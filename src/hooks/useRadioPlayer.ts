@@ -68,6 +68,8 @@ export function useRadioPlayer(opts: UseRadioPlayerOptions = {}): RadioPlayer {
   const [status, setStatus] = useState<PlayerStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const [volume, setVolumeState] = useState(0.8);
+  const volumeRef = useRef(volume);
+  volumeRef.current = volume;
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
 
   const stopWatchdog = useCallback(() => {
@@ -78,7 +80,23 @@ export function useRadioPlayer(opts: UseRadioPlayerOptions = {}): RadioPlayer {
   }, []);
 
   const ensureGraph = useCallback(() => {
-    if (audioRef.current) return;
+    const existing = ctxRef.current;
+    if (audioRef.current && existing && existing.state !== "closed") return;
+
+    // A closed AudioContext cannot be revived, and the element attached to it
+    // is permanently bound — `createMediaElementSource` may only ever be called
+    // once per element — so both get replaced.
+    //
+    // This fires in dev on every Fast Refresh: the unmount cleanup closes the
+    // context while React preserves the refs, so an `if (audioRef.current)`
+    // guard would keep handing back a dead graph. It can also happen in the
+    // wild when the platform tears a context down, so the recovery is real and
+    // not just a dev workaround.
+    if (existing) existing.close().catch(() => {});
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.removeAttribute("src");
+    }
 
     const audio = new Audio();
     audio.crossOrigin = "anonymous";
@@ -98,7 +116,7 @@ export function useRadioPlayer(opts: UseRadioPlayerOptions = {}): RadioPlayer {
     analyserRef.current = an;
 
     const gain = ctx.createGain();
-    gain.gain.value = volume;
+    gain.gain.value = volumeRef.current;
     gainRef.current = gain;
 
     // Analyser sits ahead of the gain, so volume never affects what it reads.
@@ -251,6 +269,13 @@ export function useRadioPlayer(opts: UseRadioPlayerOptions = {}): RadioPlayer {
       stopWatchdog();
       audioRef.current?.pause();
       ctxRef.current?.close().catch(() => {});
+      // Cleared so the next `ensureGraph` builds fresh. Without this, React
+      // Fast Refresh keeps the refs alive across a reload and the hook would
+      // reuse the context this line just closed.
+      audioRef.current = null;
+      ctxRef.current = null;
+      analyserRef.current = null;
+      gainRef.current = null;
     };
   }, [stopWatchdog]);
 
