@@ -23,7 +23,8 @@ const RED_AT = 0.86;
 
 interface SpectrumProps {
   analyser: AnalyserNode | null;
-  height?: number;
+  /** A pixel height, or "fill" to take whatever the parent gives it. */
+  height?: number | "fill";
   className?: string;
 }
 
@@ -199,7 +200,7 @@ export function Spectrum({ analyser, height = 150, className }: SpectrumProps) {
       className={className}
       style={{
         width: "100%",
-        height,
+        height: height === "fill" ? "100%" : height,
         display: "block",
         borderRadius: "var(--app-radius-sm)",
         background: "var(--app-bg-overlay)",
