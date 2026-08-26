@@ -28,6 +28,9 @@ export default function App() {
   const playSeq = useRef(0);
   /** Indirection so the player can call a handler defined further down. */
   const onFailedRef = useRef<(reason: string) => void>(() => {});
+  /** The failure handler can fire before React has re-rendered with the new
+      `playing`, so it reads the station from here rather than from state. */
+  const playingRef = useRef<Station | null>(null);
 
   const player = useRadioPlayer({ onFailed: (reason) => onFailedRef.current(reason) });
 
@@ -64,6 +67,7 @@ export default function App() {
 
       // Show the switch immediately — resolving can take a network round trip
       // for `resolve:` entries, and the list should never feel laggy.
+      playingRef.current = station;
       setPlaying(station);
       setNowPlaying(null);
 
@@ -84,7 +88,7 @@ export default function App() {
    * in one line — no diagnostics, no buttons, nothing to decide.
    */
   onFailedRef.current = (reason: string) => {
-    const failed = playing;
+    const failed = playingRef.current;
     if (!failed) return;
 
     const skip = new Set(unavailable).add(failed.url);
@@ -99,6 +103,7 @@ export default function App() {
       void playStation(next);
     } else {
       setNote(`${failed.name} ${reason}. Nothing else in ${genre?.name ?? "this genre"} is responding.`);
+      playingRef.current = null;
       setPlaying(null);
     }
   };
@@ -106,6 +111,7 @@ export default function App() {
   const stopPlayback = useCallback(() => {
     playSeq.current++; // invalidate anything still resolving
     player.stop();
+    playingRef.current = null;
     setPlaying(null);
     setNowPlaying(null);
     setNote(null);
@@ -270,7 +276,9 @@ export default function App() {
                         ? live.artist
                         : player.status === "loading"
                           ? "connecting…"
-                          : "not playing")}
+                          : player.status === "error"
+                            ? (player.error ?? "unavailable")
+                            : "not playing")}
                   </div>
                 </div>
               </div>

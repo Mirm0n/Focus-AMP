@@ -25,7 +25,8 @@ export const GENRES: Genre[] = [
     name: "Lofi / Chill",
     stations: [
       { name: "Lofi 24/7", artist: "Lofi Hip Hop", url: "http://usa9.fastcast4u.com/proxy/jamz?mp=/1" },
-      { name: "Lofi 101.ru", artist: "Lofi / Chill", url: "https://pub0202.101.ru:8443/stream/pro/aac/64/358" },
+      // Lofi 101.ru removed 2026-08-26 — the endpoint refuses connections
+      // (502 from the proxy, three attempts, ~2.6s each). Possibly geo-blocked.
       { name: "Box Lofi Radio", artist: "Lofi Beats", url: "https://stream.zeno.fm/tabzverz0fctv" },
       { name: "MoE Lofi", artist: "Chillhop", url: "http://stream.zeno.fm/3u1qndyk8rhvv" },
       { name: "LITT Live", artist: "Jazz Beats", url: "https://das-sa39.cdnstream1.com/5582_128" },
@@ -38,10 +39,15 @@ export const GENRES: Genre[] = [
     id: "space",
     name: "Space / Ambient",
     stations: [
-      { name: "Space Station 1", artist: "Ambient Space", url: "resolve:2f02a25d-9b5d-4c3e-abb7-c43be64ca8d7" },
-      { name: "Space Station 2", artist: "Deep Space", url: "resolve:83accca7-b878-419d-a506-3d21ef2f250f" },
+      // Two of V1's `resolve:` UUIDs turned out to be SomaFM channels behind a
+      // Radio Browser lookup. Pinned to the real URLs: one less network
+      // round trip before playback starts, and one less dependency.
+      { name: "Synphaera", artist: "SomaFM · Space Ambient", url: "https://ice6.somafm.com/synphaera-256-mp3" },
+      { name: "Mission Control", artist: "SomaFM · Space", url: "https://ice5.somafm.com/missioncontrol-128-mp3" },
       { name: "Space Travel", artist: "Sci-Fi", url: "http://spacetravelradio.de:1701/stream/1/" },
-      { name: "Space Station 3", artist: "Cosmic", url: "resolve:9614eb15-0601-11e8-ae97-52543be04c81" },
+      // Resolves to stream.drugradio.ru — a Russian station, content unverified,
+      // and "Space Station 1" was only ever a placeholder name.
+      { name: "Space Station 1", artist: "Ambient Space", url: "resolve:2f02a25d-9b5d-4c3e-abb7-c43be64ca8d7" },
     ],
   },
   {

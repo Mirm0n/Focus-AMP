@@ -26,6 +26,10 @@ use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter};
 
+/// How long upstream gets to return response headers. The body that follows is
+/// deliberately unbounded — it is a radio stream.
+const HANDSHAKE_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
+
 #[derive(Clone)]
 struct AppState {
     client: reqwest::Client,
@@ -110,15 +114,19 @@ async fn stream_handler(State(state): State<AppState>, Query(q): Query<StreamQue
         Err(e) => return error_response(StatusCode::BAD_GATEWAY, format!("resolve failed: {e}")),
     };
 
-    let resp = match state
-        .client
-        .get(&upstream)
-        .header("Icy-MetaData", "1")
-        .send()
-        .await
-    {
-        Ok(r) => r,
-        Err(e) => return error_response(StatusCode::BAD_GATEWAY, format!("upstream failed: {e}")),
+    // Bounded on the handshake only — never on the body, which is an endless
+    // stream. A station that completes TLS and then goes quiet would otherwise
+    // hold this connection open forever.
+    let send = state.client.get(&upstream).header("Icy-MetaData", "1").send();
+    let resp = match tokio::time::timeout(HANDSHAKE_TIMEOUT, send).await {
+        Ok(Ok(r)) => r,
+        Ok(Err(e)) => return error_response(StatusCode::BAD_GATEWAY, format!("upstream failed: {e}")),
+        Err(_) => {
+            return error_response(
+                StatusCode::GATEWAY_TIMEOUT,
+                "upstream did not send headers in time".to_string(),
+            )
+        }
     };
 
     if !resp.status().is_success() {
@@ -190,8 +198,11 @@ async fn resolve_playlist(client: &reqwest::Client, url: &str) -> Result<String,
         return Ok(url.to_string());
     }
 
+    // A playlist is a small finite body, so a whole-request timeout is safe here
+    // in a way it never would be for the stream itself.
     let text = client
         .get(url)
+        .timeout(HANDSHAKE_TIMEOUT)
         .send()
         .await
         .map_err(|e| e.to_string())?

@@ -20,7 +20,7 @@ serde_json = "1"
 
 # Local audio proxy
 axum = "0.8"
-tokio = { version = "1", features = ["rt-multi-thread", "net", "macros"] }
+tokio = { version = "1", features = ["rt-multi-thread", "net", "macros", "time"] }
 reqwest = { version = "0.12", features = ["stream"] }
 futures-util = "0.3"
 async-stream = "0.3"
