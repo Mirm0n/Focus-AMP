@@ -32,7 +32,9 @@ export const GENRES: Genre[] = [
       { name: "Box Lofi Radio", artist: "Lofi Beats", url: "https://stream.zeno.fm/tabzverz0fctv" },
       { name: "MoE Lofi", artist: "Chillhop", url: "http://stream.zeno.fm/3u1qndyk8rhvv" },
       { name: "LITT Live", artist: "Jazz Beats", url: "https://das-sa39.cdnstream1.com/5582_128" },
-      { name: "PAX LO-FI", artist: "Lofi Ambient", url: "https://das-edge16-live365-dal02.cdnstream.com/a24494" },
+      // PAX LO-FI removed 2026-08-26 — excluded pending provenance review.
+      // A precaution rather than a finding about the station: anonymous
+      // auto-DJ lofi is the hardest category to verify. Don't re-add blind.
     ],
   },
   {
