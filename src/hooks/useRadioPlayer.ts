@@ -7,19 +7,18 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * `createMediaElementSource()` may only be called once per element — every
  * later station swaps `src` on the same element and keeps the graph intact.
  *
- * Radio stations die quietly: the URL still resolves, the element still reports
- * healthy playback, and nothing comes out. So the player watches two things and
- * reports a failure rather than sitting there looking fine —
+ * Radio stations fail in three different ways and each needs its own catch:
  *
- *   1. no decodable audio at all within DEAD_AFTER_MS
- *   2. decodable audio, but the analyser reads silence for SILENT_AFTER_MS
+ *   1. the element errors outright (bad response, undecodable codec)
+ *   2. nothing ever arrives and `play()` simply never settles
+ *   3. audio arrives, but it is silence — dead air or a stalled feed
  *
- * The caller decides what to do about it; App moves to the next station.
+ * The caller decides what to do; App moves to the next station in the genre.
  */
 
-/** No decodable audio at all — the station is unreachable. */
-const DEAD_AFTER_MS = 12_000;
-/** Playing, but the graph is carrying nothing — dead air or a stalled feed. */
+/** Backstop for a stream that hangs without ever erroring. */
+const DEAD_AFTER_MS = 10_000;
+/** Playing, but the graph is carrying nothing. */
 const SILENT_AFTER_MS = 8_000;
 /** Analyser byte value at or below which we call it silence. */
 const SILENCE_FLOOR = 3;
@@ -41,16 +40,30 @@ export interface RadioPlayer {
   analyser: AnalyserNode | null;
 }
 
+/** MediaError codes, phrased to read inside "<Station> …". */
+const MEDIA_ERROR: Record<number, string> = {
+  1: "stopped unexpectedly",
+  2: "could not be reached",
+  3: "sent audio this device cannot decode",
+  4: "is unavailable",
+};
+
 export function useRadioPlayer(opts: UseRadioPlayerOptions = {}): RadioPlayer {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ctxRef = useRef<AudioContext | null>(null);
   const gainRef = useRef<GainNode | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const watchRef = useRef<number | null>(null);
+  /** True between play() and stop(). Guards against a late event from a
+      previous station tripping the watchdog for the current one. */
+  const activeRef = useRef(false);
+  /** Set once per attempt, so two failure paths can't both advance the list. */
+  const failedRef = useRef(false);
 
-  // Held in a ref so the watchdog never closes over a stale handler.
+  // Held in refs so listeners registered once never close over stale values.
   const onFailedRef = useRef(opts.onFailed);
   onFailedRef.current = opts.onFailed;
+  const failRef = useRef<(reason: string) => void>(() => {});
 
   const [status, setStatus] = useState<PlayerStatus>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -94,10 +107,20 @@ export function useRadioPlayer(opts: UseRadioPlayerOptions = {}): RadioPlayer {
     gain.connect(ctx.destination);
 
     audio.addEventListener("playing", () => {
+      if (!activeRef.current) return;
       setStatus("playing");
       setError(null);
     });
-    audio.addEventListener("waiting", () => setStatus("loading"));
+    audio.addEventListener("waiting", () => {
+      if (activeRef.current) setStatus("loading");
+    });
+    // Failure mode 1. Without this a bad response is silently swallowed and
+    // the UI sits on "connecting…" forever.
+    audio.addEventListener("error", () => {
+      if (!activeRef.current) return;
+      const code = audio.error?.code;
+      failRef.current((code && MEDIA_ERROR[code]) || "could not be played");
+    });
 
     setAnalyser(an);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -106,6 +129,9 @@ export function useRadioPlayer(opts: UseRadioPlayerOptions = {}): RadioPlayer {
   /** Give up on the current stream and tell the caller why. */
   const fail = useCallback(
     (reason: string) => {
+      if (!activeRef.current || failedRef.current) return;
+      failedRef.current = true;
+      activeRef.current = false;
       stopWatchdog();
       audioRef.current?.pause();
       setStatus("error");
@@ -114,6 +140,7 @@ export function useRadioPlayer(opts: UseRadioPlayerOptions = {}): RadioPlayer {
     },
     [stopWatchdog],
   );
+  failRef.current = fail;
 
   const startWatchdog = useCallback(() => {
     stopWatchdog();
@@ -128,13 +155,14 @@ export function useRadioPlayer(opts: UseRadioPlayerOptions = {}): RadioPlayer {
     watchRef.current = window.setInterval(() => {
       const audio = audioRef.current;
       const analyserNode = analyserRef.current;
-      if (!audio || !analyserNode || audio.paused) return;
+      if (!audio || !analyserNode || !activeRef.current) return;
 
       if (audio.readyState >= 2) sawAudio = true;
 
+      // Failure mode 2: nothing ever arrived.
       if (!sawAudio) {
         if (performance.now() - startedAt > DEAD_AFTER_MS) {
-          fail("station did not respond");
+          fail("did not respond");
         }
         return;
       }
@@ -147,10 +175,11 @@ export function useRadioPlayer(opts: UseRadioPlayerOptions = {}): RadioPlayer {
         silentSince = null;
         return;
       }
+      // Failure mode 3: playing, but carrying silence.
       if (silentSince === null) {
         silentSince = performance.now();
       } else if (performance.now() - silentSince > SILENT_AFTER_MS) {
-        fail("station is playing silence");
+        fail("is playing silence");
       }
     }, 500);
   }, [fail, stopWatchdog]);
@@ -163,30 +192,39 @@ export function useRadioPlayer(opts: UseRadioPlayerOptions = {}): RadioPlayer {
 
       if (ctx.state === "suspended") await ctx.resume();
 
-      stopWatchdog();
+      activeRef.current = true;
+      failedRef.current = false;
       setStatus("loading");
       setError(null);
       audio.src = url;
 
+      // Armed BEFORE play() is awaited. A stream that connects and then stalls
+      // leaves that promise pending forever, so anything waiting on it to start
+      // the timer would wait forever too.
+      startWatchdog();
+
       try {
         await audio.play();
-        startWatchdog();
       } catch (e) {
         const name = (e as Error)?.name ?? String(e);
         // An autoplay block is the browser's doing, not the station's — never
         // let it get counted against the stream.
         if (name === "NotAllowedError") {
+          activeRef.current = false;
+          stopWatchdog();
           setStatus("error");
           setError("Click anywhere to enable audio");
           return;
         }
-        fail("could not start playback");
+        fail("could not be played");
       }
     },
     [ensureGraph, fail, startWatchdog, stopWatchdog],
   );
 
   const stop = useCallback(() => {
+    activeRef.current = false;
+    failedRef.current = false;
     stopWatchdog();
     const audio = audioRef.current;
     if (!audio) return;
@@ -209,6 +247,7 @@ export function useRadioPlayer(opts: UseRadioPlayerOptions = {}): RadioPlayer {
 
   useEffect(() => {
     return () => {
+      activeRef.current = false;
       stopWatchdog();
       audioRef.current?.pause();
       ctxRef.current?.close().catch(() => {});
