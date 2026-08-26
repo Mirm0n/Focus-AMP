@@ -1,19 +1,27 @@
 import { useEffect, useRef } from "react";
 
 /**
- * A preview of the Phase 3 hero, built here for one reason: it proves the
- * analyser data is *musical*, not merely non-zero. A peak reading above the
- * silence floor could be a single stuck bin; bars moving across the whole
- * width cannot be.
+ * The LED spectrum.
  *
- * It also settles the plan's #1 craft detail early. FFT bins are linearly
- * spaced while hearing is logarithmic, so a straight bin-to-bar mapping piles
- * every visible movement into the leftmost tenth and leaves the rest dead.
- * These bands are log-spaced.
+ * Band and segment counts are derived from the canvas size rather than fixed,
+ * so the display gets denser as it gets bigger instead of turning into a grid
+ * of large blocks. Everything is snapped to whole device pixels — fractional
+ * rects get antialiased on both edges, which reads as blur at this scale.
+ *
+ * The frequency mapping is logarithmic. FFT bins are linearly spaced while
+ * hearing is not, so a straight bin-to-bar mapping piles every visible movement
+ * into the leftmost tenth and leaves the rest dead.
  */
 
-const BANDS = 28;
-const SEGMENTS = 22;
+/** Rough pixel budget per column and per segment, including its gap. */
+const COL_PITCH = 11;
+const SEG_PITCH = 7;
+
+const MIN_BANDS = 16;
+const MAX_BANDS = 128;
+const MIN_SEGMENTS = 14;
+const MAX_SEGMENTS = 80;
+
 const MIN_HZ = 32;
 const MAX_HZ = 16000;
 
@@ -50,24 +58,26 @@ function readColors(el: HTMLElement): Colors {
   };
 }
 
-/** Log-spaced bin ranges, one per band. Recomputed only when the FFT changes. */
-function buildBands(binCount: number, sampleRate: number): Array<[number, number]> {
+const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+
+/** Log-spaced bin ranges, one per band. */
+function buildBands(bandCount: number, binCount: number, sampleRate: number): Array<[number, number]> {
   const nyquist = sampleRate / 2;
   const top = Math.min(MAX_HZ, nyquist);
   const out: Array<[number, number]> = [];
-  for (let i = 0; i < BANDS; i++) {
-    const f0 = MIN_HZ * Math.pow(top / MIN_HZ, i / BANDS);
-    const f1 = MIN_HZ * Math.pow(top / MIN_HZ, (i + 1) / BANDS);
+  for (let i = 0; i < bandCount; i++) {
+    const f0 = MIN_HZ * Math.pow(top / MIN_HZ, i / bandCount);
+    const f1 = MIN_HZ * Math.pow(top / MIN_HZ, (i + 1) / bandCount);
     let b0 = Math.floor((f0 / nyquist) * binCount);
     let b1 = Math.ceil((f1 / nyquist) * binCount);
-    b0 = Math.max(0, Math.min(binCount - 1, b0));
-    b1 = Math.max(b0 + 1, Math.min(binCount, b1));
+    b0 = clamp(b0, 0, binCount - 1);
+    b1 = clamp(b1, b0 + 1, binCount);
     out.push([b0, b1]);
   }
   return out;
 }
 
-export function Spectrum({ analyser, height = 150, className }: SpectrumProps) {
+export function Spectrum({ analyser, height = "fill", className }: SpectrumProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -78,21 +88,31 @@ export function Spectrum({ analyser, height = 150, className }: SpectrumProps) {
 
     let raf = 0;
     let colors = readColors(canvas);
+
+    // Sized on demand: band count follows the canvas width, and the bin ranges
+    // follow both that and the analyser's FFT size.
+    let bandCount = 0;
+    let segmentCount = 0;
+    let binCount = 0;
     let bands: Array<[number, number]> = [];
     let bins = new Uint8Array(0);
+    let levels = new Float32Array(0);
+    let peaks = new Float32Array(0);
+    let holds = new Float32Array(0);
 
-    const levels = new Float32Array(BANDS);
-    const peaks = new Float32Array(BANDS);
-    const holds = new Float32Array(BANDS);
-
-    // dpr capped at 2 — beyond that the fill cost outruns the visible gain.
+    // dpr capped at 2 — past that the fill cost outruns any visible gain.
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let cssW = 0;
+    let cssH = 0;
 
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
-      canvas.width = Math.max(1, Math.round(rect.width * dpr));
-      canvas.height = Math.max(1, Math.round(rect.height * dpr));
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cssW = rect.width;
+      cssH = rect.height;
+      canvas.width = Math.max(1, Math.round(cssW * dpr));
+      canvas.height = Math.max(1, Math.round(cssH * dpr));
+      // Draw in device pixels so every rect can land on a whole one.
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
       colors = readColors(canvas);
     };
     resize();
@@ -107,15 +127,31 @@ export function Spectrum({ analyser, height = 150, className }: SpectrumProps) {
       const dt = Math.min((now - last) / 1000, 0.1);
       last = now;
 
-      const rect = canvas.getBoundingClientRect();
-      const w = rect.width;
-      const h = rect.height;
-      if (w < 2 || h < 2) return;
+      const w = canvas.width;
+      const h = canvas.height;
+      if (w < 4 || h < 4) return;
+
+      // ── Geometry, recomputed only when the size actually changes ──────────
+      const wantBands = clamp(Math.round(cssW / COL_PITCH), MIN_BANDS, MAX_BANDS);
+      const wantSegments = clamp(Math.round(cssH / SEG_PITCH), MIN_SEGMENTS, MAX_SEGMENTS);
+
+      if (wantBands !== bandCount) {
+        bandCount = wantBands;
+        levels = new Float32Array(bandCount);
+        peaks = new Float32Array(bandCount);
+        holds = new Float32Array(bandCount);
+        bands = [];
+      }
+      segmentCount = wantSegments;
 
       if (analyser) {
-        if (bins.length !== analyser.frequencyBinCount) {
-          bins = new Uint8Array(analyser.frequencyBinCount);
-          bands = buildBands(analyser.frequencyBinCount, analyser.context.sampleRate);
+        if (binCount !== analyser.frequencyBinCount) {
+          binCount = analyser.frequencyBinCount;
+          bins = new Uint8Array(binCount);
+          bands = [];
+        }
+        if (bands.length !== bandCount && binCount > 0) {
+          bands = buildBands(bandCount, binCount, analyser.context.sampleRate);
         }
         analyser.getByteFrequencyData(bins);
       }
@@ -126,20 +162,22 @@ export function Spectrum({ analyser, height = 150, className }: SpectrumProps) {
       ctx.fillRect(0, 0, w, h);
       ctx.globalAlpha = 1;
 
-      const gap = 2;
-      const colW = (w - gap * (BANDS - 1)) / BANDS;
-      const segGap = 2;
-      const segH = (h - segGap * (SEGMENTS - 1)) / SEGMENTS;
+      const colGap = Math.max(1, Math.round(1.5 * dpr));
+      const segGap = Math.max(1, Math.round(1 * dpr));
+      const colPitch = w / bandCount;
+      const colW = Math.max(1, Math.round(colPitch - colGap));
+      const segPitch = h / segmentCount;
+      const segH = Math.max(1, Math.round(segPitch - segGap));
 
-      for (let i = 0; i < BANDS; i++) {
+      for (let i = 0; i < bandCount; i++) {
         let target = 0;
-        if (analyser && bands.length) {
+        if (analyser && bands.length === bandCount) {
           const [b0, b1] = bands[i];
           let max = 0;
           for (let b = b0; b < b1; b++) if (bins[b] > max) max = bins[b];
           // Lift the top end: treble carries far less energy than bass, so a
-          // raw reading leaves the right half of the display permanently flat.
-          const tilt = 1 + (i / BANDS) * 0.55;
+          // raw reading leaves the right half permanently flat.
+          const tilt = 1 + (i / bandCount) * 0.55;
           target = Math.min(1, (max / 255) * tilt);
         }
 
@@ -156,33 +194,29 @@ export function Spectrum({ analyser, height = 150, className }: SpectrumProps) {
           peaks[i] = Math.max(levels[i], peaks[i] - dt * 0.85);
         }
 
-        const x = i * (colW + gap);
-        const lit = Math.round(levels[i] * SEGMENTS);
+        const x = Math.round(i * colPitch);
+        const lit = Math.round(levels[i] * segmentCount);
 
-        for (let s = 0; s < SEGMENTS; s++) {
-          const frac = s / (SEGMENTS - 1);
-          const y = h - (s + 1) * segH - s * segGap;
+        for (let s = 0; s < segmentCount; s++) {
+          const frac = s / (segmentCount - 1);
+          const y = Math.round(h - (s + 1) * segPitch);
           const on = s < lit;
 
           if (on) {
             // Colour keyed to the segment's height in the column, never to how
             // tall this particular bar happens to be.
             ctx.fillStyle = frac >= RED_AT ? colors.hi : frac >= AMBER_AT ? colors.mid : colors.lo;
-            ctx.shadowColor = ctx.fillStyle;
-            ctx.shadowBlur = 5;
           } else {
             ctx.fillStyle = colors.gridOff;
-            ctx.shadowBlur = 0;
           }
           ctx.fillRect(x, y, colW, segH);
         }
-        ctx.shadowBlur = 0;
 
         if (peaks[i] > 0.02) {
-          const ps = Math.min(SEGMENTS - 1, Math.round(peaks[i] * SEGMENTS));
-          const py = h - (ps + 1) * segH - ps * segGap;
+          const ps = Math.min(segmentCount - 1, Math.round(peaks[i] * segmentCount));
+          const py = Math.round(h - (ps + 1) * segPitch);
           ctx.fillStyle = colors.cap;
-          ctx.fillRect(x, py, colW, Math.max(1.5, segH * 0.35));
+          ctx.fillRect(x, py, colW, Math.max(1, Math.round(segH * 0.4)));
         }
       }
     };

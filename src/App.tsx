@@ -270,10 +270,6 @@ export default function App() {
             </div>
           )}
 
-          <section style={{ ...card, flex: "0 0 auto" }}>
-            <PomodoroPanel pom={pom} />
-          </section>
-
           {/* The visualizer is the hero — it takes everything left over. */}
           <div style={{ flex: 1, minHeight: 120 }}>
             <Spectrum analyser={player.analyser} height="fill" />
@@ -291,6 +287,10 @@ export default function App() {
               {note}
             </div>
           )}
+
+          <section style={{ ...card, flex: "0 0 auto", padding: "18px 20px" }}>
+            <PomodoroPanel pom={pom} />
+          </section>
         </main>
       </div>
 
