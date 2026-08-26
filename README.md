@@ -10,15 +10,12 @@ Full plan: `../Tunescape/plans/tunescape-v2.md`
 | Phase | State |
 |---|---|
 | 0 — Scaffold | **done** |
-| 1 — Rust audio proxy | **done, needs live verification** |
-| 2 — Playback core | seeded (`useRadioPlayer`), not wired to a real catalog UI |
+| 1 — Rust audio proxy | **done** |
+| 2 — Playback core | **done** — transport, volume, automatic stream health |
 | 3 — The visualizer | previewed (`Spectrum.tsx`), registry not built |
-| 4 — UI shell | not started |
+| 4 — UI shell | not started — no genre grid yet, the station list is the whole navigation |
 | 5 — Desktop integration | not started |
 | 6 — Package & ship | not started |
-
-The app currently opens onto the **Phase 1 spike harness**, not the real UI. That is
-deliberate: the harness exists to prove the CORS claim before anything is built on top of it.
 
 ## Running it
 
@@ -41,52 +38,51 @@ dead visualizer — dead audio. Most public Icecast endpoints send no CORS heade
 - resolves `.pls` / `.m3u` playlist URLs to the stream behind them
 - sidesteps mixed content, since loopback is a trustworthy origin
 
-## Using the spike harness
+Verified against live traffic: `stream.zeno.fm` answers a direct request with 302 and no
+ACAO; through the proxy it is 200 + ACAO with clean MP3 frame sync.
 
-Pick a station on the left, then:
+## Stream health is automatic
 
-- **Probe this station** runs the same stream twice — once direct, once through the proxy —
-  and reports, for each, whether audio reached the element *and* whether the analyser saw
-  anything. Those two answers coming apart is the whole point.
-- **Probe all stations** sweeps the catalog and tallies the verdicts.
-- **Listen** plays through the proxy with the live spectrum, so you can confirm the analyser
-  data is musical rather than merely non-zero.
+Radio stations die quietly — the URL still resolves, the element still reports healthy
+playback, and nothing comes out. `useRadioPlayer` watches for both failure modes and moves
+on by itself:
 
-### Reading the verdicts
+| Condition | Window | Result |
+|---|---|---|
+| No decodable audio at all | 12 s | station marked unavailable |
+| Playing, but the analyser reads silence | 8 s | station marked unavailable |
 
-| Verdict | Meaning |
-|---|---|
-| Sends CORS | Works either way. The SomaFM reference stations should land here. |
-| Was CORS-silenced | Element played, graph was silent. **This is the case that justifies the proxy.** |
-| Proxy-only | Not reachable directly at all. |
-| Still broken | The proxy did not recover it — investigate before shipping. |
-| Genuinely dead | No audio on either path. Prune from the catalog. |
+On failure the player skips to the next station in the same genre, dims the dead one in the
+list, and says so in one line. There is nothing to configure and nothing to press. An
+autoplay block is handled separately, so the browser's policy is never counted against a
+station.
 
-The "Reference (known-good)" group is the control. If those show as dead on the direct path,
-the harness is broken, not the stations.
+A manual click on a dimmed station gives it another chance.
 
 ## Layout
 
 ```
-src-tauri/src/proxy.rs      the audio proxy — CORS, ICY, playlists
-src-tauri/src/lib.rs        Tauri setup, binds the proxy, exposes proxy_port
-src/lib/probe.ts            the A/B measurement
-src/lib/proxy.ts            proxy URLs + Radio Browser mirror resolution
-src/hooks/useRadioPlayer.ts persistent playback graph (Phase 2 seed)
-src/components/Spectrum.tsx log-binned LED spectrum (Phase 3 preview)
-src/data/stations.ts        catalog ported from V1, unverified
-src/App.tsx                 the spike harness
+src-tauri/src/proxy.rs        the audio proxy — CORS, ICY, playlists
+src-tauri/src/lib.rs          Tauri setup, binds the proxy, exposes proxy_port
+src/hooks/useRadioPlayer.ts   playback graph + automatic stream health
+src/components/Spectrum.tsx   log-binned LED spectrum (Phase 3 preview)
+src/lib/proxy.ts              proxy URLs + Radio Browser mirror resolution
+src/data/stations.ts          catalog ported from V1
+src/App.tsx                   station list + player
 ```
 
 ## Ported from V1
 
 `styles/theme.css`, `styles/fonts.css`, `ErrorBoundary.tsx`, `ui/utils.ts`, and the station
-catalog. Everything else here is new. V1's visualizer was **not** ported — `fftSize: 128`
-with six linear bands is too coarse, and it drew by mutating DOM element heights.
+catalog. Everything else is new. V1's visualizer was **not** ported — `fftSize: 128` with six
+linear bands is too coarse, and it drew by mutating DOM element heights.
 
 ## Known gaps
 
-- Stations in `src/data/stations.ts` are marked unverified until the probe has run.
+- No genre grid yet — Phase 4. The station list is currently the whole navigation.
 - Linux needs GStreamer plugins (`gstreamer1.0-libav`, `gstreamer1.0-plugins-bad`) for MP3/AAC
   under WebKitGTK. Untested there so far.
-- No persistence yet — `tauri-plugin-store` is wired into the Rust build but unused.
+- No persistence — `tauri-plugin-store` is wired into the Rust build but unused, so volume and
+  last station reset on every launch.
+- The Lofi group is all anonymous auto-DJ streams with no named curator, which is the hardest
+  category to verify for AI-generated content. See the note in `stations.ts`.

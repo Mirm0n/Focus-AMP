@@ -1,54 +1,35 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { Play, Square, Radio, Loader2 } from "lucide-react";
 
 import { TitleBar } from "./components/TitleBar";
 import { Spectrum } from "./components/Spectrum";
-import { card, label, Button, Dot } from "./components/primitives";
+import { card, label, Button } from "./components/primitives";
 import { useRadioPlayer } from "./hooks/useRadioPlayer";
 import { GENRES, type Station } from "./data/stations";
 import { getProxyPort, proxied, resolveStationUrl, isTauri } from "./lib/proxy";
-import type { StationReport } from "./lib/probe";
 
-/**
- * The probe harness is developer tooling — it sorts V1's catalog into
- * genuinely-dead versus merely CORS-silenced, and an end user has no use for it.
- *
- * Vite substitutes a literal `false` for `import.meta.env.DEV` at build time, so
- * this ternary collapses to `null` and the dynamic import becomes unreachable.
- * Rollup then drops the chunk entirely — harness, `lib/probe.ts`, and all.
- * `StationReport` above is a type-only import and erases, so it costs nothing.
- */
-const DEV = import.meta.env.DEV;
-const ProbeHarness = DEV ? lazy(() => import("./dev/ProbeHarness")) : null;
+function genreOf(station: Station) {
+  return GENRES.find((g) => g.stations.some((s) => s.url === station.url));
+}
 
 export default function App() {
   const [port, setPort] = useState<number | null>(null);
   const [portError, setPortError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Station>(GENRES[2].stations[0]);
-  const [nowPlaying, setNowPlaying] = useState<string | null>(null);
   const [playing, setPlaying] = useState<Station | null>(null);
+  const [nowPlaying, setNowPlaying] = useState<string | null>(null);
+  /** Stations that failed while we were listening. Dimmed, and skipped over. */
+  const [unavailable, setUnavailable] = useState<Set<string>>(new Set());
+  const [note, setNote] = useState<string | null>(null);
 
-  // Harness-owned data App still needs, to decorate the station rows.
-  const [reports, setReports] = useState<Record<string, StationReport>>({});
-  const [batchAt, setBatchAt] = useState<string | null>(null);
-  const [log, setLog] = useState<string[]>([]);
-
-  const player = useRadioPlayer();
   const resolvedCache = useRef(new Map<string, string>());
   /** Rising token so a slow resolve from an earlier click can't land after a later one. */
   const playSeq = useRef(0);
+  /** Indirection so the player can call a handler defined further down. */
+  const onFailedRef = useRef<(reason: string) => void>(() => {});
 
-  const say = useCallback((line: string) => {
-    // Only the harness renders the log, so in production this would be a
-    // re-render on every now-playing event for something nobody can see.
-    if (!DEV) return;
-    setLog((prev) => [`${new Date().toLocaleTimeString()}  ${line}`, ...prev].slice(0, 60));
-  }, []);
-
-  const handleReport = useCallback((url: string, report: StationReport) => {
-    setReports((r) => ({ ...r, [url]: report }));
-  }, []);
+  const player = useRadioPlayer({ onFailed: (reason) => onFailedRef.current(reason) });
 
   useEffect(() => {
     if (!isTauri()) {
@@ -56,23 +37,17 @@ export default function App() {
       return;
     }
     getProxyPort()
-      .then((p) => {
-        setPort(p);
-        say(`proxy listening on 127.0.0.1:${p}`);
-      })
+      .then(setPort)
       .catch((e) => setPortError(String(e)));
-  }, [say]);
+  }, []);
 
   useEffect(() => {
     if (!isTauri()) return;
-    const un = listen<{ title: string }>("now-playing", (e) => {
-      setNowPlaying(e.payload.title);
-      say(`now playing — ${e.payload.title}`);
-    });
+    const un = listen<{ title: string }>("now-playing", (e) => setNowPlaying(e.payload.title));
     return () => {
       un.then((f) => f());
     };
-  }, [say]);
+  }, []);
 
   const resolve = useCallback(async (station: Station) => {
     const hit = resolvedCache.current.get(station.url);
@@ -95,26 +70,57 @@ export default function App() {
       try {
         const upstream = await resolve(station);
         if (seq !== playSeq.current) return; // a later click already won
-        say(`playing ${station.name}`);
         await player.play(proxied(port, upstream));
-      } catch (e) {
+      } catch {
         if (seq !== playSeq.current) return;
-        say(`could not resolve ${station.name}: ${String(e)}`);
-        setPlaying(null);
+        onFailedRef.current("could not be reached");
       }
     },
-    [player, port, resolve, say],
+    [player, port, resolve],
   );
+
+  /**
+   * A station died. Mark it, move to the next one in the same genre, and say so
+   * in one line — no diagnostics, no buttons, nothing to decide.
+   */
+  onFailedRef.current = (reason: string) => {
+    const failed = playing;
+    if (!failed) return;
+
+    const skip = new Set(unavailable).add(failed.url);
+    setUnavailable(skip);
+
+    const genre = genreOf(failed);
+    const next = genre?.stations.find((s) => !skip.has(s.url));
+
+    if (next) {
+      setNote(`${failed.name} ${reason} — switching to ${next.name}`);
+      setSelected(next);
+      void playStation(next);
+    } else {
+      setNote(`${failed.name} ${reason}. Nothing else in ${genre?.name ?? "this genre"} is responding.`);
+      setPlaying(null);
+    }
+  };
 
   const stopPlayback = useCallback(() => {
     playSeq.current++; // invalidate anything still resolving
     player.stop();
     setPlaying(null);
     setNowPlaying(null);
+    setNote(null);
   }, [player]);
 
   const selectAndPlay = useCallback(
     (station: Station) => {
+      setNote(null);
+      // A manual pick is a second chance — clear any past failure for it.
+      setUnavailable((prev) => {
+        if (!prev.has(station.url)) return prev;
+        const next = new Set(prev);
+        next.delete(station.url);
+        return next;
+      });
       setSelected(station);
       void playStation(station);
     },
@@ -125,7 +131,7 @@ export default function App() {
 
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <TitleBar subtitle={DEV ? "Phase 1 — proxy spike" : undefined} />
+      <TitleBar />
 
       <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
         {/* ── Stations ──────────────────────────────────────────────── */}
@@ -142,11 +148,10 @@ export default function App() {
             <div key={genre.id}>
               <div style={{ ...label, padding: "14px 16px 6px" }}>{genre.name}</div>
               {genre.stations.map((station) => {
-                const r = reports[station.url];
                 const isSel = selected.url === station.url;
-                const isAt = batchAt === station.url;
                 const isLive = playing?.url === station.url;
                 const isBuffering = isLive && player.status === "loading";
+                const isDown = unavailable.has(station.url);
                 return (
                   <div
                     key={station.url}
@@ -166,6 +171,7 @@ export default function App() {
                       gap: 9,
                       padding: "8px 16px",
                       cursor: "pointer",
+                      opacity: isDown ? 0.42 : 1,
                       background: isSel ? "var(--app-bg-overlay)" : "transparent",
                       borderLeft: isLive
                         ? "2px solid var(--app-accent-amber)"
@@ -174,29 +180,6 @@ export default function App() {
                           : "2px solid transparent",
                     }}
                   >
-                    {/* Probe verdict — dev only. In production it would be a
-                        meaningless grey dot on every row. */}
-                    {DEV &&
-                      (isAt ? (
-                        <Loader2
-                          size={8}
-                          className="spin"
-                          style={{ color: "var(--app-accent-amber)" }}
-                        />
-                      ) : (
-                        <Dot
-                          tone={
-                            !r
-                              ? "idle"
-                              : r.verdict === "dead"
-                                ? "bad"
-                                : r.verdict === "degraded"
-                                  ? "warn"
-                                  : "good"
-                          }
-                        />
-                      ))}
-
                     <div style={{ minWidth: 0, flex: 1 }}>
                       <div
                         style={{
@@ -211,7 +194,7 @@ export default function App() {
                         {station.name}
                       </div>
                       <div style={{ fontSize: 10.5, color: "var(--app-text-faint)" }}>
-                        {station.artist}
+                        {isDown ? "unavailable" : station.artist}
                       </div>
                     </div>
 
@@ -235,7 +218,7 @@ export default function App() {
           ))}
         </aside>
 
-        {/* ── Main ──────────────────────────────────────────────────── */}
+        {/* ── Player ────────────────────────────────────────────────── */}
         <main
           style={{
             flex: 1,
@@ -243,7 +226,7 @@ export default function App() {
             padding: 20,
             display: "flex",
             flexDirection: "column",
-            gap: 18,
+            gap: 14,
           }}
         >
           {portError && (
@@ -284,7 +267,7 @@ export default function App() {
                   >
                     {nowPlaying ??
                       (player.status === "playing"
-                        ? "waiting for ICY metadata…"
+                        ? live.artist
                         : player.status === "loading"
                           ? "connecting…"
                           : "not playing")}
@@ -308,7 +291,7 @@ export default function App() {
                     <Square size={12} /> Stop
                   </Button>
                 ) : (
-                  <Button primary onClick={() => playStation(selected)} disabled={port === null}>
+                  <Button primary onClick={() => selectAndPlay(selected)} disabled={port === null}>
                     <Play size={12} /> Play
                   </Button>
                 )}
@@ -316,25 +299,12 @@ export default function App() {
             </div>
 
             <Spectrum analyser={player.analyser} height={132} />
-
-            {player.error && (
-              <div style={{ fontSize: 11, color: "var(--viz-led-hi)" }}>{player.error}</div>
-            )}
           </section>
 
-          {ProbeHarness && (
-            <Suspense fallback={null}>
-              <ProbeHarness
-                port={port}
-                selected={selected}
-                resolve={resolve}
-                say={say}
-                log={log}
-                reports={reports}
-                onReport={handleReport}
-                onBatchAt={setBatchAt}
-              />
-            </Suspense>
+          {note && (
+            <div style={{ fontSize: 11.5, color: "var(--app-text-faint)", paddingLeft: 2 }}>
+              {note}
+            </div>
           )}
         </main>
       </div>

@@ -1,10 +1,9 @@
 /**
  * Curated station catalog — seeded from V1's `MUSIC_CATEGORIES`.
  *
- * Every entry here is unverified until it has been through the Phase 1 probe.
- * V1 could not tell a dead station from a CORS-silenced one (its silence
- * auto-skip fires identically for both), so treat `verified` as the source of
- * truth and re-run the probe before promoting anything.
+ * Nothing here is hand-verified. The player checks each station as it plays
+ * (see `useRadioPlayer`) and moves on by itself when one fails, so a stale
+ * entry costs a few seconds rather than a broken app.
  */
 
 export interface Station {
@@ -12,8 +11,6 @@ export interface Station {
   artist: string;
   /** A direct stream URL, or `resolve:<uuid>` for a Radio Browser lookup. */
   url: string;
-  /** Set once the station has passed the proxy probe. */
-  verified?: boolean;
 }
 
 export interface Genre {
@@ -48,12 +45,11 @@ export const GENRES: Genre[] = [
     ],
   },
   {
-    id: "reference",
-    name: "Reference (known-good)",
+    id: "somafm",
+    name: "SomaFM",
     stations: [
-      // SomaFM sends CORS headers, so these play *and* analyse without the
-      // proxy. They are the control group: if the direct column is dead for
-      // these, the harness itself is broken, not the station.
+      // Listener-supported, human-curated, and long-running — the most
+      // dependable group in this catalog.
       { name: "Groove Salad", artist: "SomaFM · Ambient", url: "https://ice1.somafm.com/groovesalad-128-mp3" },
       { name: "Drone Zone", artist: "SomaFM · Ambient", url: "https://ice1.somafm.com/dronezone-128-mp3" },
       { name: "Lush", artist: "SomaFM · Vocal", url: "https://ice1.somafm.com/lush-128-mp3" },

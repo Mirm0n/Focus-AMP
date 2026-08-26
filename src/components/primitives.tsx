@@ -17,30 +17,6 @@ export const label: CSSProperties = {
   fontFamily: "var(--app-font-ui)",
 };
 
-export type Tone = "good" | "bad" | "warn" | "idle";
-
-const TONE_COLOR: Record<Tone, string> = {
-  good: "var(--viz-led-lo)",
-  bad: "var(--viz-led-hi)",
-  warn: "var(--viz-led-mid)",
-  idle: "var(--app-border-default)",
-};
-
-export function Dot({ tone }: { tone: Tone }) {
-  return (
-    <span
-      style={{
-        width: 7,
-        height: 7,
-        borderRadius: "50%",
-        background: TONE_COLOR[tone],
-        display: "inline-block",
-        flex: "0 0 auto",
-      }}
-    />
-  );
-}
-
 export function Button({
   children,
   onClick,
