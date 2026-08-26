@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
-import { Play, Square, Radio, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 import { TitleBar } from "./components/TitleBar";
 import { Spectrum } from "./components/Spectrum";
-import { card, label, Button } from "./components/primitives";
+import { PlayerBar } from "./components/PlayerBar";
+import { PomodoroPanel } from "./components/PomodoroPanel";
+import { card, label } from "./components/primitives";
 import { useRadioPlayer } from "./hooks/useRadioPlayer";
+import { usePomodoro, type Phase } from "./hooks/usePomodoro";
 import { GENRES, type Station } from "./data/stations";
 import { getProxyPort, proxied, resolveStationUrl, isTauri } from "./lib/proxy";
 
@@ -31,8 +34,12 @@ export default function App() {
   /** The failure handler can fire before React has re-rendered with the new
       `playing`, so it reads the station from here rather than from state. */
   const playingRef = useRef<Station | null>(null);
+  /** What to put back on when a break ends. */
+  const resumeRef = useRef<Station | null>(null);
+  const onPhaseRef = useRef<(next: Phase, previous: Phase) => void>(() => {});
 
   const player = useRadioPlayer({ onFailed: (reason) => onFailedRef.current(reason) });
+  const pom = usePomodoro({ onPhaseChange: (n, p) => onPhaseRef.current(n, p) });
 
   useEffect(() => {
     if (!isTauri()) {
@@ -83,31 +90,6 @@ export default function App() {
     [player, port, resolve],
   );
 
-  /**
-   * A station died. Mark it, move to the next one in the same genre, and say so
-   * in one line — no diagnostics, no buttons, nothing to decide.
-   */
-  onFailedRef.current = (reason: string) => {
-    const failed = playingRef.current;
-    if (!failed) return;
-
-    const skip = new Set(unavailable).add(failed.url);
-    setUnavailable(skip);
-
-    const genre = genreOf(failed);
-    const next = genre?.stations.find((s) => !skip.has(s.url));
-
-    if (next) {
-      setNote(`${failed.name} ${reason} — switching to ${next.name}`);
-      setSelected(next);
-      void playStation(next);
-    } else {
-      setNote(`${failed.name} ${reason}. Nothing else in ${genre?.name ?? "this genre"} is responding.`);
-      playingRef.current = null;
-      setPlaying(null);
-    }
-  };
-
   const stopPlayback = useCallback(() => {
     playSeq.current++; // invalidate anything still resolving
     player.stop();
@@ -133,6 +115,44 @@ export default function App() {
     [playStation],
   );
 
+  /**
+   * A station died. Mark it, move to the next one in the same genre, and say so
+   * in one line — no diagnostics, no buttons, nothing to decide.
+   */
+  onFailedRef.current = (reason: string) => {
+    const failed = playingRef.current;
+    if (!failed) return;
+
+    const skip = new Set(unavailable).add(failed.url);
+    setUnavailable(skip);
+
+    const genre = genreOf(failed);
+    const next = genre?.stations.find((s) => !skip.has(s.url));
+
+    if (next) {
+      setNote(`${failed.name} ${reason} — switching to ${next.name}`);
+      setSelected(next);
+      void playStation(next);
+    } else {
+      setNote(`${failed.name} ${reason}. Nothing else in ${genre?.name ?? "this genre"} is responding.`);
+      playingRef.current = null;
+      setPlaying(null);
+    }
+  };
+
+  /** Hand the radio over to the timer when "pause radio on breaks" is on. */
+  onPhaseRef.current = (next: Phase) => {
+    if (!pom.settings.pauseOnBreak) return;
+    if (next === "focus") {
+      const back = resumeRef.current;
+      resumeRef.current = null;
+      if (back) void playStation(back);
+    } else if (playingRef.current) {
+      resumeRef.current = playingRef.current;
+      stopPlayback();
+    }
+  };
+
   const live = playing ?? selected;
 
   return (
@@ -143,8 +163,8 @@ export default function App() {
         {/* ── Stations ──────────────────────────────────────────────── */}
         <aside
           style={{
-            width: 268,
-            flex: "0 0 268px",
+            width: 250,
+            flex: "0 0 250px",
             borderRight: "1px solid var(--app-border-subtle)",
             overflowY: "auto",
             background: "var(--app-bg-surface)",
@@ -224,15 +244,16 @@ export default function App() {
           ))}
         </aside>
 
-        {/* ── Player ────────────────────────────────────────────────── */}
+        {/* ── Stage ─────────────────────────────────────────────────── */}
         <main
           style={{
             flex: 1,
-            overflowY: "auto",
-            padding: 20,
+            minWidth: 0,
+            minHeight: 0,
+            padding: 16,
             display: "flex",
             flexDirection: "column",
-            gap: 14,
+            gap: 12,
           }}
         >
           {portError && (
@@ -242,80 +263,46 @@ export default function App() {
                 borderColor: "var(--viz-led-hi)",
                 color: "var(--viz-led-hi)",
                 fontSize: 12.5,
+                flex: "0 0 auto",
               }}
             >
               {portError}
             </div>
           )}
 
-          <section style={{ ...card, display: "flex", flexDirection: "column", gap: 13 }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 12,
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
-                <Radio size={15} style={{ color: "var(--app-accent-amber)", flex: "0 0 auto" }} />
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>{live.name}</div>
-                  <div
-                    className="selectable"
-                    style={{
-                      fontSize: 11.5,
-                      color: nowPlaying ? "var(--app-accent-amber)" : "var(--app-text-faint)",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {nowPlaying ??
-                      (player.status === "playing"
-                        ? live.artist
-                        : player.status === "loading"
-                          ? "connecting…"
-                          : player.status === "error"
-                            ? (player.error ?? "unavailable")
-                            : "not playing")}
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: "flex", alignItems: "center", gap: 8, flex: "0 0 auto" }}>
-                <input
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  value={player.volume}
-                  onChange={(e) => player.setVolume(parseFloat(e.target.value))}
-                  style={{ width: 90, accentColor: "var(--app-accent-amber)" }}
-                  title="Volume"
-                />
-                {playing ? (
-                  <Button onClick={stopPlayback}>
-                    <Square size={12} /> Stop
-                  </Button>
-                ) : (
-                  <Button primary onClick={() => selectAndPlay(selected)} disabled={port === null}>
-                    <Play size={12} /> Play
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            <Spectrum analyser={player.analyser} height={132} />
+          <section style={{ ...card, flex: "0 0 auto" }}>
+            <PomodoroPanel pom={pom} />
           </section>
 
+          {/* The visualizer is the hero — it takes everything left over. */}
+          <div style={{ flex: 1, minHeight: 120 }}>
+            <Spectrum analyser={player.analyser} height="fill" />
+          </div>
+
           {note && (
-            <div style={{ fontSize: 11.5, color: "var(--app-text-faint)", paddingLeft: 2 }}>
+            <div
+              style={{
+                fontSize: 11.5,
+                color: "var(--app-text-faint)",
+                flex: "0 0 auto",
+                paddingLeft: 2,
+              }}
+            >
               {note}
             </div>
           )}
         </main>
       </div>
+
+      <PlayerBar
+        station={live}
+        player={player}
+        nowPlaying={nowPlaying}
+        playing={playing !== null}
+        disabled={port === null}
+        onPlay={() => selectAndPlay(selected)}
+        onStop={stopPlayback}
+      />
     </div>
   );
 }

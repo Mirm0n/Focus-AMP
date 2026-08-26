@@ -14,6 +14,7 @@ fn proxy_port(state: tauri::State<'_, ProxyPort>) -> u16 {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::new().build())
+        .plugin(tauri_plugin_notification::init())
         .setup(|app| {
             let port = proxy::spawn(app.handle().clone())?;
             app.manage(ProxyPort(port));

@@ -12,6 +12,7 @@ Full plan: `../Tunescape/plans/tunescape-v2.md`
 | 0 — Scaffold | **done** |
 | 1 — Rust audio proxy | **done** |
 | 2 — Playback core | **done** — transport, volume, automatic stream health |
+| — Pomodoro | **done** — configurable, with radio integration |
 | 3 — The visualizer | previewed (`Spectrum.tsx`), registry not built |
 | 4 — UI shell | not started — no genre grid yet, the station list is the whole navigation |
 | 5 — Desktop integration | not started |
@@ -59,16 +60,32 @@ station.
 
 A manual click on a dimmed station gives it another chance.
 
+## The pomodoro timer
+
+Deadline-based, not tick-based: the remaining time is derived from a stored end
+timestamp rather than decremented each second. Background windows throttle timers hard, so a
+counter that subtracts one second per tick drifts badly over 25 minutes.
+
+Configurable focus / short / long durations, a long break every N sessions, auto-start,
+a synthesised two-note chime, and desktop notifications. Settings persist to `localStorage`.
+
+The one integration a radio app can offer that a standalone timer cannot: **pause radio on
+breaks**. Turn it on and the stream stops when a break begins and the same station comes back
+when focus resumes.
+
 ## Layout
 
 ```
-src-tauri/src/proxy.rs        the audio proxy — CORS, ICY, playlists
-src-tauri/src/lib.rs          Tauri setup, binds the proxy, exposes proxy_port
-src/hooks/useRadioPlayer.ts   playback graph + automatic stream health
-src/components/Spectrum.tsx   log-binned LED spectrum (Phase 3 preview)
-src/lib/proxy.ts              proxy URLs + Radio Browser mirror resolution
-src/data/stations.ts          catalog ported from V1
-src/App.tsx                   station list + player
+src-tauri/src/proxy.rs         the audio proxy — CORS, ICY, playlists
+src-tauri/src/lib.rs           Tauri setup, binds the proxy, exposes proxy_port
+src/hooks/useRadioPlayer.ts    playback graph + automatic stream health
+src/hooks/usePomodoro.ts       deadline-based timer state machine
+src/components/Spectrum.tsx    log-binned LED spectrum (Phase 3 preview)
+src/components/PlayerBar.tsx   persistent transport
+src/components/PomodoroPanel.tsx
+src/lib/proxy.ts               proxy URLs + Radio Browser mirror resolution
+src/data/stations.ts           catalog
+src/App.tsx                    station list + stage + player bar
 ```
 
 ## Ported from V1
@@ -82,7 +99,7 @@ linear bands is too coarse, and it drew by mutating DOM element heights.
 - No genre grid yet — Phase 4. The station list is currently the whole navigation.
 - Linux needs GStreamer plugins (`gstreamer1.0-libav`, `gstreamer1.0-plugins-bad`) for MP3/AAC
   under WebKitGTK. Untested there so far.
-- No persistence — `tauri-plugin-store` is wired into the Rust build but unused, so volume and
-  last station reset on every launch.
+- Volume and last station reset on every launch. Only pomodoro settings persist, and via
+  `localStorage` rather than `tauri-plugin-store`, which is still wired but unused.
 - The Lofi group is all anonymous auto-DJ streams with no named curator, which is the hardest
   category to verify for AI-generated content. See the note in `stations.ts`.
