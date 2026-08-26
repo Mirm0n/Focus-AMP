@@ -33,8 +33,8 @@ function IconButton({
       title={title}
       aria-label={title}
       style={{
-        width: 32,
-        height: 32,
+        width: 38,
+        height: 38,
         display: "grid",
         placeItems: "center",
         borderRadius: "var(--app-radius-sm)",
@@ -160,8 +160,8 @@ export function PomodoroPanel({ pom }: { pom: Pomodoro }) {
     pom.update({ [k]: v } as Partial<PomodoroSettings>);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
         {/* Readout */}
         <div style={{ minWidth: 0, flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
@@ -175,7 +175,7 @@ export function PomodoroPanel({ pom }: { pom: Pomodoro }) {
           <div
             style={{
               fontFamily: "ui-monospace, monospace",
-              fontSize: 40,
+              fontSize: 58,
               fontWeight: 600,
               lineHeight: 1,
               letterSpacing: "-0.02em",
@@ -190,25 +190,25 @@ export function PomodoroPanel({ pom }: { pom: Pomodoro }) {
         <div style={{ display: "flex", gap: 6, flex: "0 0 auto" }}>
           {pom.running ? (
             <IconButton onClick={pom.pause} title="Pause">
-              <Pause size={14} />
+              <Pause size={16} />
             </IconButton>
           ) : (
             <IconButton onClick={pom.start} title="Start" accent={color}>
-              <Play size={14} />
+              <Play size={16} />
             </IconButton>
           )}
           <IconButton onClick={pom.skip} title="Skip to next phase">
-            <SkipForward size={14} />
+            <SkipForward size={16} />
           </IconButton>
           <IconButton onClick={pom.reset} title="Reset">
-            <RotateCcw size={14} />
+            <RotateCcw size={16} />
           </IconButton>
           <IconButton
             onClick={() => setShowSettings((s) => !s)}
             title="Timer settings"
             accent={showSettings ? "var(--app-accent-amber)" : undefined}
           >
-            <Settings2 size={14} />
+            <Settings2 size={16} />
           </IconButton>
         </div>
       </div>
@@ -216,8 +216,8 @@ export function PomodoroPanel({ pom }: { pom: Pomodoro }) {
       {/* Progress */}
       <div
         style={{
-          height: 3,
-          borderRadius: 2,
+          height: 5,
+          borderRadius: 3,
           background: "var(--app-border-subtle)",
           overflow: "hidden",
         }}
