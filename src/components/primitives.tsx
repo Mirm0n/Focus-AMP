@@ -1,0 +1,78 @@
+import type { CSSProperties, ReactNode } from "react";
+
+/** Shared surface + text styles, so App and the dev harness stay in step. */
+
+export const card: CSSProperties = {
+  background: "var(--app-bg-surface)",
+  border: "1px solid var(--app-border-subtle)",
+  borderRadius: "var(--app-radius-md)",
+  padding: 16,
+};
+
+export const label: CSSProperties = {
+  fontSize: 10,
+  letterSpacing: "0.13em",
+  textTransform: "uppercase",
+  color: "var(--app-text-faint)",
+  fontFamily: "var(--app-font-ui)",
+};
+
+export type Tone = "good" | "bad" | "warn" | "idle";
+
+const TONE_COLOR: Record<Tone, string> = {
+  good: "var(--viz-led-lo)",
+  bad: "var(--viz-led-hi)",
+  warn: "var(--viz-led-mid)",
+  idle: "var(--app-border-default)",
+};
+
+export function Dot({ tone }: { tone: Tone }) {
+  return (
+    <span
+      style={{
+        width: 7,
+        height: 7,
+        borderRadius: "50%",
+        background: TONE_COLOR[tone],
+        display: "inline-block",
+        flex: "0 0 auto",
+      }}
+    />
+  );
+}
+
+export function Button({
+  children,
+  onClick,
+  disabled,
+  primary,
+}: {
+  children: ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+  primary?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 7,
+        padding: "7px 13px",
+        fontSize: 12.5,
+        fontFamily: "var(--app-font-ui)",
+        fontWeight: 500,
+        borderRadius: "var(--app-radius-sm)",
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.45 : 1,
+        border: primary ? "1px solid var(--app-accent-amber)" : "1px solid var(--app-border-muted)",
+        background: primary ? "var(--app-accent-amber)" : "transparent",
+        color: primary ? "#161104" : "var(--app-text-primary)",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
