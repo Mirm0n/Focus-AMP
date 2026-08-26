@@ -1,0 +1,15 @@
+# Normalize to LF in the repo and on checkout. Vite and Cargo are both
+# indifferent, and this keeps Windows checkouts from producing CRLF-only diffs.
+* text=auto eol=lf
+
+# Binary assets — never touch these.
+*.png  binary
+*.ico  binary
+*.icns binary
+*.jpg  binary
+*.jpeg binary
+*.webp binary
+*.mp3  binary
+*.mp4  binary
+*.woff  binary
+*.woff2 binary
