@@ -15,6 +15,17 @@ import {
   type StationReport,
 } from "./lib/probe";
 
+/**
+ * The probe harness is developer tooling — it exists to sort V1's catalog into
+ * genuinely-dead versus merely CORS-silenced, and an end user has no use for it.
+ *
+ * Vite substitutes a literal `false` here at build time, so every panel behind
+ * this flag is dropped from production bundles. The probe *module* still gets
+ * linked in, because the handlers reference it unconditionally — extracting the
+ * harness into `src/dev/` would remove that last few KB.
+ */
+const DEV = import.meta.env.DEV;
+
 // ── Small presentational helpers ────────────────────────────────────────────
 
 const card: React.CSSProperties = {
@@ -344,7 +355,7 @@ export default function App() {
         }
       `}</style>
 
-      <TitleBar subtitle="Phase 1 — proxy spike" />
+      <TitleBar subtitle={DEV ? "Phase 1 — proxy spike" : undefined} />
 
       <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
         {/* ── Stations ──────────────────────────────────────────────── */}
@@ -393,21 +404,24 @@ export default function App() {
                           : "2px solid transparent",
                     }}
                   >
-                    {isAt ? (
-                      <Loader2 size={8} className="spin" style={{ color: "var(--app-accent-amber)" }} />
-                    ) : (
-                      <Dot
-                        tone={
-                          !r
-                            ? "idle"
-                            : r.verdict === "dead"
-                              ? "bad"
-                              : r.verdict === "degraded"
-                                ? "warn"
-                                : "good"
-                        }
-                      />
-                    )}
+                    {/* Probe verdict — dev only. In production it would be a
+                        meaningless grey dot on every row. */}
+                    {DEV &&
+                      (isAt ? (
+                        <Loader2 size={8} className="spin" style={{ color: "var(--app-accent-amber)" }} />
+                      ) : (
+                        <Dot
+                          tone={
+                            !r
+                              ? "idle"
+                              : r.verdict === "dead"
+                                ? "bad"
+                                : r.verdict === "degraded"
+                                  ? "warn"
+                                  : "good"
+                          }
+                        />
+                      ))}
                     <div style={{ minWidth: 0, flex: 1 }}>
                       <div
                         style={{
@@ -519,7 +533,8 @@ export default function App() {
             </div>
           </section>
 
-          {/* A/B */}
+          {/* A/B — dev only */}
+          {DEV && (
           <section style={{ display: "flex", flexDirection: "column", gap: 11 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -587,9 +602,10 @@ export default function App() {
               </div>
             )}
           </section>
+          )}
 
-          {/* Tally */}
-          {tally.total > 0 && (
+          {/* Tally — dev only */}
+          {DEV && tally.total > 0 && (
             <section style={{ ...card, display: "flex", gap: 26, flexWrap: "wrap" }}>
               {[
                 ["Probed", tally.total, "var(--app-text-primary)"],
@@ -608,7 +624,8 @@ export default function App() {
             </section>
           )}
 
-          {/* Log */}
+          {/* Log — dev only */}
+          {DEV && (
           <section style={{ ...card, flex: "0 0 auto" }}>
             <div style={{ ...label, marginBottom: 8 }}>Activity</div>
             <div
@@ -631,6 +648,7 @@ export default function App() {
               )}
             </div>
           </section>
+          )}
         </main>
       </div>
     </div>
