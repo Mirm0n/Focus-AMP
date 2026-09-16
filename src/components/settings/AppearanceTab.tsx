@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { Sun, Moon, Monitor } from "lucide-react";
 
 import { VisualizerCanvas } from "../VisualizerCanvas";
 import { FieldGroup, Hint, Toggle } from "./fields";
@@ -6,6 +7,7 @@ import { THEMES } from "../../theme/themes";
 import { VISUALIZERS } from "../../viz/registry";
 import type { Appearance } from "../../theme/useAppearance";
 import type { VizOptionKey } from "../../viz/types";
+import type { Mode } from "../../theme/themes";
 
 const OPTION_COPY: Record<VizOptionKey, { name: string; hint: string }> = {
   density: { name: "Density", hint: "How finely the display is divided" },
@@ -17,6 +19,76 @@ const OPTION_COPY: Record<VizOptionKey, { name: string; hint: string }> = {
 
 const TOGGLE_KEYS: VizOptionKey[] = ["glow", "peaks", "mirror", "scanlines"];
 
+const MODES: Array<{ id: Mode; name: string; Icon: typeof Sun }> = [
+  { id: "light", name: "Light", Icon: Sun },
+  { id: "dark", name: "Dark", Icon: Moon },
+  { id: "system", name: "System", Icon: Monitor },
+];
+
+/** Segmented control. A radiogroup, not a set of toggles — exactly one wins. */
+function ModeSwitch({
+  mode,
+  resolved,
+  onChange,
+}: {
+  mode: Mode;
+  resolved: "light" | "dark";
+  onChange: (m: Mode) => void;
+}) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+      <div
+        role="radiogroup"
+        aria-label="Light or dark"
+        style={{
+          display: "flex",
+          gap: 3,
+          padding: 3,
+          borderRadius: "var(--app-radius-sm)",
+          border: "1px solid var(--app-border-input)",
+          background: "var(--app-bg-base)",
+          alignSelf: "flex-start",
+        }}
+      >
+        {MODES.map(({ id, name, Icon }) => {
+          const active = id === mode;
+          return (
+            <button
+              key={id}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => onChange(id)}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 7,
+                minHeight: 36,
+                padding: "7px 14px",
+                fontSize: 12.5,
+                fontFamily: "var(--app-font-ui)",
+                fontWeight: active ? 600 : 400,
+                borderRadius: 4,
+                border: "1px solid transparent",
+                borderColor: active ? "var(--app-border-input)" : "transparent",
+                background: active ? "var(--app-bg-surface)" : "transparent",
+                color: active ? "var(--app-text-primary)" : "var(--app-text-muted)",
+                cursor: "pointer",
+              }}
+            >
+              <Icon size={14} aria-hidden="true" />
+              {name}
+            </button>
+          );
+        })}
+      </div>
+      {mode === "system" && (
+        <Hint>Following the system setting, currently {resolved}.</Hint>
+      )}
+    </div>
+  );
+}
+
 export function AppearanceTab({
   appearance,
   analyser,
@@ -26,11 +98,16 @@ export function AppearanceTab({
   analyser: AnalyserNode | null;
   playing: boolean;
 }) {
-  const { theme, setTheme, visualizer, setVisualizer, options, setOption, vizTheme } = appearance;
+  const { theme, setTheme, mode, setMode, resolved, visualizer, setVisualizer, options, setOption, vizTheme } =
+    appearance;
   const densityId = useId();
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      <FieldGroup title="Light or dark">
+        <ModeSwitch mode={mode} resolved={resolved} onChange={setMode} />
+      </FieldGroup>
+
       <FieldGroup title="Theme">
         <div
           role="radiogroup"
@@ -72,8 +149,8 @@ export function AppearanceTab({
                     border: "1px solid var(--app-border-input)",
                   }}
                 >
-                  <span style={{ flex: 2, background: t.swatch[0] }} />
-                  <span style={{ flex: 1, background: t.swatch[1] }} />
+                  <span style={{ flex: 2, background: t[resolved].swatch[0] }} />
+                  <span style={{ flex: 1, background: t[resolved].swatch[1] }} />
                 </span>
                 <span style={{ minWidth: 0 }}>
                   <span
@@ -87,7 +164,7 @@ export function AppearanceTab({
                     {t.name}
                   </span>
                   <span style={{ display: "block", fontSize: 11, color: "var(--app-text-muted)" }}>
-                    {t.era}
+                    {t[resolved].era}
                   </span>
                 </span>
               </button>
