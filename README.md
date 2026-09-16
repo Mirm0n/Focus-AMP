@@ -13,7 +13,7 @@ Full plan: `../Tunescape/plans/tunescape-v2.md`
 | 1 — Rust audio proxy | **done** |
 | 2 — Playback core | **done** — transport, volume, automatic stream health |
 | — Pomodoro | **done** — configurable, with radio integration |
-| 3 — The visualizer | **done** — registry, 5 visualizers, 5 themes, appearance settings |
+| 3 — The visualizer | **done** — registry, 4 visualizers incl. Milkdrop, 6 themes, appearance settings |
 | 4 — UI shell | not started — no genre grid yet, the station list is the whole navigation |
 | 5 — Desktop integration | not started |
 | 6 — Package & ship | not started |
@@ -84,9 +84,10 @@ palettes are sampled from what those things looked like:
 | Silver | Brushed aluminium receiver, 1977 — teal dial lamp |
 | Phosphor | P31 green monitor, 1983 — one phosphor, three brightnesses |
 | Amber | Amber monochrome monitor, 1985 |
+| Classic | Macintosh System 1, 1984 — genuinely 1-bit, black accent |
 | Aqua | Mac OS X 10.0, 2001 |
 
-Under the two light themes the display stays dark glass. On a real silver faceplate the meter
+Under the three light themes the display stays dark glass. On a real silver faceplate the meter
 window is a smoked panel, so it is both period-correct and the reason the visualizer stays
 legible on a bright chassis.
 
