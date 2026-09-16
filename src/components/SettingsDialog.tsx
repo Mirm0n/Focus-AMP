@@ -8,20 +8,24 @@ import type { Appearance } from "../theme/useAppearance";
 import type { Pomodoro } from "../hooks/usePomodoro";
 
 /**
- * Settings, as an actual modal dialog.
+ * Settings — a wide modal with a category rail, the desktop convention.
  *
  * `useModalDialog` handles focus in, focus trapped, focus back to the trigger,
- * Escape, and freezing the rest of the app with `inert`. The tab strip follows
- * the WAI-ARIA tabs pattern: roving tabindex, arrows to move, Home and End to
- * jump, and only the selected tab is in the tab order — Tab from the strip goes
- * into the panel, not along the tabs.
+ * Escape, and freezing the rest of the app with `inert`.
+ *
+ * The rail is a vertical tablist per the WAI-ARIA pattern: roving tabindex so
+ * Tab leaves the rail rather than walking down it, Up and Down to move (Left
+ * and Right too, since people try both), Home and End to jump.
+ *
+ * The dialog is a fixed size rather than one that hugs its content, so
+ * switching categories does not resize the window under the pointer.
  */
 
 type TabId = "appearance" | "timer";
 
-const TABS: Array<{ id: TabId; name: string; Icon: typeof Palette }> = [
-  { id: "appearance", name: "Appearance", Icon: Palette },
-  { id: "timer", name: "Timer", Icon: Timer },
+const TABS: Array<{ id: TabId; name: string; blurb: string; Icon: typeof Palette }> = [
+  { id: "appearance", name: "Appearance", blurb: "Theme and visualizer", Icon: Palette },
+  { id: "timer", name: "Timer", blurb: "Pomodoro and alerts", Icon: Timer },
 ];
 
 export function SettingsDialog({
@@ -41,17 +45,16 @@ export function SettingsDialog({
   const { dialogRef, onKeyDown } = useModalDialog(onClose);
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
-  const onTabKeyDown = (e: React.KeyboardEvent) => {
+  const onRailKeyDown = (e: React.KeyboardEvent) => {
     const i = TABS.findIndex((t) => t.id === tab);
     let next = -1;
-    if (e.key === "ArrowRight") next = (i + 1) % TABS.length;
-    else if (e.key === "ArrowLeft") next = (i - 1 + TABS.length) % TABS.length;
+    if (e.key === "ArrowDown" || e.key === "ArrowRight") next = (i + 1) % TABS.length;
+    else if (e.key === "ArrowUp" || e.key === "ArrowLeft") next = (i - 1 + TABS.length) % TABS.length;
     else if (e.key === "Home") next = 0;
     else if (e.key === "End") next = TABS.length - 1;
     if (next < 0) return;
     e.preventDefault();
-    // Selection follows focus, which is the expected behaviour when switching
-    // panels is cheap and has no side effects.
+    // Selection follows focus — switching panels is cheap and has no side effects.
     setTab(TABS[next].id);
     tabRefs.current[TABS[next].id]?.focus();
   };
@@ -64,7 +67,7 @@ export function SettingsDialog({
         zIndex: 40,
         display: "grid",
         placeItems: "center",
-        padding: 24,
+        padding: 20,
       }}
     >
       <div
@@ -82,26 +85,26 @@ export function SettingsDialog({
         onKeyDown={onKeyDown}
         style={{
           position: "relative",
-          width: 620,
-          maxWidth: "100%",
-          maxHeight: "100%",
+          width: "min(940px, 100%)",
+          height: "min(620px, 100%)",
           display: "flex",
           flexDirection: "column",
           background: "var(--app-bg-surface)",
           border: "1px solid var(--app-border-subtle)",
           borderRadius: "var(--app-radius-md)",
-          boxShadow: "0 18px 60px rgba(0,0,0,0.45)",
+          boxShadow: "0 20px 64px rgba(0,0,0,0.5)",
           outline: "none",
           overflow: "hidden",
         }}
       >
         <header
           style={{
+            flex: "0 0 auto",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             gap: 12,
-            padding: "14px 16px",
+            padding: "13px 14px 13px 20px",
             borderBottom: "1px solid var(--app-border-subtle)",
           }}
         >
@@ -137,79 +140,111 @@ export function SettingsDialog({
           </button>
         </header>
 
-        <div
-          role="tablist"
-          aria-label="Settings sections"
-          onKeyDown={onTabKeyDown}
-          style={{
-            display: "flex",
-            gap: 4,
-            padding: "10px 12px 0",
-            borderBottom: "1px solid var(--app-border-subtle)",
-          }}
-        >
-          {TABS.map(({ id, name, Icon }) => {
-            const active = id === tab;
-            return (
-              <button
-                key={id}
-                type="button"
-                role="tab"
-                id={`tab-${id}`}
-                aria-selected={active}
-                aria-controls={`panel-${id}`}
-                tabIndex={active ? 0 : -1}
-                ref={(el) => {
-                  tabRefs.current[id] = el;
-                }}
-                onClick={() => setTab(id)}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 7,
-                  padding: "8px 13px",
-                  minHeight: 38,
-                  fontSize: 12.5,
-                  fontWeight: active ? 600 : 400,
-                  fontFamily: "var(--app-font-ui)",
-                  color: active ? "var(--app-text-primary)" : "var(--app-text-muted)",
-                  background: "transparent",
-                  border: "none",
-                  borderBottom: `2px solid ${active ? "var(--app-accent)" : "transparent"}`,
-                  marginBottom: -1,
-                  cursor: "pointer",
-                }}
-              >
-                <Icon size={14} aria-hidden="true" />
-                {name}
-              </button>
-            );
-          })}
-        </div>
-
-        {TABS.map(({ id }) => (
+        <div style={{ flex: 1, minHeight: 0, display: "flex" }}>
+          {/* ── Category rail ──────────────────────────────────────────── */}
           <div
-            key={id}
-            role="tabpanel"
-            id={`panel-${id}`}
-            aria-labelledby={`tab-${id}`}
-            hidden={id !== tab}
-            // Focusable so a keyboard user can scroll the panel without having
-            // to tab onto a control inside it first.
-            tabIndex={0}
-            style={
-              id === tab
-                ? { flex: 1, minHeight: 0, overflowY: "auto", padding: "18px 20px 24px" }
-                : undefined
-            }
+            role="tablist"
+            aria-orientation="vertical"
+            aria-label="Settings categories"
+            onKeyDown={onRailKeyDown}
+            style={{
+              flex: "0 0 194px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+              padding: "12px 10px",
+              overflowY: "auto",
+              background: "var(--app-bg-base)",
+              borderRight: "1px solid var(--app-border-subtle)",
+            }}
           >
-            {id === "appearance" ? (
-              <AppearanceTab appearance={appearance} analyser={analyser} playing={playing} />
-            ) : (
-              <TimerTab pom={pom} />
-            )}
+            {TABS.map(({ id, name, blurb, Icon }) => {
+              const active = id === tab;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  id={`tab-${id}`}
+                  aria-selected={active}
+                  aria-controls={`panel-${id}`}
+                  tabIndex={active ? 0 : -1}
+                  ref={(el) => {
+                    tabRefs.current[id] = el;
+                  }}
+                  onClick={() => setTab(id)}
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 10,
+                    width: "100%",
+                    minHeight: 46,
+                    padding: "9px 11px",
+                    textAlign: "left",
+                    fontFamily: "var(--app-font-ui)",
+                    borderRadius: "var(--app-radius-sm)",
+                    border: "1px solid transparent",
+                    borderColor: active ? "var(--app-border-input)" : "transparent",
+                    background: active ? "var(--app-bg-surface)" : "transparent",
+                    cursor: "pointer",
+                  }}
+                >
+                  <Icon
+                    size={15}
+                    aria-hidden="true"
+                    style={{
+                      flex: "0 0 auto",
+                      marginTop: 1,
+                      color: active ? "var(--app-accent)" : "var(--app-text-muted)",
+                    }}
+                  />
+                  <span style={{ minWidth: 0 }}>
+                    <span
+                      style={{
+                        display: "block",
+                        fontSize: 12.5,
+                        fontWeight: active ? 600 : 400,
+                        color: active ? "var(--app-text-primary)" : "var(--app-text-muted)",
+                      }}
+                    >
+                      {name}
+                    </span>
+                    <span
+                      style={{ display: "block", fontSize: 11, color: "var(--app-text-muted)" }}
+                    >
+                      {blurb}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
           </div>
-        ))}
+
+          {/* ── Panels ─────────────────────────────────────────────────── */}
+          {TABS.map(({ id }) => (
+            <div
+              key={id}
+              role="tabpanel"
+              id={`panel-${id}`}
+              aria-labelledby={`tab-${id}`}
+              hidden={id !== tab}
+              // Focusable so the panel can be scrolled without tabbing onto a
+              // control inside it first.
+              tabIndex={0}
+              style={
+                id === tab
+                  ? { flex: 1, minWidth: 0, overflowY: "auto", padding: "20px 24px 28px" }
+                  : undefined
+              }
+            >
+              {id === "appearance" ? (
+                <AppearanceTab appearance={appearance} analyser={analyser} playing={playing} />
+              ) : (
+                <TimerTab pom={pom} />
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

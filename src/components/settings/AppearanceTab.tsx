@@ -35,7 +35,11 @@ export function AppearanceTab({
         <div
           role="radiogroup"
           aria-label="Theme"
-          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(206px, 1fr))",
+            gap: 8,
+          }}
         >
           {THEMES.map((t) => {
             const active = t.id === theme.id;
@@ -96,7 +100,11 @@ export function AppearanceTab({
         <div
           role="radiogroup"
           aria-label="Visualizer"
-          style={{ display: "flex", flexDirection: "column", gap: 8 }}
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+            gap: 8,
+          }}
         >
           {VISUALIZERS.map((v) => {
             const active = v.id === visualizer.id;
