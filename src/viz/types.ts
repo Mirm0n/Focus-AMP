@@ -178,3 +178,33 @@ export function drawScanlines(ctx: CanvasRenderingContext2D, view: VizView) {
 export function ladderColor(frac: number, theme: VizTheme): string {
   return frac >= 0.86 ? theme.hi : frac >= 0.62 ? theme.mid : theme.lo;
 }
+
+/** A theme colour at a given alpha. Accepts #rgb and #rrggbb. */
+export function withAlpha(color: string, alpha: number): string {
+  if (!color.startsWith("#")) return color;
+  const s = color.slice(1);
+  const n =
+    s.length === 3
+      ? s
+          .split("")
+          .map((c) => c + c)
+          .join("")
+      : s;
+  const r = parseInt(n.slice(0, 2), 16) || 0;
+  const g = parseInt(n.slice(2, 4), 16) || 0;
+  const b = parseInt(n.slice(4, 6), 16) || 0;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+/**
+ * Mean energy across a fraction of the spectrum, 0..1.
+ * `from` and `to` are proportions of the bin array, not frequencies — enough
+ * for driving motion, and it costs no log mapping.
+ */
+export function bandEnergy(freq: Uint8Array, from: number, to: number): number {
+  const a = Math.floor(freq.length * from);
+  const b = Math.max(a + 1, Math.floor(freq.length * to));
+  let sum = 0;
+  for (let i = a; i < b; i++) sum += freq[i];
+  return sum / ((b - a) * 255);
+}
