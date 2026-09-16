@@ -13,7 +13,7 @@ Full plan: `../Tunescape/plans/tunescape-v2.md`
 | 1 — Rust audio proxy | **done** |
 | 2 — Playback core | **done** — transport, volume, automatic stream health |
 | — Pomodoro | **done** — configurable, with radio integration |
-| 3 — The visualizer | **done** — registry, 4 visualizers incl. Milkdrop, 6 themes, appearance settings |
+| 3 — The visualizer | **done** — registry, 3 visualizers, 6 themes, appearance settings |
 | 4 — UI shell | not started — no genre grid yet, the station list is the whole navigation |
 | 5 — Desktop integration | not started |
 | 6 — Package & ship | not started |
@@ -91,7 +91,7 @@ Under the three light themes the display stays dark glass. On a real silver face
 window is a smoked panel, so it is both period-correct and the reason the visualizer stays
 legible on a bright chassis.
 
-Four visualizers. Three are hand-drawn panels imitating a piece of hardware; the fourth is
+Three visualizers. Three are hand-drawn panels imitating a piece of hardware; the fourth is
 the genuine article from the era.
 
 | Visualizer | What it is |
@@ -99,7 +99,6 @@ the genuine article from the era.
 | Ladder | Segmented LED analyser — log bands, colour keyed to column height, peak caps |
 | Scope | Phosphor oscilloscope — zero-crossing trigger, beam dims with velocity, afterglow |
 | Matrix | Dot-matrix LCD — unlit cells stay faintly visible, as a real panel does |
-| Milkdrop | Winamp's visualizer via [Butterchurn](https://github.com/jberg/butterchurn), with 100 original presets |
 
 ### On Milkdrop
 
@@ -135,7 +134,7 @@ src/theme/themes.ts            theme definitions
 src/theme/useAppearance.ts     persisted theme + visualizer + options
 src/viz/types.ts               the visualizer contract and shared DSP helpers
 src/viz/registry.ts            every visualizer the app knows about
-src/viz/units/                 ladder, scope, matrix, milkdrop
+src/viz/units/                 ladder, scope, matrix
 src/types/butterchurn.d.ts     hand-written declarations (butterchurn ships none)
 src/components/VisualizerCanvas.tsx  the canvas host and RAF loop
 src/components/SettingsPanel.tsx     appearance, with live previews
