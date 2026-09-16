@@ -54,10 +54,6 @@ export interface VizOptions {
   mirror: boolean;
   /** CRT scanline overlay. */
   scanlines: boolean;
-  /** Milkdrop: a preset name, or null to shuffle. */
-  preset: string | null;
-  /** Milkdrop: seconds before shuffling on. 0 holds the current preset. */
-  cycleSeconds: number;
 }
 
 export const DEFAULT_OPTIONS: VizOptions = {
@@ -68,8 +64,6 @@ export const DEFAULT_OPTIONS: VizOptions = {
   peaks: true,
   mirror: false,
   scanlines: false,
-  preset: null,
-  cycleSeconds: 25,
 };
 
 export type VizOptionKey = keyof VizOptions;
@@ -86,32 +80,13 @@ export interface VizInstance {
   draw(ctx: CanvasRenderingContext2D, frame: VizFrame, view: VizView, opts: VizOptions): void;
 }
 
-/**
- * Props for a visualizer that owns its own surface — a WebGL renderer, or a
- * third-party library that wants its own canvas.
- */
-export interface VizComponentProps {
-  /** Tap point for audio. Fan-out only; never routed to the destination. */
-  source: AnalyserNode | null;
-  theme: VizTheme;
-  options: VizOptions;
-  playing: boolean;
-  preview?: boolean;
-}
-
 export interface Visualizer {
   id: string;
   name: string;
   /** One line for the picker — what it is, and where it comes from. */
   blurb: string;
   supports: VizOptionKey[];
-  /** A Canvas-2D draw function, for the ones drawn by hand. */
-  create?(): VizInstance;
-  /**
-   * Or a component owning its own surface. Set exactly one of these; the host
-   * renders the component when present and the draw loop otherwise.
-   */
-  Component?: React.ComponentType<VizComponentProps>;
+  create(): VizInstance;
 }
 
 // ── Shared helpers ──────────────────────────────────────────────────────────
