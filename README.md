@@ -91,8 +91,8 @@ Under the three light themes the display stays dark glass. On a real silver face
 window is a smoked panel, so it is both period-correct and the reason the visualizer stays
 legible on a bright chassis.
 
-Three visualizers. Three are hand-drawn panels imitating a piece of hardware; the fourth is
-the genuine article from the era.
+Three visualizers, all hand-drawn panels imitating a piece of hardware, each a different
+*form* rather than a recolour.
 
 | Visualizer | What it is |
 |---|---|
@@ -100,22 +100,18 @@ the genuine article from the era.
 | Scope | Phosphor oscilloscope — zero-crossing trigger, beam dims with velocity, afterglow |
 | Matrix | Dot-matrix LCD — unlit cells stay faintly visible, as a real panel does |
 
-### On Milkdrop
+### On third-party visualizer engines
 
-Hand-written imitations of Media Player's Battery and Ambience presets were tried and
-discarded — they read as approximations. Butterchurn (MIT) is a WebGL reimplementation of
-Milkdrop 2, and `butterchurn-presets` (MIT) is the original community library by Geiss,
-Aderrasi, Royal and the rest, so this is the actual thing rather than an impression of it.
+Butterchurn — a WebGL reimplementation of Milkdrop, Winamp's own visualizer, with the
+original community preset library — was integrated and then removed. It works and it is
+genuinely the article from that era, but the Milkdrop look is not what this app is for. The
+integration is in the history (`f97e653`) if it is ever wanted back, along with the
+component-surface hook on the `Visualizer` contract that let a library own its own canvas.
 
-Both are UMD browser bundles that touch `window` at load, so they are imported dynamically.
-That also keeps them out of the startup path: the app chunk stays ~208 kB, and the engine
-(196 kB) plus preset pack (632 kB) load the first time Milkdrop is selected.
-
-Presets can be pinned or shuffled on a timer from the appearance panel.
-
-**Rejected:** [audioMotion-analyzer](https://github.com/hvianna/audioMotion-analyzer) is an
-excellent analyser library, but it is AGPL-3.0, which would require Tunescape itself to be
-AGPL with source available. Not adopted without that being a deliberate decision.
+[audioMotion-analyzer](https://github.com/hvianna/audioMotion-analyzer) is the other strong
+option and was rejected on licensing: it is AGPL-3.0-or-later, which would require Tunescape
+itself to ship with source available. Not a reason to avoid it, but a deliberate decision
+rather than an accidental one.
 
 Adding another is one file in `src/viz/units/` and one line in `registry.ts`. Nothing in the
 audio pipeline, the canvas host, or the settings panel changes.
