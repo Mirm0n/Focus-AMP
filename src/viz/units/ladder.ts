@@ -22,8 +22,10 @@ import {
  *
  * Four details do the work:
  *   · segments are wider than they are tall, as real bargraph lamps are
- *   · unlit segments are a dim tint of the colour they would light, not grey —
- *     an LED that is off still shows you where it is
+ *   · unlit segments are one flat colour across the whole panel. Tinting them
+ *     toward the colour they would light seems right and is not: it bands the
+ *     background at the ladder's own thresholds, so the panel picks up two
+ *     horizontal seams that have nothing to do with the audio
  *   · the ladder colour is keyed to height in the column, never to the height
  *     of its own bar
  *   · peak caps are a whole lit segment, not a hairline
@@ -187,17 +189,16 @@ export const ladder: Visualizer = {
               : -1;
 
           for (let s = 0; s < wantSegs; s++) {
-            const frac = s / Math.max(1, wantSegs - 1);
             const y = Math.round(panelH - (s + 1) * segPitch);
-            const color = ladderColor(frac, theme);
 
             if (s < lit) {
-              ctx.fillStyle = color;
+              // Ladder colour is resolved only for lit cells — most of the
+              // panel is unlit, and this runs for every cell every frame.
+              ctx.fillStyle = ladderColor(s / Math.max(1, wantSegs - 1), theme);
             } else if (s === peakSeg) {
               ctx.fillStyle = theme.ink;
             } else {
-              // An unlit lamp, not an empty cell.
-              ctx.fillStyle = withAlpha(color, 0.12);
+              ctx.fillStyle = theme.grid;
             }
             ctx.fillRect(x, y, colW, segH);
           }
