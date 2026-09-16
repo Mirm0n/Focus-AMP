@@ -13,7 +13,7 @@ Full plan: `../Tunescape/plans/tunescape-v2.md`
 | 1 — Rust audio proxy | **done** |
 | 2 — Playback core | **done** — transport, volume, automatic stream health |
 | — Pomodoro | **done** — configurable, with radio integration |
-| 3 — The visualizer | previewed (`Spectrum.tsx`), registry not built |
+| 3 — The visualizer | **done** — registry, 5 visualizers, 5 themes, appearance settings |
 | 4 — UI shell | not started — no genre grid yet, the station list is the whole navigation |
 | 5 — Desktop integration | not started |
 | 6 — Package & ship | not started |
@@ -73,6 +73,39 @@ The one integration a radio app can offer that a standalone timer cannot: **paus
 breaks**. Turn it on and the stream stops when a break begins and the same station comes back
 when focus resumes.
 
+## Themes and visualizers
+
+Each theme is a specific object from a specific year rather than a hue rotation, and the
+palettes are sampled from what those things looked like:
+
+| Theme | Artifact |
+|---|---|
+| Graphite | Black-face separate, early 80s — amber backlight |
+| Silver | Brushed aluminium receiver, 1977 — teal dial lamp |
+| Phosphor | P31 green monitor, 1983 — one phosphor, three brightnesses |
+| Amber | Amber monochrome monitor, 1985 |
+| Aqua | Mac OS X 10.0, 2001 |
+
+Under the two light themes the display stays dark glass. On a real silver faceplate the meter
+window is a smoked panel, so it is both period-correct and the reason the visualizer stays
+legible on a bright chassis.
+
+Five visualizers, each a different *form* rather than a recolour:
+
+| Visualizer | What it is |
+|---|---|
+| Ladder | Segmented LED analyser — log bands, ladder colour keyed to column height, peak caps |
+| Scope | Phosphor oscilloscope — zero-crossing trigger, beam dims with velocity, afterglow |
+| VU | Analogue needle driven by a damped spring, ~300ms rise with real overshoot |
+| Chrome | Y2K gel bars — hard gloss break at the midpoint, specular cap, reflection |
+| Matrix | Dot-matrix LCD — unlit cells stay faintly visible, as a real panel does |
+
+Adding another is one file in `src/viz/units/` and one line in `registry.ts`. Nothing in the
+audio pipeline, the canvas host, or the settings panel changes.
+
+The appearance panel (the slider icon in the title bar) previews every visualizer **live on
+the current audio**, and the option toggles filter to whatever the selected one honours.
+
 ## Layout
 
 ```
@@ -80,26 +113,36 @@ src-tauri/src/proxy.rs         the audio proxy — CORS, ICY, playlists
 src-tauri/src/lib.rs           Tauri setup, binds the proxy, exposes proxy_port
 src/hooks/useRadioPlayer.ts    playback graph + automatic stream health
 src/hooks/usePomodoro.ts       deadline-based timer state machine
-src/components/Spectrum.tsx    log-binned LED spectrum (Phase 3 preview)
+src/theme/themes.ts            theme definitions
+src/theme/useAppearance.ts     persisted theme + visualizer + options
+src/viz/types.ts               the visualizer contract and shared DSP helpers
+src/viz/registry.ts            every visualizer the app knows about
+src/viz/units/                 ladder, scope, vu, chrome, matrix
+src/components/VisualizerCanvas.tsx  the canvas host and RAF loop
+src/components/SettingsPanel.tsx     appearance, with live previews
 src/components/PlayerBar.tsx   persistent transport
 src/components/PomodoroPanel.tsx
 src/lib/proxy.ts               proxy URLs + Radio Browser mirror resolution
 src/data/stations.ts           catalog
-src/App.tsx                    station list + stage + player bar
+src/App.tsx                    station list + display + timer + player bar
 ```
 
 ## Ported from V1
 
-`styles/theme.css`, `styles/fonts.css`, `ErrorBoundary.tsx`, `ui/utils.ts`, and the station
-catalog. Everything else is new. V1's visualizer was **not** ported — `fftSize: 128` with six
-linear bands is too coarse, and it drew by mutating DOM element heights.
+`ErrorBoundary.tsx`, `ui/utils.ts`, and the station catalog. Everything else is new.
+
+V1's visualizer was **not** ported — `fftSize: 128` with six linear bands is too coarse, and
+it drew by mutating DOM element heights. V1's stylesheets are gone too: the palette is now
+generated from `themes.ts`, and the six Google font families V1 inherited from Figma (of which
+five were unused) are down to Chivo and Chivo Mono.
 
 ## Known gaps
 
 - No genre grid yet — Phase 4. The station list is currently the whole navigation.
 - Linux needs GStreamer plugins (`gstreamer1.0-libav`, `gstreamer1.0-plugins-bad`) for MP3/AAC
   under WebKitGTK. Untested there so far.
-- Volume and last station reset on every launch. Only pomodoro settings persist, and via
-  `localStorage` rather than `tauri-plugin-store`, which is still wired but unused.
+- Volume and last station reset on every launch. Theme, visualizer, appearance options and
+  pomodoro settings persist, but via `localStorage` rather than `tauri-plugin-store`, which is
+  still wired but unused.
 - The Lofi group is all anonymous auto-DJ streams with no named curator, which is the hardest
   category to verify for AI-generated content. See the note in `stations.ts`.

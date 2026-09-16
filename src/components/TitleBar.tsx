@@ -1,21 +1,18 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { Minus, Square, X, Sun, Moon } from "lucide-react";
-import { useTheme } from "./ThemeProvider";
+import { Minus, Square, X, SlidersHorizontal } from "lucide-react";
 import { isTauri } from "../lib/proxy";
 
 /**
  * Custom chrome — the window is created with `decorations: false`, so the drag
  * region and the three controls have to be ours.
  */
-export function TitleBar({ subtitle }: { subtitle?: string }) {
-  const { theme, toggle } = useTheme();
+export function TitleBar({ onOpenSettings }: { onOpenSettings: () => void }) {
   const inTauri = isTauri();
-
   const win = () => getCurrentWindow();
 
   const btn: React.CSSProperties = {
     width: 42,
-    height: 32,
+    height: 34,
     display: "grid",
     placeItems: "center",
     background: "transparent",
@@ -35,35 +32,25 @@ export function TitleBar({ subtitle }: { subtitle?: string }) {
         justifyContent: "space-between",
         background: "var(--app-bg-header)",
         borderBottom: "1px solid var(--app-border-subtle)",
-        paddingLeft: 14,
+        paddingLeft: 15,
       }}
     >
-      <div data-tauri-drag-region style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-        <span
-          data-tauri-drag-region
-          style={{
-            fontFamily: "var(--app-font-brand)",
-            fontWeight: 700,
-            fontSize: 13,
-            letterSpacing: "-0.01em",
-            color: "var(--app-text-primary)",
-          }}
-        >
-          Tunescape
-        </span>
-        {subtitle && (
-          <span
-            data-tauri-drag-region
-            style={{ fontSize: 11, color: "var(--app-text-faint)", fontFamily: "var(--app-font-ui)" }}
-          >
-            {subtitle}
-          </span>
-        )}
-      </div>
+      <span
+        data-tauri-drag-region
+        style={{
+          fontFamily: "var(--app-font-ui)",
+          fontWeight: 600,
+          fontSize: 12.5,
+          letterSpacing: "0.01em",
+          color: "var(--app-text-primary)",
+        }}
+      >
+        Tunescape
+      </span>
 
       <div style={{ display: "flex", alignItems: "center" }}>
-        <button style={btn} onClick={toggle} title={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}>
-          {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+        <button style={btn} onClick={onOpenSettings} title="Appearance" aria-label="Appearance">
+          <SlidersHorizontal size={14} />
         </button>
         {inTauri && (
           <>
@@ -74,7 +61,7 @@ export function TitleBar({ subtitle }: { subtitle?: string }) {
               <Square size={11} />
             </button>
             <button
-              style={{ ...btn, marginRight: 0 }}
+              style={btn}
               onClick={() => win().close()}
               title="Close"
               onMouseEnter={(e) => {

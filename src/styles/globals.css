@@ -24,7 +24,7 @@ body {
 .selectable { user-select: text; cursor: text; }
 
 :focus-visible {
-  outline: 2px solid var(--app-accent-amber);
+  outline: 2px solid var(--app-accent);
   outline-offset: 2px;
 }
 
@@ -61,7 +61,7 @@ body {
   display: block;
   width: 2px;
   border-radius: 1px;
-  background: var(--app-accent-amber);
+  background: var(--app-accent);
   animation: nowbars 900ms ease-in-out infinite;
 }
 .nowbars i:nth-child(1) { animation-delay: -300ms; }

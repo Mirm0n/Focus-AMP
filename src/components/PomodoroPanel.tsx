@@ -5,9 +5,9 @@ import { label } from "./primitives";
 import { PHASE_LABEL, type Phase, type Pomodoro, type PomodoroSettings } from "../hooks/usePomodoro";
 
 const PHASE_COLOR: Record<Phase, string> = {
-  focus: "var(--app-accent-amber)",
-  short: "var(--viz-led-lo)",
-  long: "var(--viz-led-lo)",
+  focus: "var(--app-accent)",
+  short: "var(--viz-lo)",
+  long: "var(--viz-lo)",
 };
 
 function mmss(seconds: number) {
@@ -132,9 +132,9 @@ function Toggle({
           display: "grid",
           placeItems: "center",
           borderRadius: 4,
-          border: `1px solid ${on ? "var(--app-accent-amber)" : "var(--app-border-muted)"}`,
-          background: on ? "var(--app-accent-amber)" : "transparent",
-          color: "#161104",
+          border: `1px solid ${on ? "var(--app-accent)" : "var(--app-border-muted)"}`,
+          background: on ? "var(--app-accent)" : "transparent",
+          color: "var(--app-accent-ink)",
         }}
       >
         {on && <Check size={11} strokeWidth={3} />}
@@ -174,7 +174,7 @@ export function PomodoroPanel({ pom }: { pom: Pomodoro }) {
           </div>
           <div
             style={{
-              fontFamily: "ui-monospace, monospace",
+              fontFamily: "var(--app-font-mono)",
               fontSize: 58,
               fontWeight: 600,
               lineHeight: 1,
@@ -206,7 +206,7 @@ export function PomodoroPanel({ pom }: { pom: Pomodoro }) {
           <IconButton
             onClick={() => setShowSettings((s) => !s)}
             title="Timer settings"
-            accent={showSettings ? "var(--app-accent-amber)" : undefined}
+            accent={showSettings ? "var(--app-accent)" : undefined}
           >
             <Settings2 size={16} />
           </IconButton>
