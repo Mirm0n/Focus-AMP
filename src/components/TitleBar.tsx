@@ -1,12 +1,12 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { Minus, Square, X, SlidersHorizontal } from "lucide-react";
+import { Minus, Square, X } from "lucide-react";
 import { isTauri } from "../lib/proxy";
 
 /**
  * Custom chrome — the window is created with `decorations: false`, so the drag
  * region and the three controls have to be ours.
  */
-export function TitleBar({ onOpenSettings }: { onOpenSettings: () => void }) {
+export function TitleBar() {
   const inTauri = isTauri();
   const win = () => getCurrentWindow();
 
@@ -49,9 +49,6 @@ export function TitleBar({ onOpenSettings }: { onOpenSettings: () => void }) {
       </span>
 
       <div style={{ display: "flex", alignItems: "center" }}>
-        <button style={btn} onClick={onOpenSettings} title="Appearance" aria-label="Appearance">
-          <SlidersHorizontal size={14} />
-        </button>
         {inTauri && (
           <>
             <button style={btn} onClick={() => win().minimize()} title="Minimize">

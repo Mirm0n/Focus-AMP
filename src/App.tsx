@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
-import { Loader2 } from "lucide-react";
+import { Loader2, Settings } from "lucide-react";
 
 import { TitleBar } from "./components/TitleBar";
 import { VisualizerCanvas } from "./components/VisualizerCanvas";
-import { SettingsPanel } from "./components/SettingsPanel";
+import { SettingsDialog } from "./components/SettingsDialog";
 import { PlayerBar } from "./components/PlayerBar";
 import { PomodoroPanel } from "./components/PomodoroPanel";
 import { card, label } from "./components/primitives";
@@ -162,19 +162,27 @@ export default function App() {
 
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column", position: "relative" }}>
-      <TitleBar onOpenSettings={() => setSettingsOpen(true)} />
+      <div
+        id="app-shell"
+        style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}
+      >
+        <TitleBar />
 
-      <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
+        <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
         {/* ── Stations ──────────────────────────────────────────────── */}
         <aside
+          aria-label="Stations"
           style={{
             width: 250,
             flex: "0 0 250px",
+            minHeight: 0,
+            display: "flex",
+            flexDirection: "column",
             borderRight: "1px solid var(--app-border-subtle)",
-            overflowY: "auto",
             background: "var(--app-bg-surface)",
           }}
         >
+          <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
           {GENRES.map((genre) => (
             <div key={genre.id}>
               <div style={{ ...label, padding: "14px 16px 6px" }}>{genre.name}</div>
@@ -247,6 +255,33 @@ export default function App() {
               })}
             </div>
           ))}
+          </div>
+
+          {/* Pinned so it stays reachable however long the station list gets. */}
+          <button
+            type="button"
+            className="station-row"
+            onClick={() => setSettingsOpen(true)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              width: "100%",
+              minHeight: 44,
+              padding: "11px 18px",
+              font: "inherit",
+              fontSize: 12.5,
+              textAlign: "left",
+              color: "var(--app-text-muted)",
+              background: "transparent",
+              border: "none",
+              borderTop: "1px solid var(--app-border-subtle)",
+              cursor: "pointer",
+            }}
+          >
+            <Settings size={15} aria-hidden="true" />
+            Settings
+          </button>
         </aside>
 
         {/* ── Stage ─────────────────────────────────────────────────── */}
@@ -318,21 +353,23 @@ export default function App() {
             <PomodoroPanel pom={pom} />
           </section>
         </main>
+        </div>
+
+        <PlayerBar
+          station={live}
+          player={player}
+          nowPlaying={nowPlaying}
+          playing={playing !== null}
+          disabled={port === null}
+          onPlay={() => selectAndPlay(selected)}
+          onStop={stopPlayback}
+        />
       </div>
 
-      <PlayerBar
-        station={live}
-        player={player}
-        nowPlaying={nowPlaying}
-        playing={playing !== null}
-        disabled={port === null}
-        onPlay={() => selectAndPlay(selected)}
-        onStop={stopPlayback}
-      />
-
       {settingsOpen && (
-        <SettingsPanel
+        <SettingsDialog
           appearance={appearance}
+          pom={pom}
           analyser={player.analyser}
           playing={playing !== null}
           onClose={() => setSettingsOpen(false)}
