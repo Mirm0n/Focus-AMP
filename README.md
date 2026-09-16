@@ -75,19 +75,29 @@ when focus resumes.
 
 ## Themes and visualizers
 
-Each theme is a specific object from a specific year rather than a hue rotation, and the
-palettes are sampled from what those things looked like:
+Six theme families, each with a light and a dark variant — twelve palettes. A variant is
+sampled from a specific object rather than being a tint of the other: a receiver came in
+black-face and silver-face models, a terminal ran normal and reverse video, the 1984
+Macintosh inverted to white-on-black for selection. The accent holds constant across a
+family; the chassis flips.
 
-| Theme | Artifact |
-|---|---|
-| Graphite | Black-face separate, early 80s — amber backlight |
-| Silver | Brushed aluminium receiver, 1977 — teal dial lamp |
-| Phosphor | P31 green monitor, 1983 — one phosphor, three brightnesses |
-| Amber | Amber monochrome monitor, 1985 |
-| Classic | Macintosh System 1, 1984 — genuinely 1-bit, black accent |
-| Aqua | Mac OS X 10.0, 2001 |
+| Family | Light | Dark |
+|---|---|---|
+| Graphite | Silver-face separate, 1979 | Black-face separate, early 80s |
+| Marine | Brushed aluminium receiver, 1977 | Black-face receiver, teal dial lamp |
+| Phosphor | Reverse video, same tube | P31 green monitor, 1983 |
+| Amber | Reverse video, same tube | Amber monochrome monitor, 1985 |
+| Classic | Macintosh System 1, 1984 | The same screen, inverted |
+| Aqua | Mac OS X 10.0, 2001 | The Graphite appearance, same year |
 
-Under the three light themes the display stays dark glass. On a real silver faceplate the meter
+Light / Dark / System sits at the top of the Appearance tab. System tracks
+`prefers-color-scheme` continuously, so a machine on a sunset schedule follows without a
+restart.
+
+All twelve variants clear WCAG AA — body, muted and faint text at 4.5:1, accents at 3:1,
+verified by a script over `themes.ts` rather than by eye.
+
+In every variant the display stays dark glass. On a real silver faceplate the meter
 window is a smoked panel, so it is both period-correct and the reason the visualizer stays
 legible on a bright chassis.
 
