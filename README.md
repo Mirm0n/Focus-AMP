@@ -90,15 +90,18 @@ Under the two light themes the display stays dark glass. On a real silver facepl
 window is a smoked panel, so it is both period-correct and the reason the visualizer stays
 legible on a bright chassis.
 
-Five visualizers, each a different *form* rather than a recolour:
+Seven visualizers, each a different *form* rather than a recolour. Three imitate a physical
+panel; four come from the Windows Media Player era.
 
 | Visualizer | What it is |
 |---|---|
-| Ladder | Segmented LED analyser — log bands, ladder colour keyed to column height, peak caps |
+| Ladder | Segmented LED analyser — log bands, colour keyed to column height, peak caps |
 | Scope | Phosphor oscilloscope — zero-crossing trigger, beam dims with velocity, afterglow |
-| VU | Analogue needle driven by a damped spring, ~300ms rise with real overshoot |
-| Chrome | Y2K gel bars — hard gloss break at the midpoint, specular cap, reflection |
 | Matrix | Dot-matrix LCD — unlit cells stay faintly visible, as a real panel does |
+| Spikes | Radial burst, mirrored left to right — Media Player's Battery set |
+| Rings | Pulses spawned on bass transients against a moving average — Battery: Sync |
+| Tide | Three mirrored waveforms drifting against each other, additive — Ocean Mist |
+| Ambience | Lissajous colour blobs blended additively — the Ambience presets |
 
 Adding another is one file in `src/viz/units/` and one line in `registry.ts`. Nothing in the
 audio pipeline, the canvas host, or the settings panel changes.
@@ -117,7 +120,7 @@ src/theme/themes.ts            theme definitions
 src/theme/useAppearance.ts     persisted theme + visualizer + options
 src/viz/types.ts               the visualizer contract and shared DSP helpers
 src/viz/registry.ts            every visualizer the app knows about
-src/viz/units/                 ladder, scope, vu, chrome, matrix
+src/viz/units/                 ladder, scope, matrix, spikes, rings, tide, ambience
 src/components/VisualizerCanvas.tsx  the canvas host and RAF loop
 src/components/SettingsPanel.tsx     appearance, with live previews
 src/components/PlayerBar.tsx   persistent transport
