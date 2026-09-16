@@ -43,8 +43,8 @@ export function Button({
         borderRadius: "var(--app-radius-sm)",
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.45 : 1,
-        border: primary ? "1px solid var(--app-accent-amber)" : "1px solid var(--app-border-muted)",
-        background: primary ? "var(--app-accent-amber)" : "transparent",
+        border: primary ? "1px solid var(--app-accent)" : "1px solid var(--app-border-muted)",
+        background: primary ? "var(--app-accent)" : "transparent",
         color: primary ? "#161104" : "var(--app-text-primary)",
       }}
     >

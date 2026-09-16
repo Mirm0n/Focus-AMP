@@ -40,9 +40,9 @@ export function PlayerBar({
           : "not playing");
 
   const secondaryColor = nowPlaying
-    ? "var(--app-accent-amber)"
+    ? "var(--app-accent)"
     : status === "error"
-      ? "var(--viz-led-hi)"
+      ? "var(--viz-hi)"
       : "var(--app-text-faint)";
 
   const VolIcon = player.volume === 0 ? VolumeX : player.volume < 0.5 ? Volume1 : Volume2;
@@ -74,8 +74,8 @@ export function PlayerBar({
           placeItems: "center",
           borderRadius: "50%",
           border: "none",
-          background: disabled ? "var(--app-border-muted)" : "var(--app-accent-amber)",
-          color: "#161104",
+          background: disabled ? "var(--app-border-muted)" : "var(--app-accent)",
+          color: "var(--app-accent-ink)",
           cursor: disabled ? "not-allowed" : "pointer",
           opacity: disabled ? 0.5 : 1,
         }}
@@ -101,7 +101,7 @@ export function PlayerBar({
             borderRadius: "var(--app-radius-sm)",
             background: "var(--app-bg-overlay)",
             border: "1px solid var(--app-border-subtle)",
-            color: playing ? "var(--app-accent-amber)" : "var(--app-text-faint)",
+            color: playing ? "var(--app-accent)" : "var(--app-text-faint)",
           }}
         >
           <Radio size={16} />
@@ -145,7 +145,7 @@ export function PlayerBar({
           step={0.01}
           value={player.volume}
           onChange={(e) => player.setVolume(parseFloat(e.target.value))}
-          style={{ width: 104, accentColor: "var(--app-accent-amber)" }}
+          style={{ width: 104, accentColor: "var(--app-accent)" }}
           title={`Volume ${Math.round(player.volume * 100)}%`}
           aria-label="Volume"
         />
