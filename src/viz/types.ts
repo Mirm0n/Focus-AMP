@@ -62,7 +62,9 @@ export interface VizOptions {
 
 export const DEFAULT_OPTIONS: VizOptions = {
   density: 0.5,
-  glow: true,
+  // Off by default. Bloom flatters a screenshot but fills the gaps between
+  // lit elements, and on a panel display those gaps are the whole point.
+  glow: false,
   peaks: true,
   mirror: false,
   scanlines: false,

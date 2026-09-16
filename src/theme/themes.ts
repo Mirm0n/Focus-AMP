@@ -2,10 +2,10 @@
  * Themes.
  *
  * Each one is a particular object from a particular year rather than a hue
- * rotation — a black-face receiver, a brushed aluminium one, two phosphor
- * monitors, and the first version of Aqua. The palettes are sampled from what
- * those things actually looked like, which is why none of them are a neutral
- * grey with an accent dropped in.
+ * rotation — two receivers, two phosphor monitors, a 1-bit Macintosh and the
+ * first version of Aqua. The palettes are sampled from what those things
+ * actually looked like, which is why none of them are a neutral grey with an
+ * accent dropped in.
  *
  * Note that the display stays dark glass under the light themes. On a real
  * silver faceplate the meter window is a smoked panel, and keeping that is both
@@ -135,6 +135,38 @@ export const THEMES: Theme[] = [
       "--viz-mid": "#ffb74d",
       "--viz-hi": "#ffe3ae",
       "--viz-ink": "#ffdaa2",
+    },
+  },
+  {
+    id: "classic",
+    name: "Classic",
+    era: "Macintosh System 1, 1984",
+    dark: false,
+    swatch: ["#ffffff", "#000000"],
+    tokens: {
+      // Genuinely 1-bit: no tinted greys anywhere in the chrome, and an accent
+      // that is simply black. The display inverts to white-on-black, which is
+      // what the original's menu highlight did.
+      "--app-bg-base": "#ffffff",
+      "--app-bg-surface": "#f6f6f6",
+      "--app-bg-header": "#e6e6e6",
+      "--app-bg-overlay": "#ffffff",
+      "--app-border-subtle": "#c9c9c9",
+      "--app-border-muted": "#9a9a9a",
+      "--app-border-default": "#000000",
+      "--app-border-input": "rgba(0,0,0,0.22)",
+      "--app-accent": "#000000",
+      "--app-accent-ink": "#ffffff",
+      "--app-text-primary": "#000000",
+      "--app-text-muted": "#3d3d3d",
+      "--app-text-faint": "#767676",
+      "--viz-ground": "#000000",
+      "--viz-grid": "#2b2b2b",
+      // One ink, three brightnesses — a bargraph rendered in halftone.
+      "--viz-lo": "#6e6e6e",
+      "--viz-mid": "#b4b4b4",
+      "--viz-hi": "#ffffff",
+      "--viz-ink": "#ffffff",
     },
   },
   {
