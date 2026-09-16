@@ -37,6 +37,7 @@ export function VisualizerCanvas({
   style,
 }: VisualizerCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const Component = visualizer.Component;
 
   // Live values the loop reads without being torn down and rebuilt.
   const optionsRef = useRef(options);
@@ -49,6 +50,8 @@ export function VisualizerCanvas({
   playingRef.current = playing;
 
   useEffect(() => {
+    // A component-backed visualizer renders itself; there is no canvas here.
+    if (visualizer.Component || !visualizer.create) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d", { alpha: false });
@@ -118,6 +121,20 @@ export function VisualizerCanvas({
     };
     // A different visualizer needs a fresh instance; everything else is a ref.
   }, [visualizer, preview]);
+
+  if (Component) {
+    return (
+      <div className={className} style={{ width: "100%", height: "100%", ...style }}>
+        <Component
+          source={analyser}
+          theme={theme}
+          options={options}
+          playing={playing}
+          preview={preview}
+        />
+      </div>
+    );
+  }
 
   return (
     <canvas

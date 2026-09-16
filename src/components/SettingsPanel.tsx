@@ -1,9 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { X, Check } from "lucide-react";
 
 import { VisualizerCanvas } from "./VisualizerCanvas";
 import { THEMES } from "../theme/themes";
 import { VISUALIZERS } from "../viz/registry";
+import { onPresetNames } from "../viz/units/milkdrop";
 import type { Appearance } from "../theme/useAppearance";
 import type { VizOptionKey } from "../viz/types";
 
@@ -23,7 +24,27 @@ const OPTION_COPY: Record<VizOptionKey, { name: string; hint: string }> = {
   peaks: { name: "Peak markers", hint: "Hold the highest recent level" },
   mirror: { name: "Reflection", hint: "Mirror the display below itself" },
   scanlines: { name: "Scanlines", hint: "Overlay a CRT line pattern" },
+  // Milkdrop's two are laid out by hand below, not as generic toggles.
+  preset: { name: "Preset", hint: "Which Milkdrop preset to run" },
+  cycleSeconds: { name: "Shuffle every", hint: "How long each preset holds" },
 };
+
+const fieldStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "7px 8px",
+  fontSize: 12,
+  borderRadius: "var(--app-radius-sm)",
+  border: "1px solid var(--app-border-input)",
+  background: "var(--app-bg-overlay)",
+  color: "var(--app-text-primary)",
+};
+
+/** Preset names arrive with the pack, which loads on first Milkdrop render. */
+function usePresetNames(): string[] {
+  const [names, setNames] = useState<string[]>([]);
+  useEffect(() => onPresetNames(setNames), []);
+  return names;
+}
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
@@ -58,6 +79,64 @@ function CheckBox({ on }: { on: boolean }) {
     >
       {on && <Check size={11} strokeWidth={3} />}
     </span>
+  );
+}
+
+function MilkdropOptions({ appearance }: { appearance: Appearance }) {
+  const { options, setOption } = appearance;
+  const names = usePresetNames();
+  const shuffling = options.preset === null;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <span style={{ fontSize: 12.5, color: "var(--app-text-primary)" }}>Preset</span>
+        <select
+          value={options.preset ?? ""}
+          onChange={(e) => setOption("preset", e.target.value || null)}
+          style={fieldStyle}
+        >
+          <option value="">Shuffle all {names.length || ""}</option>
+          {names.map((n) => (
+            <option key={n} value={n}>
+              {n}
+            </option>
+          ))}
+        </select>
+        {names.length === 0 && (
+          <span style={{ fontSize: 10.5, color: "var(--app-text-faint)" }}>
+            The preset pack loads the first time Milkdrop runs.
+          </span>
+        )}
+      </label>
+
+      {shuffling && (
+        <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <span
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: 12.5,
+              color: "var(--app-text-primary)",
+            }}
+          >
+            Shuffle every
+            <span style={{ fontSize: 10.5, color: "var(--app-text-faint)" }}>
+              {options.cycleSeconds === 0 ? "held" : `${options.cycleSeconds}s`}
+            </span>
+          </span>
+          <input
+            type="range"
+            min={0}
+            max={120}
+            step={5}
+            value={options.cycleSeconds}
+            onChange={(e) => setOption("cycleSeconds", parseInt(e.target.value, 10))}
+            style={{ width: "100%", accentColor: "var(--app-accent)" }}
+          />
+        </label>
+      )}
+    </div>
   );
 }
 
@@ -261,6 +340,10 @@ export function SettingsPanel({
         {/* ── Options for the chosen visualizer ──────────────────────────── */}
         <section style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <SectionTitle>{visualizer.name} options</SectionTitle>
+
+          {visualizer.supports.includes("preset") && (
+            <MilkdropOptions appearance={appearance} />
+          )}
 
           {visualizer.supports.includes("density") && (
             <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>

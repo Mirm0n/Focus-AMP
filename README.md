@@ -90,18 +90,32 @@ Under the two light themes the display stays dark glass. On a real silver facepl
 window is a smoked panel, so it is both period-correct and the reason the visualizer stays
 legible on a bright chassis.
 
-Seven visualizers, each a different *form* rather than a recolour. Three imitate a physical
-panel; four come from the Windows Media Player era.
+Four visualizers. Three are hand-drawn panels imitating a piece of hardware; the fourth is
+the genuine article from the era.
 
 | Visualizer | What it is |
 |---|---|
 | Ladder | Segmented LED analyser — log bands, colour keyed to column height, peak caps |
 | Scope | Phosphor oscilloscope — zero-crossing trigger, beam dims with velocity, afterglow |
 | Matrix | Dot-matrix LCD — unlit cells stay faintly visible, as a real panel does |
-| Spikes | Radial burst, mirrored left to right — Media Player's Battery set |
-| Rings | Pulses spawned on bass transients against a moving average — Battery: Sync |
-| Tide | Three mirrored waveforms drifting against each other, additive — Ocean Mist |
-| Ambience | Lissajous colour blobs blended additively — the Ambience presets |
+| Milkdrop | Winamp's visualizer via [Butterchurn](https://github.com/jberg/butterchurn), with 100 original presets |
+
+### On Milkdrop
+
+Hand-written imitations of Media Player's Battery and Ambience presets were tried and
+discarded — they read as approximations. Butterchurn (MIT) is a WebGL reimplementation of
+Milkdrop 2, and `butterchurn-presets` (MIT) is the original community library by Geiss,
+Aderrasi, Royal and the rest, so this is the actual thing rather than an impression of it.
+
+Both are UMD browser bundles that touch `window` at load, so they are imported dynamically.
+That also keeps them out of the startup path: the app chunk stays ~208 kB, and the engine
+(196 kB) plus preset pack (632 kB) load the first time Milkdrop is selected.
+
+Presets can be pinned or shuffled on a timer from the appearance panel.
+
+**Rejected:** [audioMotion-analyzer](https://github.com/hvianna/audioMotion-analyzer) is an
+excellent analyser library, but it is AGPL-3.0, which would require Tunescape itself to be
+AGPL with source available. Not adopted without that being a deliberate decision.
 
 Adding another is one file in `src/viz/units/` and one line in `registry.ts`. Nothing in the
 audio pipeline, the canvas host, or the settings panel changes.
@@ -120,7 +134,8 @@ src/theme/themes.ts            theme definitions
 src/theme/useAppearance.ts     persisted theme + visualizer + options
 src/viz/types.ts               the visualizer contract and shared DSP helpers
 src/viz/registry.ts            every visualizer the app knows about
-src/viz/units/                 ladder, scope, matrix, spikes, rings, tide, ambience
+src/viz/units/                 ladder, scope, matrix, milkdrop
+src/types/butterchurn.d.ts     hand-written declarations (butterchurn ships none)
 src/components/VisualizerCanvas.tsx  the canvas host and RAF loop
 src/components/SettingsPanel.tsx     appearance, with live previews
 src/components/PlayerBar.tsx   persistent transport
