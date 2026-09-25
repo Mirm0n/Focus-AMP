@@ -1,3 +1,4 @@
+mod notify;
 mod proxy;
 
 use tauri::Manager;
@@ -18,9 +19,10 @@ pub fn run() {
         .setup(|app| {
             let port = proxy::spawn(app.handle().clone())?;
             app.manage(ProxyPort(port));
+            notify::register();
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![proxy_port])
+        .invoke_handler(tauri::generate_handler![proxy_port, notify::notify])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -1,13 +1,10 @@
-import { useId } from "react";
-import { Sun, Moon, Monitor } from "lucide-react";
+import { useEffect, useId, useState } from "react";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
-import { VisualizerCanvas } from "../VisualizerCanvas";
 import { FieldGroup, Hint, Toggle } from "./fields";
-import { THEMES } from "../../theme/themes";
-import { VISUALIZERS } from "../../viz/registry";
 import type { Appearance } from "../../theme/useAppearance";
 import type { VizOptionKey } from "../../viz/types";
-import type { Mode } from "../../theme/themes";
+import { isTauri } from "../../lib/proxy";
 
 const OPTION_COPY: Record<VizOptionKey, { name: string; hint: string }> = {
   density: { name: "Density", hint: "How finely the display is divided" },
@@ -19,232 +16,39 @@ const OPTION_COPY: Record<VizOptionKey, { name: string; hint: string }> = {
 
 const TOGGLE_KEYS: VizOptionKey[] = ["glow", "peaks", "mirror", "scanlines"];
 
-const MODES: Array<{ id: Mode; name: string; Icon: typeof Sun }> = [
-  { id: "light", name: "Light", Icon: Sun },
-  { id: "dark", name: "Dark", Icon: Moon },
-  { id: "system", name: "System", Icon: Monitor },
-];
 
-/** Segmented control. A radiogroup, not a set of toggles — exactly one wins. */
-function ModeSwitch({
-  mode,
-  resolved,
-  onChange,
-}: {
-  mode: Mode;
-  resolved: "light" | "dark";
-  onChange: (m: Mode) => void;
-}) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-      <div
-        role="radiogroup"
-        aria-label="Light or dark"
-        style={{
-          display: "flex",
-          gap: 3,
-          padding: 3,
-          borderRadius: "var(--app-radius-sm)",
-          border: "1px solid var(--app-border-input)",
-          background: "var(--app-bg-base)",
-          alignSelf: "flex-start",
-        }}
-      >
-        {MODES.map(({ id, name, Icon }) => {
-          const active = id === mode;
-          return (
-            <button
-              key={id}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              onClick={() => onChange(id)}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 7,
-                minHeight: 36,
-                padding: "7px 14px",
-                fontSize: 12.5,
-                fontFamily: "var(--app-font-ui)",
-                fontWeight: active ? 600 : 400,
-                borderRadius: 4,
-                border: "1px solid transparent",
-                borderColor: active ? "var(--app-border-input)" : "transparent",
-                background: active ? "var(--app-bg-surface)" : "transparent",
-                color: active ? "var(--app-text-primary)" : "var(--app-text-muted)",
-                cursor: "pointer",
-              }}
-            >
-              <Icon size={14} aria-hidden="true" />
-              {name}
-            </button>
-          );
-        })}
-      </div>
-      {mode === "system" && (
-        <Hint>Following the system setting, currently {resolved}.</Hint>
-      )}
-    </div>
-  );
-}
 
 export function AppearanceTab({
   appearance,
-  analyser,
-  playing,
 }: {
   appearance: Appearance;
-  analyser: AnalyserNode | null;
-  playing: boolean;
 }) {
-  const { theme, setTheme, mode, setMode, resolved, visualizer, setVisualizer, options, setOption, vizTheme } =
-    appearance;
+  const {
+    visualizer,
+    options,
+    setOption,
+    albumArt,
+    setAlbumArt,
+  } = appearance;
   const densityId = useId();
+
+  const inTauri = isTauri();
+  const [alwaysOnTop, setAlwaysOnTop] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("tunescape:alwaysOnTop") ?? "false");
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    if (inTauri) {
+      getCurrentWindow().setAlwaysOnTop(alwaysOnTop);
+    }
+  }, [alwaysOnTop, inTauri]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-      <FieldGroup title="Light or dark">
-        <ModeSwitch mode={mode} resolved={resolved} onChange={setMode} />
-      </FieldGroup>
-
-      <FieldGroup title="Theme">
-        <div
-          role="radiogroup"
-          aria-label="Theme"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(206px, 1fr))",
-            gap: 8,
-          }}
-        >
-          {THEMES.map((t) => {
-            const active = t.id === theme.id;
-            return (
-              <button
-                key={t.id}
-                type="button"
-                role="radio"
-                aria-checked={active}
-                onClick={() => setTheme(t.id)}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 8,
-                  padding: 9,
-                  textAlign: "left",
-                  borderRadius: "var(--app-radius-sm)",
-                  border: `1px solid ${active ? "var(--app-accent)" : "var(--app-border-input)"}`,
-                  background: active ? "var(--app-bg-overlay)" : "transparent",
-                  cursor: "pointer",
-                }}
-              >
-                <span
-                  aria-hidden="true"
-                  style={{
-                    display: "flex",
-                    height: 28,
-                    borderRadius: 4,
-                    overflow: "hidden",
-                    border: "1px solid var(--app-border-input)",
-                  }}
-                >
-                  <span style={{ flex: 2, background: t[resolved].swatch[0] }} />
-                  <span style={{ flex: 1, background: t[resolved].swatch[1] }} />
-                </span>
-                <span style={{ minWidth: 0 }}>
-                  <span
-                    style={{
-                      display: "block",
-                      fontSize: 12.5,
-                      fontWeight: 600,
-                      color: "var(--app-text-primary)",
-                    }}
-                  >
-                    {t.name}
-                  </span>
-                  <span style={{ display: "block", fontSize: 11, color: "var(--app-text-muted)" }}>
-                    {t[resolved].era}
-                  </span>
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </FieldGroup>
-
-      <FieldGroup title="Visualizer">
-        <div
-          role="radiogroup"
-          aria-label="Visualizer"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-            gap: 8,
-          }}
-        >
-          {VISUALIZERS.map((v) => {
-            const active = v.id === visualizer.id;
-            return (
-              <button
-                key={v.id}
-                type="button"
-                role="radio"
-                aria-checked={active}
-                onClick={() => setVisualizer(v.id)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  padding: 8,
-                  textAlign: "left",
-                  borderRadius: "var(--app-radius-sm)",
-                  border: `1px solid ${active ? "var(--app-accent)" : "var(--app-border-input)"}`,
-                  background: active ? "var(--app-bg-overlay)" : "transparent",
-                  cursor: "pointer",
-                }}
-              >
-                <span
-                  aria-hidden="true"
-                  style={{
-                    width: 92,
-                    height: 50,
-                    flex: "0 0 auto",
-                    borderRadius: 4,
-                    overflow: "hidden",
-                    border: "1px solid var(--app-border-input)",
-                    background: vizTheme.ground,
-                  }}
-                >
-                  <VisualizerCanvas
-                    analyser={analyser}
-                    visualizer={v}
-                    options={options}
-                    theme={vizTheme}
-                    playing={playing}
-                    preview
-                  />
-                </span>
-                <span style={{ minWidth: 0 }}>
-                  <span
-                    style={{
-                      display: "block",
-                      fontSize: 12.5,
-                      fontWeight: 600,
-                      color: "var(--app-text-primary)",
-                    }}
-                  >
-                    {v.name}
-                  </span>
-                  <span style={{ display: "block", fontSize: 11, color: "var(--app-text-muted)" }}>
-                    {v.blurb}
-                  </span>
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </FieldGroup>
 
       <FieldGroup title={`${visualizer.name} options`}>
         {visualizer.supports.includes("density") && (
@@ -289,6 +93,33 @@ export function AppearanceTab({
 
         <Hint>Options apply to the selected visualizer only.</Hint>
       </FieldGroup>
+
+      <FieldGroup title="Now playing">
+        <Toggle
+          name="Album art"
+          hint="Show the cover of the current track in the player bar"
+          on={albumArt}
+          onChange={setAlbumArt}
+        />
+        <Hint>
+          Covers are looked up by sending each track title to Apple's iTunes search. Only stations
+          that announce their tracks can have one, and a cover is shown only on a confident match.
+        </Hint>
+      </FieldGroup>
+
+      {inTauri && (
+        <FieldGroup title="Window">
+          <Toggle
+            name="Always on top"
+            hint="Keep the app above other windows"
+            on={alwaysOnTop}
+            onChange={(v) => {
+              setAlwaysOnTop(v);
+              localStorage.setItem("tunescape:alwaysOnTop", JSON.stringify(v));
+            }}
+          />
+        </FieldGroup>
+      )}
     </div>
   );
 }

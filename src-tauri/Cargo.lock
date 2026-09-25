@@ -4510,7 +4510,9 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-notification",
  "tauri-plugin-store",
+ "tauri-winrt-notification",
  "tokio",
+ "winreg",
 ]
 
 [[package]]

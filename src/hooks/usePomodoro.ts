@@ -140,21 +140,21 @@ export function usePomodoro(opts: UsePomodoroOptions = {}): Pomodoro {
     const s = settingsRef.current;
     if (s.chime) playChime(next !== "focus");
     if (s.notify) {
-      // Imported lazily so a machine that denies notifications never blocks
+      // Our own command rather than the plugin's: on Windows the plugin only
+      // names the app for an installed build, so in development every alert
+      // arrives branded as PowerShell. See src-tauri/src/notify.rs.
+      // Imported lazily so a machine that refuses notifications never blocks
       // the transition itself.
-      import("@tauri-apps/plugin-notification")
-        .then(async ({ isPermissionGranted, requestPermission, sendNotification }) => {
-          let granted = await isPermissionGranted();
-          if (!granted) granted = (await requestPermission()) === "granted";
-          if (!granted) return;
-          sendNotification({
+      import("@tauri-apps/api/core")
+        .then(({ invoke }) =>
+          invoke("notify", {
             title: PHASE_LABEL[next],
             body:
               next === "focus"
                 ? `${minutesFor("focus", s)} minutes. Back to it.`
                 : `${minutesFor(next, s)} minutes. Step away.`,
-          });
-        })
+          }),
+        )
         .catch(() => {});
     }
   }, []);

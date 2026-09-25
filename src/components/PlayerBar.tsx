@@ -1,7 +1,10 @@
+import { useEffect, useState } from "react";
 import { Play, Square, Radio, Loader2, Volume1, Volume2, VolumeX } from "lucide-react";
 
 import type { Station } from "../data/stations";
 import type { RadioPlayer } from "../hooks/useRadioPlayer";
+import type { Favorites } from "../hooks/useFavorites";
+import { StarButton } from "./Sidebar";
 
 /**
  * Persistent transport. Lives below every view so playback controls never move
@@ -10,8 +13,11 @@ import type { RadioPlayer } from "../hooks/useRadioPlayer";
 
 interface PlayerBarProps {
   station: Station;
+  favorites: Favorites;
   player: RadioPlayer;
   nowPlaying: string | null;
+  /** Cover for the current track, when one was found. */
+  art: string | null;
   playing: boolean;
   disabled: boolean;
   onPlay: () => void;
@@ -20,14 +26,22 @@ interface PlayerBarProps {
 
 export function PlayerBar({
   station,
+  favorites,
   player,
   nowPlaying,
+  art,
   playing,
   disabled,
   onPlay,
   onStop,
 }: PlayerBarProps) {
   const status = player.status;
+
+  // A cover that fails to load falls back to the icon rather than a broken
+  // image; a new URL gets a fresh chance.
+  const [broken, setBroken] = useState<string | null>(null);
+  useEffect(() => setBroken(null), [art]);
+  const cover = art && art !== broken ? art : null;
 
   const secondary =
     nowPlaying ??
@@ -42,7 +56,7 @@ export function PlayerBar({
   const secondaryColor = nowPlaying
     ? "var(--app-accent)"
     : status === "error"
-      ? "var(--viz-hi)"
+      ? "var(--app-danger)"
       : "var(--app-text-faint)";
 
   const VolIcon = player.volume === 0 ? VolumeX : player.volume < 0.5 ? Volume1 : Volume2;
@@ -81,7 +95,10 @@ export function PlayerBar({
         }}
       >
         {status === "loading" ? (
-          <Loader2 size={16} className="spin" />
+          <div style={{ position: "relative", display: "grid", placeItems: "center" }}>
+            <Square size={10} fill="currentColor" />
+            <Loader2 size={24} className="spin" style={{ position: "absolute", opacity: 0.5 }} />
+          </div>
         ) : playing ? (
           <Square size={14} fill="currentColor" />
         ) : (
@@ -93,18 +110,29 @@ export function PlayerBar({
       <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1 }}>
         <span
           style={{
-            width: 38,
-            height: 38,
+            width: 44,
+            height: 44,
             flex: "0 0 auto",
             display: "grid",
             placeItems: "center",
+            overflow: "hidden",
             borderRadius: "var(--app-radius-sm)",
             background: "var(--app-bg-overlay)",
             border: "1px solid var(--app-border-subtle)",
             color: playing ? "var(--app-accent)" : "var(--app-text-faint)",
           }}
         >
-          <Radio size={16} />
+          {cover ? (
+            <img
+              src={cover}
+              alt=""
+              draggable={false}
+              onError={() => setBroken(cover)}
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            />
+          ) : (
+            <Radio size={16} />
+          )}
         </span>
         <div style={{ minWidth: 0 }}>
           <div
@@ -133,6 +161,7 @@ export function PlayerBar({
             {secondary}
           </div>
         </div>
+        <StarButton station={station} favorites={favorites} size={16} />
       </div>
 
       {/* Volume */}

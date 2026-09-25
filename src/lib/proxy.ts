@@ -1,5 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 
+import { pickMirror } from "./radioBrowser";
+
 let cachedPort: number | null = null;
 
 /** Loopback port the Rust audio proxy bound at startup. */
@@ -16,39 +18,6 @@ export function proxied(port: number, upstream: string): string {
 
 export function isTauri(): boolean {
   return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
-}
-
-// ── Radio Browser ───────────────────────────────────────────────────────────
-// A volunteer-run service behind DNS round-robin. V1 hardcoded a single mirror
-// (de1), which is a single point of failure; resolve the live list instead and
-// fall back to the known hosts only if that fails.
-
-const FALLBACK_MIRRORS = [
-  "https://de1.api.radio-browser.info",
-  "https://de2.api.radio-browser.info",
-  "https://at1.api.radio-browser.info",
-];
-
-let mirrorPromise: Promise<string> | null = null;
-
-async function pickMirror(): Promise<string> {
-  if (mirrorPromise) return mirrorPromise;
-  mirrorPromise = (async () => {
-    try {
-      const res = await fetch("https://all.api.radio-browser.info/json/servers", {
-        signal: AbortSignal.timeout(6000),
-      });
-      if (res.ok) {
-        const servers = (await res.json()) as Array<{ name: string }>;
-        const names = servers.map((s) => `https://${s.name}`).filter(Boolean);
-        if (names.length) return names[Math.floor(Math.random() * names.length)];
-      }
-    } catch {
-      /* fall through to the hardcoded list */
-    }
-    return FALLBACK_MIRRORS[Math.floor(Math.random() * FALLBACK_MIRRORS.length)];
-  })();
-  return mirrorPromise;
 }
 
 const uuidCache = new Map<string, string>();
