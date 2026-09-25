@@ -13,6 +13,7 @@
     "windows": [
       {
         "label": "main",
+        "zoomHotkeysEnabled": true,
         "title": "Tunescape",
         "width": 1120,
         "height": 740,
