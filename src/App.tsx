@@ -70,6 +70,11 @@ export default function App() {
   const [unavailable, setUnavailable] = useState<Set<string>>(new Set());
   const [note, setNote] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  /** What a screen reader should hear. The app changes station by itself when
+      one dies, which is otherwise silent — the note is on screen, but only
+      sighted users get it. Track titles are left out deliberately: announcing
+      every song would bury the things that need saying. */
+  const [announcement, setAnnouncement] = useState("");
 
   const appearance = useAppearance();
   const favorites = useFavorites();
@@ -209,10 +214,12 @@ export default function App() {
     if (next) {
       autoSkips.current++;
       setNote(`${failed.name} ${reason} — switching to ${next.name}`);
+      setAnnouncement(`${failed.name} ${reason}. Switching to ${next.name}.`);
       setSelected(next);
       void playStation(next);
     } else {
       setNote(`${failed.name} ${reason}. Nothing else in ${queue.name} is responding.`);
+      setAnnouncement(`${failed.name} ${reason}. Nothing else in ${queue.name} is responding.`);
       playingRef.current = null;
       setPlaying(null);
     }
@@ -224,9 +231,13 @@ export default function App() {
     if (next === "focus") {
       const back = resumeRef.current;
       resumeRef.current = null;
-      if (back) void playStation(back);
+      if (back) {
+        setAnnouncement(`Break over. Resuming ${back.name}.`);
+        void playStation(back);
+      }
     } else if (playingRef.current) {
       resumeRef.current = playingRef.current;
+      setAnnouncement("Break started. Radio paused.");
       stopPlayback();
     }
   };
@@ -236,6 +247,12 @@ export default function App() {
 
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column", position: "relative" }}>
+      {/* Mounted always and empty to start. A live region inserted at the same
+          moment as its text is frequently missed. */}
+      <div role="status" aria-live="polite" className="sr-only">
+        {announcement}
+      </div>
+
       <div
         id="app-shell"
         style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}

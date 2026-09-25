@@ -13,9 +13,10 @@ Full plan: `../Tunescape/plans/tunescape-v2.md`
 | 1 — Rust audio proxy | **done** |
 | 2 — Playback core | **done** — transport, volume, automatic stream health |
 | — Pomodoro | **done** — configurable, with radio integration |
-| 3 — The visualizer | **done** — registry, 3 visualizers, 6 themes, appearance settings |
-| 4 — UI shell | not started — no genre grid yet, the station list is the whole navigation |
-| 5 — Desktop integration | not started |
+| 3 — The visualizer | **done** — registry, 7 visualizers, 12 theme families (24 variants) |
+| 4 — UI shell | **done** — genre browser, search, favorites, pinned genres, layouts |
+| — Catalog | **done** — Picks by default, directory behind a setting |
+| 5 — Desktop integration | partial — native toasts done; no tray, media keys or updater |
 | 6 — Package & ship | not started |
 
 ## Running it
@@ -306,5 +307,8 @@ five were unused) are down to Chivo and Chivo Mono.
 - Volume and last station reset on every launch. Theme, visualizer, appearance options and
   pomodoro settings persist, but via `localStorage` rather than `tauri-plugin-store`, which is
   still wired but unused.
-- The Lofi group is all anonymous auto-DJ streams with no named curator, which is the hardest
-  category to verify for AI-generated content. See the note in `stations.ts`.
+- Accessibility: the audit's criticals are closed — dialog semantics, contrast across all 24
+  variants, text zoom, a live region for changes the app makes by itself, reduced motion on
+  the canvas, and the canvas hidden from AT. Still open: the window title never reflects the
+  playing station, an autoplay block is visible but not announced, station rows are
+  `div role="button"` rather than a list of buttons, and Windows High Contrast is unhandled.

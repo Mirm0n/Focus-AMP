@@ -111,9 +111,28 @@ export function VisualizerCanvas({
       instance.draw(ctx, frame, view, optionsRef.current);
     };
 
-    raf = requestAnimationFrame(tick);
+    // WCAG 2.2.2: this fills the window, starts on its own and never stops, so
+    // it needs an off switch. The CSS `prefers-reduced-motion` rule governs CSS
+    // animation only — a canvas RAF loop is untouched by it.
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onMotionChange = () => {
+      cancelAnimationFrame(raf);
+      if (motion.matches) {
+        // One frame, so the display shows its resting state rather than going blank.
+        raf = requestAnimationFrame((now) => {
+          tick(now);
+          cancelAnimationFrame(raf);
+        });
+      } else {
+        raf = requestAnimationFrame(tick);
+      }
+    };
+    motion.addEventListener("change", onMotionChange);
+    onMotionChange();
+
     return () => {
       cancelAnimationFrame(raf);
+      motion.removeEventListener("change", onMotionChange);
       ro.disconnect();
     };
     // A different visualizer needs a fresh instance; everything else is a ref.
@@ -122,6 +141,9 @@ export function VisualizerCanvas({
   return (
     <canvas
       ref={canvasRef}
+      // Decorative. Without this it is announced as an unnamed graphic filling
+      // most of the window.
+      aria-hidden="true"
       className={className}
       style={{ display: "block", width: "100%", height: "100%", ...style }}
     />
