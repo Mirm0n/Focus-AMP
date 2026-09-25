@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
+    "audit:themes": "node scripts/audit-themes.mjs",
+    "audit:genres": "node scripts/audit-genres.mjs",
     "tauri": "tauri"
   },
   "dependencies": {

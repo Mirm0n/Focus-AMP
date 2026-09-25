@@ -1,11 +1,14 @@
 import { useRef, useState } from "react";
-import { X, Palette, Timer } from "lucide-react";
+import { X, LayoutGrid, Palette, Timer } from "lucide-react";
 
 import { AppearanceTab } from "./settings/AppearanceTab";
+import { LayoutTab } from "./settings/LayoutTab";
+
 import { TimerTab } from "./settings/TimerTab";
 import { useModalDialog } from "../hooks/useModalDialog";
 import type { Appearance } from "../theme/useAppearance";
 import type { Pomodoro } from "../hooks/usePomodoro";
+
 
 /**
  * Settings — a wide modal with a category rail, the desktop convention.
@@ -21,24 +24,21 @@ import type { Pomodoro } from "../hooks/usePomodoro";
  * switching categories does not resize the window under the pointer.
  */
 
-type TabId = "appearance" | "timer";
+type TabId = "appearance" | "layout" | "timer";
 
 const TABS: Array<{ id: TabId; name: string; blurb: string; Icon: typeof Palette }> = [
   { id: "appearance", name: "Appearance", blurb: "Theme and visualizer", Icon: Palette },
+  { id: "layout", name: "Layout", blurb: "How the window is arranged", Icon: LayoutGrid },
   { id: "timer", name: "Timer", blurb: "Pomodoro and alerts", Icon: Timer },
 ];
 
 export function SettingsDialog({
   appearance,
   pom,
-  analyser,
-  playing,
   onClose,
 }: {
   appearance: Appearance;
   pom: Pomodoro;
-  analyser: AnalyserNode | null;
-  playing: boolean;
   onClose: () => void;
 }) {
   const [tab, setTab] = useState<TabId>("appearance");
@@ -238,7 +238,9 @@ export function SettingsDialog({
               }
             >
               {id === "appearance" ? (
-                <AppearanceTab appearance={appearance} analyser={analyser} playing={playing} />
+                <AppearanceTab appearance={appearance} />
+              ) : id === "layout" ? (
+                <LayoutTab appearance={appearance} />
               ) : (
                 <TimerTab pom={pom} />
               )}

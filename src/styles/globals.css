@@ -55,6 +55,21 @@ body {
 .station-row { outline-offset: -2px; }
 .station-row:hover { background: var(--app-bg-overlay) !important; }
 
+/* An unstarred star stays out of the way until the row is pointed at or the
+   star itself is focused; a starred one is always lit. */
+.star-button[aria-pressed="false"],
+.pin-button[aria-pressed="false"] { opacity: 0.35; }
+.station-row:hover .star-button[aria-pressed="false"],
+.station-row:hover .pin-button[aria-pressed="false"],
+.star-button[aria-pressed="false"]:hover,
+.pin-button[aria-pressed="false"]:hover,
+.star-button[aria-pressed="false"]:focus-visible,
+.pin-button[aria-pressed="false"]:focus-visible { opacity: 1; }
+
+
+
+.quick-choice:hover { background: var(--app-bg-overlay) !important; }
+
 /* Now-playing glyph — three bars bouncing, the universal shorthand. */
 .nowbars { display: inline-flex; align-items: flex-end; gap: 2px; height: 11px; }
 .nowbars i {

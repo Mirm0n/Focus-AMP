@@ -29,291 +29,467 @@ export interface Theme {
   name: string;
   light: ThemeVariant;
   dark: ThemeVariant;
+  /** Corner radii, small and medium. The shape of the object, not its colour. */
+  radius: [number, number];
 }
 
-/** The display half is shared within a family — the glass does not change. */
-const glass = (ground: string, grid: string, lo: string, mid: string, hi: string, ink: string) => ({
-  "--viz-ground": ground,
-  "--viz-grid": grid,
-  "--viz-lo": lo,
-  "--viz-mid": mid,
-  "--viz-hi": hi,
-  "--viz-ink": ink,
+// ── Colour maths ────────────────────────────────────────────────────────────
+
+type Rgb = [number, number, number];
+
+function parse(hex: string): Rgb {
+  const s = hex.replace("#", "");
+  return [0, 2, 4].map((i) => parseInt(s.slice(i, i + 2), 16)) as Rgb;
+}
+
+function format(rgb: Rgb): string {
+  return "#" + rgb.map((v) => Math.round(v).toString(16).padStart(2, "0")).join("");
+}
+
+function mix(a: string, b: string, t: number): string {
+  const x = parse(a);
+  const y = parse(b);
+  return format([0, 1, 2].map((i) => x[i] + (y[i] - x[i]) * t) as Rgb);
+}
+
+/** WCAG relative luminance. */
+function luminance(hex: string): number {
+  const [r, g, b] = parse(hex).map((v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/** WCAG contrast ratio, 1..21. */
+export function contrast(a: string, b: string): number {
+  const x = luminance(a);
+  const y = luminance(b);
+  return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+}
+
+/**
+ * The colour nearest `from`, on the line toward `toward`, that reaches `ratio`
+ * against every colour in `against`. Falls back to `toward` itself when the
+ * line never gets there — the best available, rather than a failure.
+ */
+function reach(from: string, toward: string, ratio: number, against: string[]): string {
+  const ok = (c: string) => against.every((bg) => contrast(c, bg) >= ratio);
+  if (ok(from)) return from;
+  if (!ok(toward)) return toward;
+  let lo = 0;
+  let hi = 1;
+  for (let i = 0; i < 18; i++) {
+    const t = (lo + hi) / 2;
+    if (ok(mix(from, toward, t))) hi = t;
+    else lo = t;
+  }
+  return mix(from, toward, hi);
+}
+
+// ── Variants from seeds ─────────────────────────────────────────────────────
+
+/**
+ * A variant is written down as the few colours that were actually sampled from
+ * the object — its chassis, its ink, its accent, its display — and everything
+ * structural is derived from those against fixed contrast targets.
+ *
+ * The first version of this file listed all thirteen app tokens by hand for
+ * every variant, and an audit of it found the same faults in nearly all of
+ * them: borders at two thirds of the contrast they needed, panels within a few
+ * percent of each other in the dark variants, accents too pale to read as text
+ * in the light ones. Those are not taste, they are arithmetic, so they are now
+ * computed. A seed that would miss a target is moved the least distance that
+ * meets it, which keeps the sampled colour whenever the sampled colour works.
+ */
+interface Glass {
+  ground: string;
+  lo: string;
+  mid: string;
+  hi: string;
+  ink: string;
+}
+
+interface Seed {
+  era: string;
+  /** The main surface: the faceplate, the case, the screen background. */
+  chassis: string;
+  /** Primary text. */
+  ink: string;
+  accent: string;
+  glass: Glass;
+  /** For the rare variant that must break the rules (1-bit Classic). */
+  override?: Record<string, string>;
+}
+
+/** Contrast targets. Text figures are against the least favourable panel. */
+const TARGET = {
+  primary: 14.4,
+  muted: 7,
+  faint: 4.6,
+  accent: 5.5,
+  borderSubtle: 1.45,
+  borderMuted: 2,
+  borderDefault: 3.1,
+  panelStep: 1.13,
+  headerStep: 1.3,
+  vizGrid: 1.4,
+  vizLo: 4.6,
+};
+
+function variant(seed: Seed, dark: boolean): ThemeVariant {
+  const { chassis, ink, glass } = seed;
+
+  // Panels. In the dark the chassis recedes toward black and the raised
+  // surfaces lift off it; in the light the chassis is the raised surface and
+  // the rest recede toward the ink.
+  let base: string;
+  let surface: string;
+  let header: string;
+  let overlay: string;
+  if (dark) {
+    base = mix(chassis, "#000000", 0.3);
+    header = mix(chassis, "#000000", 0.58);
+    surface = reach(chassis, ink, TARGET.panelStep, [base]);
+    overlay = reach(surface, ink, TARGET.panelStep, [surface]);
+  } else {
+    surface = chassis;
+    base = reach(chassis, ink, TARGET.panelStep, [surface]);
+    header = reach(chassis, ink, TARGET.headerStep, [surface]);
+    const lifted = reach(surface, "#ffffff", 1.1, [surface]);
+    // A near-white chassis has nowhere lighter to go, so its overlay recedes instead.
+    overlay = contrast(lifted, surface) >= 1.1 ? lifted : reach(surface, ink, 1.1, [surface]);
+  }
+  const panels = [base, surface, header, overlay];
+
+  const primary = reach(ink, dark ? "#ffffff" : "#000000", TARGET.primary, panels);
+  // Start well back from the ink so the three text levels stay three levels.
+  const muted = reach(mix(primary, surface, 0.42), primary, TARGET.muted, panels);
+  const faint = reach(mix(primary, surface, 0.62), primary, TARGET.faint, panels);
+
+  const accent = reach(seed.accent, primary, TARGET.accent, panels);
+  const accentDark = mix(accent, "#000000", 0.88);
+  const accentLight = mix(accent, "#ffffff", 0.94);
+  const accentInk =
+    contrast(accentDark, accent) >= contrast(accentLight, accent) ? accentDark : accentLight;
+
+  // Errors are app text, so they can't borrow the display's top colour: that
+  // one is tuned for dark glass and washes out on a light chassis.
+  const danger = reach(dark ? "#ff6b5e" : "#c4271b", primary, TARGET.accent, panels);
+
+  const [r, g, b] = parse(primary);
+  // A rule has to show against both panels it can separate.
+  const edges = [surface, base];
+
+  const vizLo = reach(glass.lo, glass.ink, TARGET.vizLo, [glass.ground]);
+  // Unlit segments are the ground lifted toward the display's ink — visible as
+  // cells, but with no colour of their own to compete with the lit ones.
+  const vizGrid = reach(glass.ground, glass.ink, TARGET.vizGrid, [glass.ground]);
+
+  const tokens: Record<string, string> = {
+    "--app-bg-base": base,
+    "--app-bg-surface": surface,
+    "--app-bg-header": header,
+    "--app-bg-overlay": overlay,
+    "--app-border-subtle": reach(surface, primary, TARGET.borderSubtle, edges),
+    "--app-border-muted": reach(surface, primary, TARGET.borderMuted, edges),
+    "--app-border-default": reach(surface, primary, TARGET.borderDefault, edges),
+    "--app-border-input": `rgba(${r},${g},${b},${dark ? 0.2 : 0.3})`,
+    "--app-accent": accent,
+    "--app-accent-ink": accentInk,
+    "--app-text-primary": primary,
+    "--app-text-muted": muted,
+    "--app-text-faint": faint,
+    "--app-danger": danger,
+    "--viz-ground": glass.ground,
+    "--viz-grid": vizGrid,
+    "--viz-lo": vizLo,
+    "--viz-mid": glass.mid,
+    "--viz-hi": glass.hi,
+    "--viz-ink": glass.ink,
+    ...seed.override,
+  };
+
+  return {
+    era: seed.era,
+    swatch: [tokens["--app-bg-surface"], tokens["--app-accent"]],
+    tokens,
+  };
+}
+
+function family(
+  id: string,
+  name: string,
+  radius: [number, number],
+  dark: Seed,
+  light: Seed,
+): Theme {
+  return { id, name, radius, dark: variant(dark, true), light: variant(light, false) };
+}
+
+// ── The displays ────────────────────────────────────────────────────────────
+// Shared within a family — the glass does not change when the chassis flips.
+
+const glass = (ground: string, lo: string, mid: string, hi: string, ink: string): Glass => ({
+  ground,
+  lo,
+  mid,
+  hi,
+  ink,
 });
 
-const AMBER_GLASS = glass("#0a0908", "#241f1a", "#57c98a", "#e8a33d", "#e0553c", "#f1ece3");
-const TEAL_GLASS = glass("#0b1211", "#22302d", "#4fbf8f", "#d8a63c", "#c2492f", "#dfe6e2");
-const GREEN_GLASS = glass("#030605", "#123020", "#1f9c55", "#3fd97b", "#a6ffc9", "#d8ffe8");
-const AMBER_CRT_GLASS = glass("#050301", "#2c1f0b", "#b4711a", "#ffb74d", "#ffe3ae", "#ffdaa2");
-const MONO_GLASS = glass("#000000", "#2b2b2b", "#6e6e6e", "#b4b4b4", "#ffffff", "#ffffff");
-const BLUE_GLASS = glass("#0c1a26", "#1e3446", "#3ad0ff", "#2a8fef", "#b6dcff", "#dceaf7");
+const AMBER_GLASS = glass("#0a0908", "#57c98a", "#e8a33d", "#e0553c", "#f1ece3");
+const TEAL_GLASS = glass("#0b1211", "#4fd6b0", "#e0b04a", "#e0593c", "#dfe6e2");
+const DIAL_GLASS = glass("#0f0a06", "#f2c14e", "#ff8a3d", "#e5482f", "#f6ead6");
+const BRAUN_GLASS = glass("#0d0d0c", "#6fcf7a", "#f2b632", "#f0601f", "#f0efe9");
+const GREEN_GLASS = glass("#030605", "#2bb866", "#5cf095", "#c9ffdd", "#d8ffe8");
+const AMBER_CRT_GLASS = glass("#050301", "#c98322", "#ffb74d", "#ffe3ae", "#ffdaa2");
+const RED_GLASS = glass("#080001", "#d42a20", "#ff5a4f", "#ffc2bd", "#ffd6d2");
+const LCD_GLASS = glass("#0c1a0c", "#8bac0f", "#b5d334", "#e6f8a8", "#e0f8d0");
+const NEON_GLASS = glass("#0d0620", "#35e0ff", "#ff4fa3", "#ffd84d", "#f6eaff");
+const GRAPE_GLASS = glass("#120c1f", "#a78bfa", "#e879f9", "#fde68a", "#ece4fb");
+const BLUE_GLASS = glass("#0c1a26", "#3ad0ff", "#2a8fef", "#b6dcff", "#dceaf7");
+
+
+// ── The families ────────────────────────────────────────────────────────────
+// Hi-fi first, then the monochrome tubes, then the colourful ones, then 1-bit.
 
 export const THEMES: Theme[] = [
-  {
-    id: "graphite",
-    name: "Graphite",
-    dark: {
+  family(
+    "graphite",
+    "Graphite",
+    [6, 10],
+    {
       era: "Black-face separate, early 80s",
-      swatch: ["#191715", "#e8a33d"],
-      tokens: {
-        "--app-bg-base": "#121110",
-        "--app-bg-surface": "#191715",
-        "--app-bg-header": "#0c0b0a",
-        "--app-bg-overlay": "#0a0908",
-        "--app-border-subtle": "#272320",
-        "--app-border-muted": "#37322c",
-        "--app-border-default": "#4d463d",
-        "--app-border-input": "rgba(255,255,255,0.09)",
-        "--app-accent": "#e8a33d",
-        "--app-accent-ink": "#191104",
-        "--app-text-primary": "#f1ece3",
-        "--app-text-muted": "#b4ab9c",
-        "--app-text-faint": "#928979",
-        ...AMBER_GLASS,
-      },
+      chassis: "#1b1917",
+      ink: "#f1ece3",
+      accent: "#e8a33d",
+      glass: AMBER_GLASS,
     },
-    light: {
+    {
       era: "Silver-face separate, 1979",
-      swatch: ["#e7e4dc", "#9a6208"],
-      tokens: {
-        "--app-bg-base": "#d7d4cc",
-        "--app-bg-surface": "#e7e4dc",
-        "--app-bg-header": "#c5c1b6",
-        "--app-bg-overlay": "#f2f0ea",
-        "--app-border-subtle": "#bab6aa",
-        "--app-border-muted": "#a5a094",
-        "--app-border-default": "#8a8478",
-        "--app-border-input": "rgba(0,0,0,0.16)",
-        "--app-accent": "#9a6208",
-        "--app-accent-ink": "#fff8ec",
-        "--app-text-primary": "#201e1a",
-        "--app-text-muted": "#524d45",
-        "--app-text-faint": "#5b564e",
-        ...AMBER_GLASS,
-      },
+      chassis: "#e7e4dc",
+      ink: "#201e1a",
+      accent: "#9a6208",
+      glass: AMBER_GLASS,
     },
-  },
-  {
-    id: "marine",
-    name: "Marine",
-    light: {
-      era: "Brushed aluminium receiver, 1977",
-      swatch: ["#e9e7e1", "#1c6b6b"],
-      tokens: {
-        "--app-bg-base": "#d9d6ce",
-        "--app-bg-surface": "#e9e7e1",
-        "--app-bg-header": "#c7c3b9",
-        "--app-bg-overlay": "#f3f2ed",
-        "--app-border-subtle": "#bcb8ad",
-        "--app-border-muted": "#a9a497",
-        "--app-border-default": "#8b8679",
-        "--app-border-input": "rgba(0,0,0,0.16)",
-        "--app-accent": "#1c6b6b",
-        "--app-accent-ink": "#f3f9f8",
-        "--app-text-primary": "#22201c",
-        "--app-text-muted": "#4b473f",
-        "--app-text-faint": "#5c5750",
-        ...TEAL_GLASS,
-      },
-    },
-    dark: {
+  ),
+  family(
+    "marine",
+    "Marine",
+    [6, 10],
+    {
       era: "Black-face receiver, teal dial lamp",
-      swatch: ["#171b1a", "#4fd6c9"],
-      tokens: {
-        "--app-bg-base": "#101312",
-        "--app-bg-surface": "#171b1a",
-        "--app-bg-header": "#0a0d0c",
-        "--app-bg-overlay": "#080a0a",
-        "--app-border-subtle": "#212826",
-        "--app-border-muted": "#2e3836",
-        "--app-border-default": "#43524f",
-        "--app-border-input": "rgba(255,255,255,0.09)",
-        "--app-accent": "#4fd6c9",
-        "--app-accent-ink": "#04201d",
-        "--app-text-primary": "#e4efed",
-        "--app-text-muted": "#a2b4b1",
-        "--app-text-faint": "#83938f",
-        ...TEAL_GLASS,
-      },
+      chassis: "#16201e",
+      ink: "#e4efed",
+      accent: "#4fd6c9",
+      glass: TEAL_GLASS,
     },
-  },
-  {
-    id: "phosphor",
-    name: "Phosphor",
-    dark: {
+    {
+      era: "Brushed aluminium receiver, 1977",
+      chassis: "#e9e7e1",
+      ink: "#22201c",
+      accent: "#1c6b6b",
+      glass: TEAL_GLASS,
+    },
+  ),
+  family(
+    "walnut",
+    "Walnut",
+    [5, 8],
+    {
+      era: "Wood-cabinet receiver, 1974",
+      chassis: "#2b1d13",
+      ink: "#f3e6d3",
+      accent: "#ff8a3d",
+      glass: DIAL_GLASS,
+    },
+    {
+      era: "Cream faceplate, walnut ends",
+      chassis: "#efe3cf",
+      ink: "#2b1a0e",
+      accent: "#a3470f",
+      glass: DIAL_GLASS,
+    },
+  ),
+  family(
+    "braun",
+    "Braun",
+    [3, 5],
+    {
+      era: "Braun black series, 1970s",
+      chassis: "#1c1c1b",
+      ink: "#f0efe9",
+      accent: "#ff6a2b",
+      glass: BRAUN_GLASS,
+    },
+    {
+      era: "Braun T3 pocket radio, 1958",
+      chassis: "#ecebe6",
+      ink: "#1b1b1a",
+      accent: "#d9480f",
+      glass: BRAUN_GLASS,
+    },
+  ),
+  family(
+    "phosphor",
+    "Phosphor",
+    [2, 4],
+    {
       era: "P31 green monitor, 1983",
-      swatch: ["#0a110c", "#4ef08a"],
-      tokens: {
-        "--app-bg-base": "#060a07",
-        "--app-bg-surface": "#0a110c",
-        "--app-bg-header": "#040706",
-        "--app-bg-overlay": "#030605",
-        "--app-border-subtle": "#15271b",
-        "--app-border-muted": "#1e3826",
-        "--app-border-default": "#2f553b",
-        "--app-border-input": "rgba(78,240,138,0.16)",
-        "--app-accent": "#4ef08a",
-        "--app-accent-ink": "#02160a",
-        "--app-text-primary": "#aaffc8",
-        "--app-text-muted": "#74cf97",
-        "--app-text-faint": "#59ab79",
-        ...GREEN_GLASS,
-      },
+      chassis: "#0b150e",
+      ink: "#aaffc8",
+      accent: "#4ef08a",
+      glass: GREEN_GLASS,
     },
-    light: {
+    {
       era: "Reverse video, same tube",
-      swatch: ["#f1f7f2", "#0f6b33"],
-      tokens: {
-        "--app-bg-base": "#e6f0e8",
-        "--app-bg-surface": "#f1f7f2",
-        "--app-bg-header": "#d5e4d9",
-        "--app-bg-overlay": "#ffffff",
-        "--app-border-subtle": "#c2d5c7",
-        "--app-border-muted": "#a8bfae",
-        "--app-border-default": "#7d9a85",
-        "--app-border-input": "rgba(0,0,0,0.16)",
-        "--app-accent": "#0f6b33",
-        "--app-accent-ink": "#f0fff4",
-        "--app-text-primary": "#0a1c10",
-        "--app-text-muted": "#33543d",
-        "--app-text-faint": "#4c7157",
-        ...GREEN_GLASS,
-      },
+      chassis: "#f1f7f2",
+      ink: "#0a1c10",
+      accent: "#0f6b33",
+      glass: GREEN_GLASS,
     },
-  },
-  {
-    id: "amber",
-    name: "Amber",
-    dark: {
+  ),
+  family(
+    "amber",
+    "Amber",
+    [2, 4],
+    {
       era: "Amber monochrome monitor, 1985",
-      swatch: ["#130e06", "#ffb74d"],
-      tokens: {
-        "--app-bg-base": "#0b0703",
-        "--app-bg-surface": "#130e06",
-        "--app-bg-header": "#070502",
-        "--app-bg-overlay": "#050301",
-        "--app-border-subtle": "#2b1e0a",
-        "--app-border-muted": "#3d2c0e",
-        "--app-border-default": "#5f4416",
-        "--app-border-input": "rgba(255,183,77,0.16)",
-        "--app-accent": "#ffb74d",
-        "--app-accent-ink": "#1d1102",
-        "--app-text-primary": "#ffdaa2",
-        "--app-text-muted": "#d9a960",
-        "--app-text-faint": "#b08a49",
-        ...AMBER_CRT_GLASS,
-      },
+      chassis: "#150f06",
+      ink: "#ffdaa2",
+      accent: "#ffb74d",
+      glass: AMBER_CRT_GLASS,
     },
-    light: {
+    {
       era: "Reverse video, same tube",
-      swatch: ["#f8f2e7", "#8a5200"],
-      tokens: {
-        "--app-bg-base": "#f0e7d8",
-        "--app-bg-surface": "#f8f2e7",
-        "--app-bg-header": "#e2d5bf",
-        "--app-bg-overlay": "#fffdf8",
-        "--app-border-subtle": "#d3c4a9",
-        "--app-border-muted": "#bda98a",
-        "--app-border-default": "#96805d",
-        "--app-border-input": "rgba(0,0,0,0.18)",
-        "--app-accent": "#8a5200",
-        "--app-accent-ink": "#fff6e6",
-        "--app-text-primary": "#231803",
-        "--app-text-muted": "#5a4620",
-        "--app-text-faint": "#6f5930",
-        ...AMBER_CRT_GLASS,
-      },
+      chassis: "#f8f2e7",
+      ink: "#231803",
+      accent: "#8a5200",
+      glass: AMBER_CRT_GLASS,
     },
-  },
-  {
-    id: "classic",
-    name: "Classic",
-    light: {
-      era: "Macintosh System 1, 1984",
-      swatch: ["#ffffff", "#000000"],
-      tokens: {
-        // Genuinely 1-bit: no tinted greys, and an accent that is simply black.
-        "--app-bg-base": "#ffffff",
-        "--app-bg-surface": "#f6f6f6",
-        "--app-bg-header": "#e6e6e6",
-        "--app-bg-overlay": "#ffffff",
-        "--app-border-subtle": "#c9c9c9",
-        "--app-border-muted": "#9a9a9a",
-        "--app-border-default": "#000000",
-        "--app-border-input": "rgba(0,0,0,0.26)",
-        "--app-accent": "#000000",
-        "--app-accent-ink": "#ffffff",
-        "--app-text-primary": "#000000",
-        "--app-text-muted": "#3d3d3d",
-        "--app-text-faint": "#5e5e5e",
-        ...MONO_GLASS,
-      },
+  ),
+  family(
+    "virtual",
+    "Virtual",
+    [2, 4],
+    {
+      era: "Virtual Boy, 1995",
+      chassis: "#170506",
+      ink: "#ffc9c4",
+      accent: "#ff3b30",
+      glass: RED_GLASS,
     },
-    dark: {
-      era: "The same screen, inverted",
-      swatch: ["#0d0d0d", "#ffffff"],
-      tokens: {
-        "--app-bg-base": "#000000",
-        "--app-bg-surface": "#0d0d0d",
-        "--app-bg-header": "#000000",
-        "--app-bg-overlay": "#151515",
-        "--app-border-subtle": "#2e2e2e",
-        "--app-border-muted": "#4a4a4a",
-        "--app-border-default": "#ffffff",
-        "--app-border-input": "rgba(255,255,255,0.26)",
-        "--app-accent": "#ffffff",
-        "--app-accent-ink": "#000000",
-        "--app-text-primary": "#ffffff",
-        "--app-text-muted": "#c4c4c4",
-        "--app-text-faint": "#9e9e9e",
-        ...MONO_GLASS,
-      },
+    {
+      era: "Reverse video, same LEDs",
+      chassis: "#fbefee",
+      ink: "#2a0606",
+      accent: "#b3140c",
+      glass: RED_GLASS,
     },
-  },
-  {
-    id: "aqua",
-    name: "Aqua",
-    light: {
-      era: "Mac OS X 10.0, 2001",
-      swatch: ["#f3f7fb", "#1a72d8"],
-      tokens: {
-        "--app-bg-base": "#e1e8f0",
-        "--app-bg-surface": "#f3f7fb",
-        "--app-bg-header": "#cbd8e7",
-        "--app-bg-overlay": "#ffffff",
-        "--app-border-subtle": "#b9c8da",
-        "--app-border-muted": "#a2b4c8",
-        "--app-border-default": "#8095ad",
-        "--app-border-input": "rgba(0,0,0,0.16)",
-        "--app-accent": "#1a72d8",
-        "--app-accent-ink": "#ffffff",
-        "--app-text-primary": "#16232e",
-        "--app-text-muted": "#4a5c6d",
-        "--app-text-faint": "#4f606f",
-        ...BLUE_GLASS,
-      },
+  ),
+  family(
+    "dmg",
+    "DMG",
+    [4, 6],
+    {
+      era: "Game Boy Light, backlit, 1998",
+      chassis: "#17230f",
+      ink: "#d7e8b0",
+      accent: "#9bbc0f",
+      glass: LCD_GLASS,
     },
-    dark: {
+    {
+      era: "Game Boy, 1989",
+      chassis: "#c4cfa1",
+      ink: "#1a2410",
+      accent: "#2f5a2f",
+      glass: LCD_GLASS,
+    },
+  ),
+  family(
+    "outrun",
+    "Outrun",
+    [6, 10],
+    {
+      era: "Arcade cabinet, 1986",
+      chassis: "#1b1033",
+      ink: "#f4e9ff",
+      accent: "#ff4fa3",
+      glass: NEON_GLASS,
+    },
+    {
+      era: "Miami pastel, same summer",
+      chassis: "#fbeef3",
+      ink: "#2a1230",
+      accent: "#c2185b",
+      glass: NEON_GLASS,
+    },
+  ),
+  family(
+    "grape",
+    "Grape",
+    [9, 14],
+    {
+      era: "Translucent shell, lights off",
+      chassis: "#1d162b",
+      ink: "#ece4fb",
+      accent: "#b79bff",
+      glass: GRAPE_GLASS,
+    },
+    {
+      era: "iMac G3 Grape, 1999",
+      chassis: "#f1ecf8",
+      ink: "#231a33",
+      accent: "#6b3fb5",
+      glass: GRAPE_GLASS,
+    },
+  ),
+  family(
+    "aqua",
+    "Aqua",
+    [8, 12],
+    {
       era: "The Graphite appearance, same year",
-      swatch: ["#151f2a", "#4aa3ff"],
-      tokens: {
-        "--app-bg-base": "#0e151d",
-        "--app-bg-surface": "#151f2a",
-        "--app-bg-header": "#0a1119",
-        "--app-bg-overlay": "#091019",
-        "--app-border-subtle": "#1f2d3c",
-        "--app-border-muted": "#2c3f52",
-        "--app-border-default": "#44607a",
-        "--app-border-input": "rgba(255,255,255,0.09)",
-        "--app-accent": "#4aa3ff",
-        "--app-accent-ink": "#04121f",
-        "--app-text-primary": "#dce9f5",
-        "--app-text-muted": "#a0b4c7",
-        "--app-text-faint": "#8398ac",
-        ...BLUE_GLASS,
+      chassis: "#151f2a",
+      ink: "#dce9f5",
+      accent: "#4aa3ff",
+      glass: BLUE_GLASS,
+    },
+    {
+      era: "Mac OS X 10.0, 2001",
+      chassis: "#f3f7fb",
+      ink: "#16232e",
+      accent: "#1a72d8",
+      glass: BLUE_GLASS,
+    },
+  ),
+  family(
+    "classic",
+    "Classic",
+    [0, 0],
+    {
+      era: "The same screen, inverted",
+      chassis: "#0d0d0d",
+      ink: "#ffffff",
+      accent: "#ffffff",
+      glass: NEON_GLASS,
+      // Genuinely 1-bit: a black field, and rules drawn in the ink itself.
+      override: {
+        "--app-bg-base": "#000000",
+        "--app-bg-header": "#000000",
+        "--app-border-default": "#ffffff",
       },
     },
-  },
+    {
+      era: "Macintosh System 1, 1984",
+      chassis: "#ffffff",
+      ink: "#000000",
+      accent: "#000000",
+      glass: NEON_GLASS,
+      override: { "--app-border-default": "#000000" },
+    },
+  ),
 ];
 
 export const DEFAULT_THEME = "graphite";
@@ -341,6 +517,8 @@ export function applyTheme(theme: Theme, resolved: Resolved) {
   for (const [key, value] of Object.entries(theme[resolved].tokens)) {
     root.style.setProperty(key, value);
   }
+  root.style.setProperty("--app-radius-sm", `${theme.radius[0]}px`);
+  root.style.setProperty("--app-radius-md", `${theme.radius[1]}px`);
   // Tells the webview to render native controls and scrollbars to match.
   root.style.colorScheme = resolved;
   root.dataset.theme = theme.id;

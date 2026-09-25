@@ -14,6 +14,7 @@ import {
 import { DEFAULT_OPTIONS, type VizOptions, type VizTheme } from "../viz/types";
 import { DEFAULT_VIZ, getVisualizer } from "../viz/registry";
 import type { Visualizer } from "../viz/types";
+import { DEFAULT_LAYOUT, getLayout, type Layout, type LayoutId } from "../layout/layouts";
 
 /** Everything the user can change about how the app looks, in one place. */
 
@@ -24,6 +25,8 @@ interface Stored {
   mode: Mode;
   viz: string;
   options: VizOptions;
+  layout: string;
+  albumArt: boolean;
 }
 
 function load(): Stored {
@@ -32,6 +35,8 @@ function load(): Stored {
     mode: DEFAULT_MODE,
     viz: DEFAULT_VIZ,
     options: DEFAULT_OPTIONS,
+    layout: DEFAULT_LAYOUT,
+    albumArt: true,
   };
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -44,6 +49,8 @@ function load(): Stored {
       // Merged over defaults so an option added later can't strand an older
       // saved object with a missing key.
       options: { ...DEFAULT_OPTIONS, ...(parsed.options ?? {}) },
+      layout: parsed.layout ?? fallback.layout,
+      albumArt: typeof parsed.albumArt === "boolean" ? parsed.albumArt : fallback.albumArt,
     };
   } catch {
     return fallback;
@@ -64,6 +71,11 @@ export interface Appearance {
   setVisualizer: (id: string) => void;
   options: VizOptions;
   setOption: <K extends keyof VizOptions>(key: K, value: VizOptions[K]) => void;
+  layout: Layout;
+  setLayout: (id: LayoutId) => void;
+  /** Look up covers for the playing track. Sends track titles to Apple. */
+  albumArt: boolean;
+  setAlbumArt: (on: boolean) => void;
   /** Display colours pulled from the live variant, for the canvas. */
   vizTheme: VizTheme;
 }
@@ -86,6 +98,8 @@ export function useAppearance(): Appearance {
   const theme = useMemo(() => getTheme(stored.theme), [stored.theme]);
   const visualizer = useMemo(() => getVisualizer(stored.viz), [stored.viz]);
 
+  const layout = useMemo(() => getLayout(stored.layout), [stored.layout]);
+
   const resolved: Resolved =
     stored.mode === "system" ? (systemDark ? "dark" : "light") : stored.mode;
   const variant = theme[resolved];
@@ -105,6 +119,8 @@ export function useAppearance(): Appearance {
   const setTheme = useCallback((id: string) => setStored((s) => ({ ...s, theme: id })), []);
   const setMode = useCallback((mode: Mode) => setStored((s) => ({ ...s, mode })), []);
   const setVisualizer = useCallback((id: string) => setStored((s) => ({ ...s, viz: id })), []);
+  const setLayout = useCallback((id: LayoutId) => setStored((s) => ({ ...s, layout: id })), []);
+  const setAlbumArt = useCallback((on: boolean) => setStored((s) => ({ ...s, albumArt: on })), []);
   const setOption = useCallback(
     <K extends keyof VizOptions>(key: K, value: VizOptions[K]) =>
       setStored((s) => ({ ...s, options: { ...s.options, [key]: value } })),
@@ -138,6 +154,10 @@ export function useAppearance(): Appearance {
     setVisualizer,
     options: stored.options,
     setOption,
+    layout,
+    setLayout,
+    albumArt: stored.albumArt,
+    setAlbumArt,
     vizTheme,
   };
 }

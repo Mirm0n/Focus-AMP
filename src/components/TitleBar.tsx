@@ -6,7 +6,13 @@ import { isTauri } from "../lib/proxy";
  * Custom chrome — the window is created with `decorations: false`, so the drag
  * region and the three controls have to be ours.
  */
-export function TitleBar() {
+export function TitleBar({
+  nowPlaying,
+  children,
+}: {
+  nowPlaying?: string | null;
+  children?: React.ReactNode;
+}) {
   const inTauri = isTauri();
   const win = () => getCurrentWindow();
 
@@ -25,30 +31,51 @@ export function TitleBar() {
     <div
       data-tauri-drag-region
       style={{
-        height: 38,
-        flex: "0 0 38px",
+        height: 44,
+        flex: "0 0 44px",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        background: "var(--app-bg-header)",
+        background: "var(--app-bg-surface)",
         borderBottom: "1px solid var(--app-border-subtle)",
         paddingLeft: 15,
       }}
     >
-      <span
-        data-tauri-drag-region
-        style={{
-          fontFamily: "var(--app-font-ui)",
-          fontWeight: 600,
-          fontSize: 12.5,
-          letterSpacing: "0.01em",
-          color: "var(--app-text-primary)",
-        }}
-      >
-        Tunescape
-      </span>
+      <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+        <span
+          data-tauri-drag-region
+          style={{
+            fontFamily: "var(--app-font-ui)",
+            fontWeight: 600,
+            fontSize: 12.5,
+            letterSpacing: "0.01em",
+            color: "var(--app-accent)",
+          }}
+        >
+          Tunescape
+        </span>
+      </div>
 
-      <div style={{ display: "flex", alignItems: "center" }}>
+      {nowPlaying && (
+        <span
+          data-tauri-drag-region
+          style={{
+            flex: 2,
+            textAlign: "center",
+            fontFamily: "var(--app-font-ui)",
+            fontSize: 12,
+            color: "var(--app-text-muted)",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {nowPlaying}
+        </span>
+      )}
+
+      <div style={{ flex: 1, display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
+        {children}
         {inTauri && (
           <>
             <button style={btn} onClick={() => win().minimize()} title="Minimize">

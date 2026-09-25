@@ -210,3 +210,50 @@ export function bandEnergy(freq: Uint8Array, from: number, to: number): number {
   for (let i = a; i < b; i++) sum += freq[i];
   return sum / ((b - a) * 255);
 }
+
+const FREQ_LEGEND: Array<[number, string]> = [
+  [31, "31"],
+  [63, "63"],
+  [125, "125"],
+  [250, "250"],
+  [500, "500"],
+  [1000, "1K"],
+  [2000, "2K"],
+  [4000, "4K"],
+  [8000, "8K"],
+  [16000, "16K"],
+];
+
+/**
+ * Frequency marks along the foot of a log-scaled panel. `minHz`/`maxHz` must be
+ * the ones the bands were built with, or the legend lies about the mapping.
+ */
+export function drawFreqLegend(
+  ctx: CanvasRenderingContext2D,
+  ink: string,
+  originX: number,
+  gridW: number,
+  y: number,
+  dpr: number,
+  minHz = 32,
+  maxHz = 16000,
+) {
+  const size = Math.max(7, Math.round(7.5 * dpr));
+  ctx.font = `500 ${size}px "Chivo Mono", ui-monospace, monospace`;
+  ctx.textBaseline = "top";
+  ctx.textAlign = "center";
+
+  let lastRight = -Infinity;
+  for (const [hz, text] of FREQ_LEGEND) {
+    const x = originX + (Math.log(hz / minHz) / Math.log(maxHz / minHz)) * gridW;
+    const half = ctx.measureText(text).width / 2;
+    // Drop a label rather than let two collide.
+    if (x - half < lastRight + 6 * dpr) continue;
+    ctx.fillStyle = withAlpha(ink, 0.38);
+    ctx.fillText(text, x, y + 3 * dpr);
+    lastRight = x + half;
+
+    ctx.fillStyle = withAlpha(ink, 0.16);
+    ctx.fillRect(Math.round(x), y, Math.max(1, Math.round(dpr)), 2 * dpr);
+  }
+}

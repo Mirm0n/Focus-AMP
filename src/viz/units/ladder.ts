@@ -2,6 +2,7 @@ import {
   bandLevel,
   ballistic,
   clamp,
+  drawFreqLegend,
   drawScanlines,
   ladderColor,
   logBands,
@@ -46,59 +47,12 @@ const SEG_PITCH = 8;
 const MIN_HZ = 32;
 const MAX_HZ = 16000;
 
-const LEGEND: Array<[number, string]> = [
-  [31, "31"],
-  [63, "63"],
-  [125, "125"],
-  [250, "250"],
-  [500, "500"],
-  [1000, "1K"],
-  [2000, "2K"],
-  [4000, "4K"],
-  [8000, "8K"],
-  [16000, "16K"],
-];
-
 const DB_MARKS: Array<[number, string]> = [
   [1.0, "0"],
   [0.75, "-6"],
   [0.5, "-12"],
   [0.25, "-24"],
 ];
-
-/** Where a frequency sits across a log-scaled panel, 0..1. */
-function freqX(hz: number): number {
-  return Math.log(hz / MIN_HZ) / Math.log(MAX_HZ / MIN_HZ);
-}
-
-function drawLegend(
-  ctx: CanvasRenderingContext2D,
-  theme: VizTheme,
-  originX: number,
-  gridW: number,
-  y: number,
-  dpr: number,
-) {
-  const size = Math.max(7, Math.round(7.5 * dpr));
-  ctx.font = `500 ${size}px "Chivo Mono", ui-monospace, monospace`;
-  ctx.textBaseline = "top";
-  ctx.fillStyle = withAlpha(theme.ink, 0.38);
-
-  let lastRight = -Infinity;
-  for (const [hz, text] of LEGEND) {
-    const x = originX + freqX(hz) * gridW;
-    const half = ctx.measureText(text).width / 2;
-    // Drop a label rather than let two collide.
-    if (x - half < lastRight + 6 * dpr) continue;
-    ctx.textAlign = "center";
-    ctx.fillText(text, x, y + 3 * dpr);
-    lastRight = x + half;
-
-    ctx.fillStyle = withAlpha(theme.ink, 0.16);
-    ctx.fillRect(Math.round(x), y, Math.max(1, Math.round(dpr)), 2 * dpr);
-    ctx.fillStyle = withAlpha(theme.ink, 0.38);
-  }
-}
 
 function drawDbScale(
   ctx: CanvasRenderingContext2D,
@@ -235,7 +189,7 @@ export const ladder: Visualizer = {
         if (legendH > 0) {
           ctx.fillStyle = withAlpha(theme.ink, 0.09);
           ctx.fillRect(0, fullH, w, Math.max(1, Math.round(dpr)));
-          drawLegend(ctx, theme, originX, gridW, fullH, dpr);
+          drawFreqLegend(ctx, theme.ink, originX, gridW, fullH, dpr, MIN_HZ, MAX_HZ);
         }
 
         if (opts.scanlines) drawScanlines(ctx, view);
