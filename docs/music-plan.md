@@ -1,5 +1,8 @@
 # Tunescape: the music plan
 
+> **2026-09-27:** still in force for 1.0. Tunescape is now a free, open-source radio player; how
+> stations qualify under that model, and the work to get there, is in [EXECUTION.md](EXECUTION.md).
+
 Status: **Phases 1–3 built**, 2026-09-18. Not yet listened to inside the Tauri app.
 
 ## The decision
