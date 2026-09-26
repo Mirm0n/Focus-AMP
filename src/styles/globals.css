@@ -102,3 +102,47 @@ body {
   white-space: nowrap;
   border: 0;
 }
+
+/* ── Windows High Contrast ────────────────────────────────
+   Every colour in this app is an inline style or a JS-injected custom
+   property, so forced-colors overrides only some of it and leaves the rest
+   fighting the user's palette. Re-point the tokens at system colours instead,
+   which is the one place that fixes the whole chrome at once.
+
+   The canvas is handled separately in useAppearance — ctx.fillStyle is not
+   something forced-colors can reach. */
+@media (forced-colors: active) {
+  :root {
+    --app-bg-base: Canvas;
+    --app-bg-surface: Canvas;
+    --app-bg-header: Canvas;
+    --app-bg-overlay: Canvas;
+
+    --app-border-subtle: CanvasText;
+    --app-border-muted: CanvasText;
+    --app-border-default: CanvasText;
+    --app-border-input: CanvasText;
+
+    --app-accent: Highlight;
+    --app-accent-ink: HighlightText;
+
+    --app-text-primary: CanvasText;
+    --app-text-muted: CanvasText;
+    --app-text-faint: GrayText;
+
+    --viz-ground: Canvas;
+    --viz-grid: GrayText;
+    --viz-lo: CanvasText;
+    --viz-mid: CanvasText;
+    --viz-hi: Highlight;
+    --viz-ink: CanvasText;
+  }
+
+  /* Borders drawn as backgrounds vanish in forced-colors; make the selected
+     and playing states carry a real outline instead of a tinted fill. */
+  .station-row:focus-within,
+  .station-row:hover {
+    outline: 1px solid Highlight;
+    outline-offset: -1px;
+  }
+}

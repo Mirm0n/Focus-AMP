@@ -96,13 +96,13 @@ export function PlayerBar({
       >
         {status === "loading" ? (
           <div style={{ position: "relative", display: "grid", placeItems: "center" }}>
-            <Square size={10} fill="currentColor" />
-            <Loader2 size={24} className="spin" style={{ position: "absolute", opacity: 0.5 }} />
+            <Square size={10} fill="currentColor" aria-hidden="true" />
+            <Loader2 size={24} className="spin" aria-hidden="true" style={{ position: "absolute", opacity: 0.5 }} />
           </div>
         ) : playing ? (
-          <Square size={14} fill="currentColor" />
+          <Square size={14} fill="currentColor" aria-hidden="true" />
         ) : (
-          <Play size={16} fill="currentColor" style={{ marginLeft: 2 }} />
+          <Play size={16} fill="currentColor" aria-hidden="true" style={{ marginLeft: 2 }} />
         )}
       </button>
 
@@ -131,7 +131,7 @@ export function PlayerBar({
               style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
             />
           ) : (
-            <Radio size={16} />
+            <Radio size={16} aria-hidden="true" />
           )}
         </span>
         <div style={{ minWidth: 0 }}>
@@ -166,7 +166,7 @@ export function PlayerBar({
 
       {/* Volume */}
       <div style={{ display: "flex", alignItems: "center", gap: 9, flex: "0 0 auto" }}>
-        <VolIcon size={15} style={{ color: "var(--app-text-faint)" }} />
+        <VolIcon size={15} aria-hidden="true" style={{ color: "var(--app-text-faint)" }} />
         <input
           type="range"
           min={0}
@@ -177,6 +177,7 @@ export function PlayerBar({
           style={{ width: 104, accentColor: "var(--app-accent)" }}
           title={`Volume ${Math.round(player.volume * 100)}%`}
           aria-label="Volume"
+          aria-valuetext={`${Math.round(player.volume * 100)} percent`}
         />
       </div>
     </div>

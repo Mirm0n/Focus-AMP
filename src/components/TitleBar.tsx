@@ -42,9 +42,12 @@ export function TitleBar({
       }}
     >
       <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
-        <span
+        {/* The app name is the document's heading — there was no h1 at all,
+            so heading navigation found nothing anywhere in the shell. */}
+        <h1
           data-tauri-drag-region
           style={{
+            margin: 0,
             fontFamily: "var(--app-font-ui)",
             fontWeight: 600,
             fontSize: 12.5,
@@ -53,7 +56,7 @@ export function TitleBar({
           }}
         >
           Tunescape
-        </span>
+        </h1>
       </div>
 
       {nowPlaying && (
@@ -78,16 +81,17 @@ export function TitleBar({
         {children}
         {inTauri && (
           <>
-            <button style={btn} onClick={() => win().minimize()} title="Minimize">
-              <Minus size={14} />
+            <button style={btn} onClick={() => win().minimize()} title="Minimize" aria-label="Minimize">
+              <Minus size={14} aria-hidden="true" />
             </button>
-            <button style={btn} onClick={() => win().toggleMaximize()} title="Maximize">
-              <Square size={11} />
+            <button style={btn} onClick={() => win().toggleMaximize()} title="Maximize" aria-label="Maximize">
+              <Square size={11} aria-hidden="true" />
             </button>
             <button
               style={btn}
               onClick={() => win().close()}
               title="Close"
+              aria-label="Close"
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = "#c4342b";
                 e.currentTarget.style.color = "#fff";
@@ -97,7 +101,7 @@ export function TitleBar({
                 e.currentTarget.style.color = "var(--app-text-muted)";
               }}
             >
-              <X size={14} />
+              <X size={14} aria-hidden="true" />
             </button>
           </>
         )}

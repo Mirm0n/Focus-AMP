@@ -215,7 +215,7 @@ export function PomodoroPanel({ pom, variant = "strip", onGlass = false }: Pomod
           }}
         >
           {phase}
-          <div style={digits}>{mmss(pom.remaining)}</div>
+          <div role="timer" aria-live="off" style={digits}>{mmss(pom.remaining)}</div>
           {/* Stretched to the digits, which are the widest thing in the column. */}
           <div style={{ alignSelf: "stretch" }}>
             <Progress value={progress} color={color} track={inks.track} />
@@ -233,7 +233,7 @@ export function PomodoroPanel({ pom, variant = "strip", onGlass = false }: Pomod
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: "50%", background: `${color}1A`, color }}>
             <Icon size={16} />
           </div>
-          <div style={{ ...digits, fontSize: 32 }}>{mmss(pom.remaining)}</div>
+          <div role="timer" aria-live="off" style={{ ...digits, fontSize: 32 }}>{mmss(pom.remaining)}</div>
         </div>
         
         <div style={{ width: 100, display: "flex", flexDirection: "column", gap: 4 }}>
@@ -256,7 +256,7 @@ export function PomodoroPanel({ pom, variant = "strip", onGlass = false }: Pomod
       <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
         <div style={{ minWidth: 0, flex: 1 }}>
           <div style={{ marginBottom: 2 }}>{phase}</div>
-          <div style={{ ...digits, fontSize: 58 }}>{mmss(pom.remaining)}</div>
+          <div role="timer" aria-live="off" style={{ ...digits, fontSize: 58 }}>{mmss(pom.remaining)}</div>
         </div>
         {buttons}
       </div>
