@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 import { TitleBar } from "./components/TitleBar";
 import { Sidebar, type Queue } from "./components/Sidebar";
@@ -241,6 +242,14 @@ export default function App() {
       stopPlayback();
     }
   };
+
+  // On a desktop the window title is how a screen reader user picks this
+  // window out of the list. Static "Tunescape" tells them nothing.
+  useEffect(() => {
+    if (!isTauri()) return;
+    const title = playing ? `${playing.name} — Tunescape` : "Tunescape";
+    getCurrentWindow().setTitle(title).catch(() => {});
+  }, [playing]);
 
   const live = playing ?? selected;
   const art = useAlbumArt(playing ? nowPlaying : null, appearance.albumArt);

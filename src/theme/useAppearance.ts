@@ -57,6 +57,28 @@ function load(): Stored {
   }
 }
 
+
+/**
+ * Read a CSS system colour keyword as a concrete value.
+ *
+ * The visualizer paints through `ctx.fillStyle`, which `forced-colors` cannot
+ * reach — the whole display would keep its own palette while the rest of the
+ * app switched to the user's. Resolving the keywords here and feeding them in
+ * as ordinary colours is the only way to make the canvas follow.
+ */
+function systemColor(keyword: string, fallback: string): string {
+  try {
+    const probe = document.createElement("span");
+    probe.style.cssText = `color:${keyword};position:absolute;visibility:hidden`;
+    document.body.appendChild(probe);
+    const value = getComputedStyle(probe).color;
+    probe.remove();
+    return value || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export interface Appearance {
   theme: Theme;
   setTheme: (id: string) => void;
@@ -85,6 +107,7 @@ export function useAppearance(): Appearance {
   const [systemDark, setSystemDark] = useState(
     () => window.matchMedia("(prefers-color-scheme: dark)").matches,
   );
+  const [forced, setForced] = useState(() => window.matchMedia("(forced-colors: active)").matches);
 
   // Track the OS preference continuously, not just at startup — someone on a
   // sunset schedule should see the app follow without restarting it.
@@ -92,7 +115,15 @@ export function useAppearance(): Appearance {
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const onChange = (e: MediaQueryListEvent) => setSystemDark(e.matches);
     mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
+
+    const fc = window.matchMedia("(forced-colors: active)");
+    const onForced = (e: MediaQueryListEvent) => setForced(e.matches);
+    fc.addEventListener("change", onForced);
+
+    return () => {
+      mq.removeEventListener("change", onChange);
+      fc.removeEventListener("change", onForced);
+    };
   }, []);
 
   const theme = useMemo(() => getTheme(stored.theme), [stored.theme]);
@@ -130,8 +161,23 @@ export function useAppearance(): Appearance {
   // Read straight off the variant rather than getComputedStyle: the CSS
   // variables are applied in an effect, so on the first paint after a switch
   // the computed values would still be the previous theme's.
-  const vizTheme = useMemo<VizTheme>(
-    () => ({
+  const vizTheme = useMemo<VizTheme>(() => {
+    if (forced) {
+      // Monochrome by necessity: the user's palette has two text colours and a
+      // highlight, so the ladder collapses to lit / very lit rather than a
+      // green-amber-red ramp.
+      const text = systemColor("CanvasText", "#000");
+      return {
+        ground: systemColor("Canvas", "#fff"),
+        grid: systemColor("GrayText", "#888"),
+        lo: text,
+        mid: text,
+        hi: systemColor("Highlight", "#00f"),
+        ink: text,
+        accent: systemColor("Highlight", "#00f"),
+      };
+    }
+    return {
       ground: variant.tokens["--viz-ground"],
       grid: variant.tokens["--viz-grid"],
       lo: variant.tokens["--viz-lo"],
@@ -139,9 +185,8 @@ export function useAppearance(): Appearance {
       hi: variant.tokens["--viz-hi"],
       ink: variant.tokens["--viz-ink"],
       accent: variant.tokens["--app-accent"],
-    }),
-    [variant],
-  );
+    };
+  }, [variant, forced]);
 
   return {
     theme,
