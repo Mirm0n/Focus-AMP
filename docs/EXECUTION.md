@@ -53,6 +53,8 @@ reading of published terms, not legal advice.
 | R12 | **Album art:** off by default. When on, the cover sits next to an Apple Music link, as Apple's terms require. | — |
 | R13 | **Windows first.** Linux next (Flathub suits open-source apps), macOS later. | After 1.0 |
 | R14 | **The legal review is optional now:** a short check of the station-listing policy and privacy policy, if budget allows | — |
+| R15 | **Purpose: audience and a personal project, not revenue.** No paywall and no paid tier planned. Tunescape gets the time budget in this plan (about 12–16 agent hours plus the U tasks); anything beyond waits until after 1.0, so it doesn't take time from money-making projects. No contributor agreement: contributions come in under GPL-3.0 like everything else. | If a real audience appears and money becomes a goal: the licensed-music "Focus" work on `mvp/audius` is the starting point |
+| R16 | **Audience hooks:** a "Made by" credit and a short "More from the maker" section in About, linking to the maker's site and other projects, plus GitHub star and donate links. Nothing in the player itself, and no tracking. | — |
 
 ## 4. The station picture under R4
 
@@ -150,7 +152,8 @@ It prints the number of Picks per genre.
       timer settings, clipping at 880×560, and the toast icon out of `%TEMP%`.
 - [ ] **B4 Reflow at 200% zoom:** every control reachable at 880×560.
 - [ ] **B5 About screen:** version, GPL licence, source code link, donate link, the station
-      policy and removal link, third-party notices.
+      policy and removal link, third-party notices, and the R16 "Made by" and "More from the maker"
+      section (links supplied by you).
 - [ ] **B6 Docs:** README catalog section, the register updated, and a privacy policy (the app
       contacts the stations you play, Radio Browser when the directory is on, and Apple only when
       album art is on; no accounts, no tracking).
@@ -201,6 +204,9 @@ npm run tauri build       # release build
 ```
 
 ## 10. Changelog
+
+- **2026-09-27** Purpose confirmed as audience and a personal project (R15): no paid tier, a
+  fixed time budget, no contributor agreement. Audience hooks added to About (R16).
 
 - **2026-09-27** Created. Tunescape becomes a free, open-source radio player (GPL-3.0). The paid,
   Audius-only plan is parked on `mvp/audius`.
