@@ -3,21 +3,12 @@
 A single-player desktop radio player. Tauri, no database, no multiplayer — pick a genre,
 get a retro spectrum visualizer, listen.
 
-Full plan: `../Tunescape/plans/tunescape-v2.md`
+Plan, decisions, station policy and known gaps: [docs/EXECUTION.md](docs/EXECUTION.md).
 
 ## Status
 
-| Phase | State |
-|---|---|
-| 0 — Scaffold | **done** |
-| 1 — Rust audio proxy | **done** |
-| 2 — Playback core | **done** — transport, volume, automatic stream health |
-| — Pomodoro | **done** — configurable, with radio integration |
-| 3 — The visualizer | **done** — registry, 7 visualizers, 12 theme families (24 variants) |
-| 4 — UI shell | **done** — genre browser, search, favorites, pinned genres, layouts |
-| — Catalog | **done** — Picks by default, directory behind a setting |
-| 5 — Desktop integration | partial — native toasts done; no tray, media keys or updater |
-| 6 — Package & ship | not started |
+Heading for 1.0 as a free, open-source radio player. Progress and what's left are in
+[docs/EXECUTION.md](docs/EXECUTION.md).
 
 ## Running it
 
@@ -70,9 +61,10 @@ box sits above both levels. A genre with no Picks yet (Solo piano, Nature, Blues
 
 That default is the whole of the app's protection against AI-generated music stations, and it
 is deliberate: nothing reaches the list by itself, so nothing unvetted can. The rules for what
-may become a Pick are in [docs/no-ai-music.md](docs/no-ai-music.md).
+may become a Pick, and which stations may appear at all, are in
+[docs/EXECUTION.md](docs/EXECUTION.md) Part 3.
 
-**Settings → Stations → Show unverified stations** (off by default) fills each genre out from
+**Show community directory** (off by default; being restored, task L4) fills each genre out from
 the community directory and brings back the genres with no Picks. Picks then carry a PICK
 badge so the two can be told apart. Search, favorites and the remembered last station all
 follow the same setting: with it off they see Picks only, and a directory station starred
@@ -299,16 +291,4 @@ five were unused) are down to Chivo and Chivo Mono.
 
 ## Known gaps
 
-- HLS-only streams are left out because the webview can't play them without a demuxer.
-- Picks were checked by hand on 2026-09-18 and are not monitored; Solo piano, Nature and Blues
-  have none yet and are directory-only.
-- Linux needs GStreamer plugins (`gstreamer1.0-libav`, `gstreamer1.0-plugins-bad`) for MP3/AAC
-  under WebKitGTK. Untested there so far.
-- Volume and last station reset on every launch. Theme, visualizer, appearance options and
-  pomodoro settings persist, but via `localStorage` rather than `tauri-plugin-store`, which is
-  still wired but unused.
-- Accessibility: the audit's criticals are closed — dialog semantics, contrast across all 24
-  variants, text zoom, a live region for changes the app makes by itself, reduced motion on
-  the canvas, and the canvas hidden from AT. Still open: the window title never reflects the
-  playing station, an autoplay block is visible but not announced, station rows are
-  `div role="button"` rather than a list of buttons, and Windows High Contrast is unhandled.
+See [docs/EXECUTION.md](docs/EXECUTION.md) Part 6.

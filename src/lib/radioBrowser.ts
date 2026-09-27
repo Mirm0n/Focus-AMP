@@ -145,7 +145,7 @@ function unwantedLanguage(row: Row, name: string): boolean {
 
 /**
  * Says of itself that its music is AI-generated, or comes from a royalty-free
- * library (docs/no-ai-music.md, D1 and D2). Exported so the audit can report
+ * library (docs/EXECUTION.md §3.2, D1 and D2). Exported so the audit can report
  * what these two rules remove.
  */
 export function declaresAI(name: string, tags: string[]): boolean {
