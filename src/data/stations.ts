@@ -14,8 +14,8 @@
  * moves down the list by itself when one fails, so a stale entry costs a few
  * seconds rather than a broken app.
  *
- * The rules a station must pass to be added here are in docs/no-ai-music.md,
- * section 5. Record the result in that file's register.
+ * The rules a station must pass to be added here are in docs/EXECUTION.md,
+ * §3.2 ("Rules for Picks"). Record the result in its register (Part 4).
  *
  * Anonymous auto-DJ streams are deliberately not Picks, however good they
  * sound — they are the hardest category to verify for provenance. The Lofi
@@ -107,13 +107,13 @@ const LOFI_10 = pick("Box Lofi Radio", "Lofi Hip Hop", "https://stream.zeno.fm/t
 
 // Nightride FM (nightride.mp3, chillsynth.mp3) was removed from the Picks on
 // 2026-09-18: excluded pending provenance. Its own site names no operator and
-// states no licensing, which fails rules R1 and R6 of docs/no-ai-music.md. That
+// states no licensing, which fails rules R1 and R6 of docs/EXECUTION.md §3.2. That
 // is a gap in what could be established, not a finding about its music: the
 // ten artists sampled were all real, and it has broadcast since 2019. See the
 // register in that file for what would reinstate it.
 
 // Public and university stations whose whole point is alternative rock. All
-// three were checked on 2026-09-24; see the register in docs/no-ai-music.md.
+// three were checked on 2026-09-24; see the register in docs/EXECUTION.md Part 4.
 const KEXP = pick("KEXP", "Friends of KEXP · Seattle, DJ-picked", "https://kexp-mp3-128.streamguys1.com/kexp128.mp3", "vocal");
 const THE_CURRENT = pick("The Current", "Minnesota Public Radio · Alternative", "https://current.stream.publicradio.org/kcmp.mp3", "vocal");
 const WXPN = pick("WXPN", "University of Pennsylvania · Adult alternative", "https://wxpnhi.xpn.org/xpnhi", "vocal");

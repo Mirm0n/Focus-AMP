@@ -343,7 +343,7 @@ export const EXCLUDED_SCRIPT =
 
 /**
  * A station that says its music is AI-generated, in its name or a tag. See
- * docs/no-ai-music.md, rule D1. This only catches the ones that say so \u2014 most
+ * docs/EXECUTION.md §3.2, rule D1. This only catches the ones that say so \u2014 most
  * don't \u2014 which is why the directory is hidden by default and this is merely
  * the floor under the "unverified" setting.
  *
@@ -367,7 +367,7 @@ export const ROYALTY_FREE_WORDING =
 
 /**
  * Genres where AI-generated music concentrates: functional, wordless,
- * interchangeable. docs/no-ai-music.md, section 3. In these, an unverified
+ * interchangeable. docs/EXECUTION.md §3.2 ("Where the risk is"). In these, an unverified
  * station must show some sign of somebody being behind it (see
  * `lacksProvenance` in radioBrowser.ts).
  */

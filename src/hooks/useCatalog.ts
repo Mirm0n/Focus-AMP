@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
  * What the catalog is allowed to contain.
  *
  * By default, Picks and nothing else: stations a person chose, from
- * broadcasters a person vetted (docs/no-ai-music.md). The community directory
+ * broadcasters a person vetted (docs/EXECUTION.md, Part 3). The community directory
  * is one setting away, off, and labelled for what it is — nobody has checked
  * those stations, and that is exactly where AI-generated streams turn up.
  */

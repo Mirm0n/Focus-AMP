@@ -1,23 +1,27 @@
-# Tunescape 1.0 — execution doc (free, open-source radio)
+# Tunescape — the build doc
 
-The build instructions for Tunescape 1.0: a **free, open-source internet radio player** for
-Windows. Every decision is already made. Each task says where the work happens and when it
-counts as done. Anyone picking up the work, a person or an agent, should be able to start
-from this file alone.
+Tunescape 1.0 is a **free, open-source internet radio player** for Windows, licensed GPL-3.0.
+This is the project's one working document: the plan, the decisions, how the catalog works,
+the station policy and register, and what's known to be missing. Anyone picking up the work,
+a person or an agent, should be able to start from this file alone.
 
-- **Live dashboard:** [Road to 1.0](https://claude.ai/artifact/Bkn7yhCGz3gGHUkqxjRX4G) tracks
-  progress. Update it whenever a box here gets ticked.
-- **Rights reference:** [Music Rights](https://claude.ai/artifact/9sQZMLtcvVzeTfXTtwY99y) records
-  each broadcaster's published terms, with sources.
-- **Still in force:** `docs/music-plan.md` (how the catalog works: Picks plus the directory) and
-  `docs/no-ai-music.md` (which stations may be Picks).
-- **Parked:** the paid, Audius-only plan lives on branch `mvp/audius`. It isn't part of 1.0.
+- **Progress dashboard:** [Road to 1.0](https://claude.ai/artifact/Bkn7yhCGz3gGHUkqxjRX4G), the
+  only live page. Tick a box here, then update its row there.
+- **Front page:** `README.md` covers what the app is, how to run it, and how the code is laid
+  out. Everything about plans and policy lives here instead.
+- **Parked:** the paid, Audius-only plan is on branch `mvp/audius`. It isn't part of 1.0.
 
 Last updated 2026-09-27.
 
+**Contents.** Part 1: the plan · Part 2: how the catalog works · Part 3: station policy (terms
+and no-AI rules) · Part 4: the Picks register · Part 5: accessibility · Part 6: known gaps ·
+Part 7: parked research · Changelog.
+
 ---
 
-## 1. The decision rule
+# Part 1 — The plan
+
+## 1.1 The decision rule
 
 In priority order:
 
@@ -26,56 +30,57 @@ In priority order:
 2. **The fastest route to a public release.**
 3. **Choices that won't need redoing later.**
 
-## 2. Why free and open source
+## 1.2 Why free and open source
 
-Most stations license **personal listening**. A paid app made their streams part of a product
-being sold, which their terms forbid. A free, open-source player is a tool a person uses to
-listen personally, like VLC or a car radio, which is how established open-source radio players
-built on the same Radio Browser directory operate. It also makes the project eligible for free
-code signing (SignPath Foundation), and removes the trial, payment and licensing work. This is a
-reading of published terms, not legal advice.
+Most stations license **personal listening**. A paid app would make their streams part of a
+product being sold, which their terms forbid. A free, open-source player is a tool a person
+uses to listen personally, like VLC or a car radio, which is how established open-source radio
+players built on the same Radio Browser directory operate. It also makes the project eligible
+for free code signing (SignPath Foundation), and removes the trial, payment and licensing work.
+This is a reading of published terms, not legal advice.
 
-## 3. Decisions
+## 1.3 Decisions
 
 | # | Decision | Reopen when |
 |---|---|---|
-| R1 | **Free and open source, licensed GPL-3.0-or-later.** Anyone may use, study and improve it; nobody may take it closed and sell it. | Before the repo goes public, if MIT is preferred |
-| R2 | **Radio is the product.** The Audius work stays parked on `mvp/audius`. | After 1.0, as an optional mode at most |
-| R3 | **The catalog:** curated Picks by default, plus the Radio Browser directory behind a working "Show community directory" setting (off by default) | — |
-| R4 | **Station eligibility.** A station can't appear at all (Pick or directory) if its terms forbid third-party players, even free ones. It can be a Pick if its terms allow listening through other players or say nothing against it, and it passes the no-AI review. Stations whose terms restrict reuse or brand use are asked for permission, and meanwhile are neither Picks nor listed. | Each time terms or permissions change |
-| R5 | **Neutral presentation:** station name, a one-line description, genre, and a "Visit station" link to the broadcaster's own site. No logos, and no wording that implies endorsement. | A station asks for something else |
-| R6 | **Removal on request, within 7 days,** through a GitHub issue template or email. The host goes on the denylist, which also filters the directory. | — |
-| R7 | **The no-AI promise stays** (`docs/no-ai-music.md`). Picks pass R1–R8; the directory keeps its filters and stays off by default. | — |
-| R8 | **Distribution:** GitHub Releases. The first public release goes out unsigned as a beta (required to apply to SignPath), then 1.0 is signed through SignPath at $0. A Microsoft Store listing and winget are optional extras later. | — |
-| R9 | **Updates** through the Tauri updater from GitHub Releases, with a self-generated signing key ($0) | — |
-| R10 | **Money:** donations only (GitHub Sponsors, Ko-fi). No paywall. | Never a paywall on the radio |
-| R11 | **The local stream proxy stays**, because the visualizer needs it for live radio. Its security fix, tracked separately, is a **launch blocker.** | — |
-| R12 | **Album art:** off by default. When on, the cover sits next to an Apple Music link, as Apple's terms require. | — |
-| R13 | **Windows first.** Linux next (Flathub suits open-source apps), macOS later. | After 1.0 |
-| R14 | **The legal review is optional now:** a short check of the station-listing policy and privacy policy, if budget allows | — |
-| R15 | **Purpose: audience and a personal project, not revenue.** No paywall and no paid tier planned. Tunescape gets the time budget in this plan (about 12–16 agent hours plus the U tasks); anything beyond waits until after 1.0, so it doesn't take time from money-making projects. No contributor agreement: contributions come in under GPL-3.0 like everything else. | If a real audience appears and money becomes a goal: the licensed-music "Focus" work on `mvp/audius` is the starting point |
-| R16 | **Audience hooks:** a "Made by" credit and a short "More from the maker" section in About, linking to the maker's site and other projects, plus GitHub star and donate links. Nothing in the player itself, and no tracking. | — |
+| C1 | **Free and open source, licensed GPL-3.0-or-later.** Anyone may use, study and improve it; nobody may take it closed and sell it. | Before the repo goes public, if MIT is preferred |
+| C2 | **Radio is the product.** The Audius work stays parked on `mvp/audius`. | After 1.0, as an optional mode at most |
+| C3 | **The catalog:** curated Picks by default, plus the Radio Browser directory behind a working "Show community directory" setting (off by default) | — |
+| C4 | **Station eligibility (Part 3.1).** A station that forbids third-party players, even free ones, can't appear at all, as a Pick or in the directory. One that allows players or says nothing against them can be a Pick, after the no-AI rules (Part 3.2). One that restricts reuse or brand use is asked for permission, and meanwhile is neither a Pick nor listed. | Each time terms or permissions change |
+| C5 | **Neutral presentation:** station name, a one-line description, genre, and a "Visit station" link to the broadcaster's own site. No logos, and no wording that implies endorsement. | A station asks for something else |
+| C6 | **Removal on request, within 7 days,** through a GitHub issue template or email. The host goes on the denylist, which also filters the directory. | — |
+| C7 | **The no-AI promise stays** (Part 3.2). Picks pass R1–R8; the directory keeps its filters and stays off by default. | — |
+| C8 | **Distribution:** GitHub Releases. The first public release goes out unsigned as a beta (required to apply to SignPath), then 1.0 is signed through SignPath at $0. A Microsoft Store listing and winget are optional extras later. | — |
+| C9 | **Updates** through the Tauri updater from GitHub Releases, with a self-generated signing key ($0) | — |
+| C10 | **Money:** donations only (GitHub Sponsors, Ko-fi). No paywall. | Never a paywall on the radio |
+| C11 | **The local stream proxy stays**, because the visualizer needs it for live radio. Its security fix, tracked separately, is a **launch blocker.** | — |
+| C12 | **Album art:** off by default. When on, the cover sits next to an Apple Music link, as Apple's terms require. | — |
+| C13 | **Windows first.** Linux next (Flathub suits open-source apps), macOS later. | After 1.0 |
+| C14 | **The legal review is optional:** a short check of the station-listing policy and privacy policy, if budget allows | — |
+| C15 | **Purpose: audience and a personal project, not revenue.** No paywall and no paid tier planned. Tunescape gets the time budget in this plan (about 12–16 agent hours plus the U tasks); anything beyond waits until after 1.0, so it doesn't take time from money-making projects. No contributor agreement: contributions come in under GPL-3.0 like everything else. | If a real audience appears and money becomes a goal: the licensed-music "Focus" work on `mvp/audius` is the starting point |
+| C16 | **Audience hooks:** a "Made by" credit and a short "More from the maker" section in About, linking to the maker's site and other projects, plus GitHub star and donate links. Nothing in the player itself, and no tracking. | — |
 
-## 4. The station picture under R4
+## 1.4 The station picture
 
-The 54 current Picks, classified under the free-player reading. This is the **starting point
-for task L1**, which confirms each one against the source links on the Music Rights page.
+The 54 current Picks under C4. This is the **starting point for task L1**, which confirms each
+one against the sources in Part 3.1.
 
 | Status | Picks | Stations |
 |---|---|---|
-| **Keep** (terms allow players or are silent) | 8 | KEXP (publishes its stream URLs for third-party players), Radio Swiss Jazz and Classic (publish URLs for internet radios), Radio Paradise Main, Rock and Mellow (no terms; historically welcomes developers), Nightwave Plaza (public API, third-party clients exist), WXPN (no terms) |
-| **Hold for the no-AI review** (terms are fine; A2 never ran) | 5 | Hotmix Lo-Fi (household use is personal listening), 0nlineradio LO-FI, Epic Lounge, Hunter.FM Lo-Fi, CLIAMP Lofi |
+| **Keep** (terms allow players or are silent) | 8 | KEXP, Radio Swiss Jazz and Classic, Radio Paradise Main, Rock and Mellow, Nightwave Plaza, WXPN |
+| **Hold for the no-AI review** (terms are fine; never reviewed under R1–R8) | 5 | Hotmix Lo-Fi, 0nlineradio LO-FI, Epic Lounge, Hunter.FM Lo-Fi, CLIAMP Lofi |
 | **Ask first** (terms restrict reuse or brand use) | 9 | Radio France FIP ×7, The Current (MPR; its URL also returns 404), laut.fm Lofi |
-| **Exclude** | 32 | SomaFM ×30 (forbids third-party clients even when free), Box Lofi Radio (demoted under the no-AI policy), BGMVibes (dead) |
+| **Exclude** | 32 | SomaFM ×30 (forbids third-party clients even when free), Box Lofi Radio (demoted under R3), BGMVibes (dead) |
 
-The genres left without a Pick are the main work of Phase 1 (task L3).
+Only 7 genres keep a Pick: Lofi, Jazz, Classical, Chillout, Alternative rock, Indie and Rock.
+The rest are the main work of Phase 1 (task L3).
 
-## 5. Specs
+## 1.5 Specs
 
-### 5.1 Station terms record
+### Station terms record
 
-Every Pick in `src/data/stations.ts` gets a `terms` record, and the check in §5.3 refuses
-builds without it:
+Every Pick in `src/data/stations.ts` gets a `terms` record, and `check:stations` refuses builds
+without one:
 
 ```ts
 interface StationTerms {
@@ -86,30 +91,27 @@ interface StationTerms {
 }
 ```
 
-### 5.2 Denylist
+### Denylist
 
 `src/data/denylist.ts` lists hosts that never play: a station that forbids third-party players
 (`somafm.com`), or one that asked to be removed. The directory filters them out before anything
-is shown, and favorites and the last station drop them on load.
+is shown, and favorites and the last station drop them on load. Each entry carries a reason and
+a date, worded as in Part 3.2 ("When one gets through").
 
-### 5.3 `check:stations`
+### `check:stations`
 
-`npm run check:stations` runs first in `npm run build` and fails if:
+`npm run check:stations` runs first in `npm run build` and fails if a Pick has no `terms` record
+or an unknown status, if a Pick's host is on the denylist, or if a Pick has no row in the
+register (Part 4). It prints the number of Picks per genre.
 
-- a Pick has no `terms` record, or an unknown status
-- a Pick's host is on the denylist
-- a Pick isn't recorded in the register in `docs/no-ai-music.md` (R8)
-
-It prints the number of Picks per genre.
-
-## 6. Phases
+## 1.6 Phases
 
 ### Phase 0 — Open-source groundwork (≈ 1 h agent time + U1)
 
 - [ ] **O1 Licence and project files:** `LICENSE` (GPL-3.0), licence fields in `package.json`
-      and `Cargo.toml`, a README that says what the app is and how to build, contribute and
-      donate, `CONTRIBUTING.md`, `SECURITY.md` (how to report a vulnerability privately), and
-      issue templates, including **"Station removal request"**.
+      and `Cargo.toml`, a short README (what it is, how to build, contribute and donate),
+      `CONTRIBUTING.md`, `SECURITY.md` (how to report a vulnerability privately), and issue
+      templates, including **"Station removal request"**.
 - [ ] **O2 Pre-publication scan:** search the full git history for secrets, keys, personal paths
       and private notes before the repo goes public, and fix anything found first.
 - [ ] **O3 Third-party notices:** generate licence notices for the npm and Cargo dependencies,
@@ -119,24 +121,24 @@ It prints the number of Picks per genre.
 
 ### Phase 1 — A catalog that respects every station (≈ 4–6 h agent time + U2, U3)
 
-- [ ] **L1 Confirm every Pick under R4:** check each of the 54 against its source link, finalise
-      §4, and update the Music Rights page.
+- [ ] **L1 Confirm every Pick under C4:** check each of the 54 against its source in Part 3.1 and
+      finalise §1.4.
 - [ ] **L2 Apply it:** remove the 32 excluded Picks; move "ask first" and "hold" stations into the
-      register as parked; add `terms` records (§5.1) and the denylist (§5.2). Filter the
-      directory, favorites and the last station through the denylist.
+      register as parked; add `terms` records and the denylist (§1.5). Filter the directory,
+      favorites and the last station through the denylist.
 - [ ] **L3 Replacement Picks:** find stations with permissive or silent terms for every genre left
       empty, starting with Ambient, Space / Drone, Chillout, Folk, Reggae, House, Techno, Trance,
-      IDM, Post-rock, Metal, Soul and Hip-hop. Each needs a named operator (R1–R8 of the no-AI
-      policy), terms that allow players, and a working stream. Target: at least 2 per genre,
-      presented to you for a listen (U2).
-- [ ] **L4 The directory setting works:** restore the "Show community directory" setting (the
-      audit found it forced on and its tab unmounted), off by default.
+      IDM, Post-rock, Metal, Soul and Hip-hop. Each needs terms that allow players, a working
+      stream, and a pass under R1–R8. Target: at least 2 per genre, presented to you for a
+      listen (U2).
+- [ ] **L4 The directory setting works:** restore "Show community directory" (the audit found it
+      forced on in `useCatalog.ts` and its tab unmounted), off by default.
 - [ ] **L5 Presentation:** a "Visit station" link on every station, neutral descriptions, no logos,
       and a "Request removal" link in Settings → About.
 - [ ] **L6 Permission emails:** a short, friendly email for the "ask first" stations and for any
       replacement whose terms are unclear. The agent drafts; you send (U3).
-- [ ] **L7 Album art (R12):** off by default, with an Apple Music link beside the cover.
-- [ ] **L8 `check:stations`** (§5.3), wired into `npm run build`.
+- [ ] **L7 Album art (C12):** off by default, with an Apple Music link beside the cover.
+- [ ] **L8 `check:stations`** (§1.5), wired into `npm run build`.
 - **Done when:** every visible genre has at least 2 Picks with terms records, nothing on the
   denylist can play from anywhere, and the build refuses a Pick without a terms record.
 
@@ -144,17 +146,17 @@ It prints the number of Picks per genre.
 
 - [ ] **B1 Proxy security fix** (tracked separately). Launch blocker.
 - [ ] **B2 Bring over the proven fixes from `mvp/audius`:** an interrupted `play()`
-      (`AbortError`) is never a failure, so fast switching no longer marks stations dead (audit
-      A3), and favorites and the last station restore through the current catalog.
+      (`AbortError`) is never a failure, so fast switching no longer marks stations dead, and
+      favorites and the last station restore through the current catalog.
 - [ ] **B3 Audit quick fixes:** the visualizer idle loop (stop when stopped, minimized or hidden;
       30 fps cap), always on top (permission, effect in `App.tsx`, error caught), validation of the
       saved `mode` plus a "Reset settings" button, remembered volume, bundled fonts, validation of
       timer settings, clipping at 880×560, and the toast icon out of `%TEMP%`.
 - [ ] **B4 Reflow at 200% zoom:** every control reachable at 880×560.
 - [ ] **B5 About screen:** version, GPL licence, source code link, donate link, the station
-      policy and removal link, third-party notices, and the R16 "Made by" and "More from the maker"
-      section (links supplied by you).
-- [ ] **B6 Docs:** README catalog section, the register updated, and a privacy policy (the app
+      policy and removal link, third-party notices, and the C16 "Made by" and "More from the
+      maker" section (links supplied by you).
+- [ ] **B6 Docs:** the README catalog section, the register updated, and a privacy policy (the app
       contacts the stations you play, Radio Browser when the directory is on, and Apple only when
       album art is on; no accounts, no tracking).
 - **Done when:** the release audit's blockers and majors are closed, with idle CPU under 3% of a
@@ -162,30 +164,30 @@ It prints the number of Picks per genre.
 
 ### Phase 3 — Public release (≈ 2–3 h agent time + U4, U5)
 
-- [ ] **D1 CI:** a GitHub Actions workflow runs the checks on every push, and on a version tag
+- [ ] **S1 CI:** a GitHub Actions workflow runs the checks on every push, and on a version tag
       builds the Windows installers and attaches them to a GitHub Release.
-- [ ] **D2 Updater (R9):** `tauri-plugin-updater` against GitHub Releases, with a self-generated
+- [ ] **S2 Updater (C9):** `tauri-plugin-updater` against GitHub Releases, with a self-generated
       key. An installed beta updates itself to the next release.
-- [ ] **D3 Beta release (v0.9, unsigned):** release notes, and install instructions explaining the
+- [ ] **S3 Beta release (v0.9, unsigned):** release notes, and install instructions explaining the
       SmartScreen warning.
-- [ ] **D4 Release verification:** automated checks on the built installer (every visible genre
-      plays, idle CPU, restart persistence, clean exit, accessibility checks).
-- [ ] **D5 1.0, signed through SignPath** once the application is approved.
+- [ ] **S4 Release verification:** automated checks on the built installer (every visible genre
+      plays, idle CPU, restart persistence, clean exit, accessibility checks from Part 5).
+- [ ] **S5 1.0, signed through SignPath** once the application is approved.
 
-## 7. Your tasks
+## 1.7 Your tasks
 
 - [ ] **U1** Create the public GitHub repository, or confirm the current one can go public, and
-      turn on two-factor authentication (SignPath requires it).
+      turn on two-factor authentication (SignPath requires it). Public only after O2.
 - [ ] **U2** Listen to the replacement Picks from L3 and approve or reject each one.
 - [ ] **U3** Send the permission emails the agent drafts in L6.
 - [ ] **U4** Publish the v0.9 beta release on GitHub.
 - [ ] **U5** Apply to the SignPath Foundation for free signing, right after the beta. Review takes
       about 1–2 weeks.
 - [ ] **U6** Optional: set up GitHub Sponsors or Ko-fi.
-- [ ] **U7** Optional: a short legal check of the station policy and privacy policy (R14).
+- [ ] **U7** Optional: a short legal check of the station policy and privacy policy (C14).
 - [ ] **U8** Check the name "Tunescape" on GitHub and in a trademark search before announcing.
 
-## 8. After 1.0
+## 1.8 After 1.0
 
 | Release | Scope |
 |---|---|
@@ -193,20 +195,311 @@ It prints the number of Picks per genre.
 | 1.1 | Linux (Flathub, AppImage). The volume slider fix for assistive tech. An optional Microsoft Store listing and winget. |
 | Later | macOS. Optional Supabase sync, only if it stays free. The Audius "continuous music" mode, if wanted. |
 
-## 9. Verification commands
+## 1.9 Verification commands
 
 ```bash
 npm test                  # unit tests
 npm run check:stations    # terms records, denylist, register
 npm run build             # type check + vite build (runs check:stations)
+npm run audit:genres      # directory yield per genre, and what D1/D2 remove
+npm run audit:themes      # contrast of every theme variant
 cargo check --manifest-path src-tauri/Cargo.toml
 npm run tauri build       # release build
 ```
 
-## 10. Changelog
+The full release-readiness audit prompt used on 2026-09-26 is in git history:
+`git show dcdf293:docs/release-readiness.md`.
 
-- **2026-09-27** Purpose confirmed as audience and a personal project (R15): no paid tier, a
-  fixed time budget, no contributor agreement. Audience hooks added to About (R16).
+---
 
+# Part 2 — How the catalog works
+
+Tunescape is a focus-music radio, not a world radio with a timer attached. Music only: talk,
+news, sport and religious programming are filtered out everywhere. Genre is the whole front
+door; there is no country browser.
+
+**Two sources, one list.**
+
+- **Picks** are the stations in `src/data/stations.ts`: hand-chosen, checked against Part 3,
+  marked by hand as instrumental, mixed or vocal. They show first in their genre.
+- **The directory** is Radio Browser, which fills each genre out to dozens of stations when
+  "Show community directory" is on. It is uncurated, so it is filtered hard before anyone sees it:
+  - a genre is a **set of tags we define**, not a raw tag. Directory tags are free text ("lofi",
+    "lo-fi", "lo fi" and "chillhop" are four different tags), so each genre lists the tags that
+    count as it and the tags that disqualify a station from it (`src/data/genres.ts`)
+  - music only: anything tagged news, talk, sport, religion, politics, comedy or podcast is
+    dropped, and religious stations are also caught by name
+  - broken, HLS-only, duplicate and sub-96k streams are dropped; results are ordered by votes,
+    then clicks. A station needs 20 votes (5 in small genres such as Post-rock and Synthwave)
+  - Arabic-language stations are excluded by the language field or an Arabic-script name
+  - the no-AI directory rules D1–D5 (Part 3.2) apply, and the denylist (§1.5)
+
+**Vocals** has no field in the directory, so it is inferred, most trusted first: marked by hand
+on a Pick; the station's own tags ("instrumental", "vocal"); the genre's default. Rows show an
+INST or VOX mark only when a Pick or its tags give one. A vocals filter was built and then
+removed at the maker's request.
+
+**Genres** come in four groups: Deep focus (Lofi, Ambient, Space / Drone, Classical, Solo
+piano, Film & game scores, Nature & soundscapes), Easy (Jazz, Bossa & latin jazz, Downtempo /
+Chillout, Acoustic & folk, Reggae & dub), Electronic (Deep house, Techno, Trance, Drum & bass,
+Synthwave, IDM / Electronica) and Band (Indie, Alternative rock, Rock, Post-rock, Metal, Blues,
+Soul & funk, Hip-hop). A genre with no Pick is hidden while the directory setting is off.
+
+**Browsing** lives in the sidebar: collapsible genre groups, then one genre's stations, with a
+search box that searches whatever is listed. Favorites sit above the genres and act as their
+own list. The last genre and station are remembered. When a station fails, the player moves to
+the next one in the list it came from, and gives up after five in a row.
+
+---
+
+# Part 3 — Station policy
+
+## 3.1 Terms: may a free player play this station?
+
+Per broadcaster, read on 2026-09-26 and re-read under the free-player reading on 2026-09-27.
+Task L1 confirms each row. Not legal advice.
+
+| Broadcaster | Picks | What their terms say | Under C4 | Source |
+|---|---|---|---|---|
+| SomaFM | 30 | Won't permit third-party clients or apps, "even noncommercial ones" | **Exclude everywhere** | [terms](https://somafm.com/contact/tos.html) |
+| Radio France (FIP) | 7 | "Strictly personal and private use"; reuse and brand use need written permission | **Ask first** | [terms](https://www.radiofrance.com/conditions-generales-dutilisation-des-sites-de-radio-france) |
+| KEXP | 1 | Publishes its stream URLs for use in third-party players (VLC and others); site terms are personal and non-commercial | **Keep** | [stream URLs](https://www.kexp.org/streaming-urls/) · [terms](https://kexp.org/terms-and-conditions/) |
+| Minnesota Public Radio (The Current) | 1 | No redistribution or rebroadcast; licensing case by case | **Ask first**; also fix the 404 URL | [permissions](https://www.mpr.org/permissions) |
+| laut.fm | 1 | No embedding on third-party websites | **Ask first** | [terms](https://laut.fm/pages/terms_and_conditions) |
+| Hotmix | 1 | Use within the household ("family circle"), i.e. personal listening | **Keep terms-wise**; hold for no-AI review | [terms](https://web.hotmixradio.com/fr/profile/terms-and-conditions) |
+| Zeno.fm (Box Lofi Radio) | 1 | Licences cover zeno.fm itself | **Exclude** (also failed R3) | [terms](https://zeno.fm/terms/) |
+| Radio Paradise | 3 | No published terms; historically welcomes developers | **Keep** | [Mozilla Hacks, 2013](https://hacks.mozilla.org/2013/10/building-a-firefoxos-app-for-my-favorite-internet-radio-station/) |
+| SRG SSR (Radio Swiss Jazz, Classic) | 2 | Publishes stream URLs for listeners to add to internet radios. Being sold: Digris runs both from July 2027 | **Keep**; re-check after the sale | [reception](https://www.radioswissjazz.ch/en/reception/internet) |
+| Nightwave Plaza | 1 | Public API, open-source official app, third-party clients exist | **Keep** | [app source](https://github.com/nightwaveplaza/plaza) |
+| WXPN | 1 | No terms of use published | **Keep** | [xpn.org](https://xpn.org/privacy-policy/) |
+| RauteMusik (0nlineradio, Epic Lounge) | 2 | Terms page timed out during the check | **Hold**: read terms, then no-AI review | [RauteMusik](https://en.wikipedia.org/wiki/RauteMusik.FM) |
+| Hunter.FM | 1 | Terms don't mention third-party use | **Hold** for no-AI review | [terms](https://hunter.fm/privacidade-e-termos/) |
+| CLIAMP Lofi | 1 | No information on operator or music source | **Hold**; likely fails R1 | [docs](https://github.com/bjarneo/cliamp/blob/main/docs/streaming.md) |
+| BGMVibes | 1 | Stream dead since 2026-09-26 | **Exclude** | — |
+
+**Services the app uses.** Radio Browser: directory data is public domain, and use in free and
+non-free software is explicitly allowed ([radio-browser.info](https://www.radio-browser.info/));
+each station's stream is still governed by that station. Apple's iTunes Search (album art):
+artwork may only be used to promote Apple's store, next to a store badge that links to the item
+([terms](https://performance-partners.apple.com/search-api)), hence C12.
+
+## 3.2 No AI music: the station rules
+
+Adopted 2026-09-18. Tunescape plays music made by people; these rules keep AI-generated music
+stations out of the catalog.
+
+### The principle
+
+**Nobody can reliably tell AI-generated music from a radio stream.** There is no detector
+accurate enough to act on. So the rules don't try to detect AI music. They check provenance:
+
+> **A station is allowed in because there is evidence that people choose and make its music.
+> It is never allowed in merely because there is no evidence against it.**
+
+Some genuine, anonymous stations will be left out. A smaller catalog that can be trusted is the
+goal. When in doubt, leave it out.
+
+### What counts as AI music
+
+**Not allowed:** recordings whose composition or performance is primarily produced by a
+generative model (Suno, Udio, Stable Audio, Mubert, AIVA, Boomy, Soundraw, Beatoven, Loudly,
+Endel and whatever comes next); stations that stream them as all or a substantial part of their
+programming; "infinite", "endless" or "generative" streams produced live by a model; stations
+whose credited artists don't exist outside the station.
+
+**Allowed:** human-made music that used machine learning as a tool (mastering, stem separation,
+pitch correction); human-made generative *art* music in the older sense (modular patches,
+Eno-style systems, live coding); **auto-DJ stations** sequencing human-made tracks, as long as
+R3 is met; AI-voiced idents, which are unwelcome but outside this policy.
+
+**The unit is the station, not the track.** A station is removed when AI music is what it is
+for, or when its operator stops caring about the difference.
+
+### Where the risk is
+
+| Risk | Genres |
+|---|---|
+| **High** | Lofi · Ambient · Space / Drone · Solo piano · Nature & soundscapes · Downtempo / Chillout · Synthwave |
+| **Medium** | Classical (public-domain works, synthetic performances) · Film & game scores · Deep house · Techno · Trance · IDM / Electronica |
+| **Lower** | Jazz · Bossa · Folk · Reggae · Indie · Alternative rock · Rock · Post-rock · Metal · Blues · Soul & funk · Hip-hop · Drum & bass |
+
+High-risk genres are the ones this app exists for, which is why the rules are stricter there
+instead of the genres being dropped.
+
+### Rules for Picks
+
+A station becomes a Pick only if **every** rule passes, and the result is written into the
+register (Part 4). One failure, or one "couldn't find out", means it isn't a Pick.
+
+- **R1. A named operator:** an identifiable organisation or person runs it (legal name,
+  non-profit, public broadcaster, named founder). *Check:* About or Imprint page; a registry.
+- **R2. Named people choose the music:** named DJs, directors, curators or hosts who can be found
+  elsewhere. *Check:* About, Shows or Team pages; search one of the names.
+- **R3. Not anonymous, even if automated:** auto-DJ passes only with R1 and R2. This rule removed
+  the original four Lofi Picks.
+- **R4. It predates the generators:** broadcasting before 1 January 2023. A newer station needs
+  stronger evidence on R2, R5 and R6, and the register must say why. *Check:* Internet Archive
+  first capture, domain age, social account age, press.
+- **R5. The artists exist:** take ten consecutive track titles from the stream; at least nine
+  artists must have a footprint predating the station (MusicBrainz, Discogs, Bandcamp). A station
+  sending no metadata passes only through published tracklists.
+- **R6. It says where its music comes from:** it pays performance royalties and says so, or is a
+  licensed public broadcaster, or plays credited releases from named labels. **Fail outright** on
+  "royalty-free", "copyright-free", "no copyright", "DMCA-free" or "stream-safe".
+- **R7. No AI claims, anywhere:** search its site and socials for AI, generated, generative, Suno,
+  Udio, Mubert, AIVA, Boomy, Soundraw, Endel, Stable Audio, neural. So is a network of dozens of
+  near-identical channels with no staff.
+- **R8. Hand-marked, dated, re-checked:** every Pick carries its check date and is re-checked
+  every six months, or at once after a change of ownership or format. One that can't be
+  re-verified is demoted.
+
+### Rules for directory stations
+
+Nobody looks at these, so the rules use only the directory's own fields. They exclude; they
+never vouch.
+
+- **D1. AI keywords** in name or tags, as whole words: ai, a.i., ai music, ai generated,
+  ai-generated, generated, generative, neural, suno, udio, mubert, aiva, boomy, soundraw,
+  beatoven, loudly, endel, stable audio, infinite, endless. `ai` must match as a whole word only.
+- **D2. Royalty-free keywords:** royalty free, royalty-free, copyright free, copyright-free,
+  no copyright, ncs, dmca free, dmca-free, stream safe, streamer safe, twitch safe.
+- **D3. A higher bar in high-risk genres:** a homepage on file that isn't a bare streaming-host
+  URL, and not a search-phrase name. (A 50-vote bar was designed but not adopted.)
+- **D4. The denylist:** see §1.5. Every entry carries a reason, a date and what was found.
+- **D5. Votes are a floor, not a proof:** the vote threshold removes test and abandoned streams;
+  it is never evidence of human music.
+- **D6. A runtime match-rate signal:** designed, parked. Only worth building if the directory
+  becomes the default.
+
+**Red flags** (two or more on an anonymous, high-risk station is enough to leave it out): no
+homepage, or a template with no people; a name that is a search phrase ("Lofi Beats to Study
+24/7"); no or generic track metadata ("Lofi Track 47"); artists that don't exist anywhere; every
+track credited to the station or one prolific "artist"; impossible output; a network of
+near-identical channels launched together; AI-generated cover art throughout; selling
+royalty-free packs or a generator; launched after 2023 with no people attached; a free streaming
+host with no site of its own plus any of the above.
+
+### When one gets through
+
+It will. **Review** the reported station under R1–R7 and record what was found. **Remove** it:
+add it to the denylist, and if it was a Pick, take it out of `stations.ts` and note the removal
+in the register's history. **Word it carefully:** unless a station says its music is
+AI-generated, the entry reads "excluded pending provenance: no named operator, artists not
+found", never "AI station". It's fairer, and the repo is public. **Reinstatement** means passing
+R1–R8 like any new Pick.
+
+### Changing these rules
+
+A rule is loosened only with a written reason here ("the genre looked empty" isn't one). A rule
+is tightened freely. Keyword lists grow as new tools appear. Any change to an automated rule is
+tested against the live directory first, with the numbers in the commit message.
+
+### What these rules can't do
+
+They can't detect AI music by listening. They can't vouch for every track on a human-curated
+station. They can't make the directory trustworthy, only less bad: **only Picks are vouched
+for**, and the interface should never imply otherwise. They depend on stations describing
+themselves truthfully. They will exclude some real, human, anonymous stations, deliberately.
+
+### What is enforced today
+
+| Rule | Status | Where |
+|---|---|---|
+| Picks only by default | **Broken**: forced on, setting unreachable. Task L4 | `useCatalog.ts`, `StationsTab.tsx` |
+| R3: anonymous auto-DJ stations aren't Picks | Built | the original Lofi four were demoted |
+| R1–R8 recorded per Pick | First pass for 7 broadcasters (Part 4); the Lofi Picks never reviewed | Part 4 |
+| R8: six-monthly re-check | Not done | no dates per Pick yet (terms record adds them) |
+| D1, D2 keyword exclusion | Built | `AI_BARE`, `AI_WORDING`, `AI_TAGS`, `ROYALTY_FREE_WORDING` in `genres.ts` |
+| D3 provenance check, high-risk genres | Built, lighter form | `lacksProvenance` in `radioBrowser.ts` |
+| D4 denylist | To build | Task L2 |
+| D5 vote floor (20, falling back to 5) | Built | `radioBrowser.ts` |
+| D6 match-rate signal, report action | Parked | — |
+
+---
+
+# Part 4 — The Picks register
+
+One row per broadcaster; a Pick's channels inherit their broadcaster's row. First review
+2026-09-18 by Claude from public sources and the stations' own track feeds, **not yet confirmed
+by a person**. "Not established" means the evidence couldn't be retrieved, not that it doesn't
+exist.
+
+| Broadcaster | R1 Operator | R2 Who programmes | R4 Since | R5 Artists exist | R6 Music source | R7 AI claims | Verdict |
+|---|---|---|---|---|---|---|---|
+| SomaFM | Pass: SomaFM.com, LLC; founder Rusty Hodge | Partly: "playlist curators" credited | Pass: Feb 2000 | Pass: 20 of 20 | Pass: pays SoundExchange royalties | None found | Passes the no-AI rules, but **excluded under C4** (terms) |
+| Radio Paradise | Pass: William and Rebecca Goldsmith | Pass: the founders | Pass: Feb 2000 | Pass: 12 of 12 | Pass: pays webcasting royalties | Not established (site script-rendered) | **Keep** |
+| FIP | Pass: Radio France | Pass: small team of curators | Pass: 1971 | Pass, narrowly: 8 of 9 | Pass: public broadcaster | None found | Passes; **ask first under C4** |
+| Radio Swiss Jazz / Classic | Pass: SRG SSR | Not established; in-house at a public broadcaster | Pass: 2002 | Pass: 10 of 10 (Jazz); Classic not sampled | Pass: public broadcaster | None found | **Keep** |
+| KEXP | Pass: Friends of KEXP, non-profit | Pass: named DJs | Pass: on air since 1972 | Pass: 12 of 12 | Pass: listener-supported licensed broadcaster | None found | **Keep** |
+| The Current | Pass: Minnesota Public Radio | Pass: named directors and hosts | Pass: 2005 | Pass: 10 of 10 | Pass: public radio | None found | Passes; **ask first under C4** |
+| WXPN | Pass: University of Pennsylvania | Pass: named hosts | Pass: on air since 1945 | Not sampled (playlist script-rendered) | Pass: non-commercial university station | None found | **Keep, R5 owed** |
+| Nightride FM | Fail: no operator named | Partly | Pass: 2019 | Pass: 10 of 10 | Not established | None found | Removed |
+
+**Still owed on the keepers:** confirm R2 for Radio Swiss, read Radio Paradise's site for R7,
+sample Radio Swiss Classic and WXPN for R5. **Not yet reviewed:** Nightwave Plaza and the Lofi
+holds (Hotmix, 0nlineradio, Epic Lounge, Hunter.FM, CLIAMP).
+
+**History**
+
+| Date | Station | Action | Reason |
+|---|---|---|---|
+| 2026-09-27 | SomaFM ×30, Box Lofi Radio, BGMVibes | To be removed (L2) | SomaFM's terms forbid third-party clients even when free; Box Lofi failed R3; BGMVibes is dead |
+| 2026-09-27 | FIP ×7, The Current, laut.fm Lofi | To be parked (L2) | Terms restrict reuse or brand use; asked for permission first |
+| 2026-09-24 | KEXP, The Current, WXPN | Added as Picks | Vetted for the new Alternative rock genre |
+| 2026-09-18 | Nightride FM, Chillsynth FM | Removed from Picks | Excluded pending provenance: no named operator (R1), licensing not stated (R6). Not a finding about its music |
+| 2026-09-18 | Lofi 24/7, Box Lofi Radio, MoE Lofi, LITT Live | Demoted from Picks | Anonymous auto-DJ streams; fail R3 |
+| 2026-08-26 | PAX LO-FI | Removed | Excluded pending provenance review; a precaution, not a finding |
+
+---
+
+# Part 5 — Accessibility
+
+The WCAG 2.1 AA audit found 20 issues; **all 20 are fixed** (one, disabled text selection, is kept
+by design), verified against `d9cda71`. The release audit's axe-core run found 0 violations on
+the main view and every Settings tab.
+
+Still to verify by hand, as part of S4: an NVDA pass (settings, failover announcements, the
+player bar, the pin buttons); Windows High Contrast, watching the visualizer; keyboard only, to
+check the sidebar isn't tedious to get past. 200% zoom is known to fail and is task B4.
+
+---
+
+# Part 6 — Known gaps
+
+- HLS-only streams are left out: the webview can't play them without a demuxer.
+- Picks aren't monitored between checks; R8 dates arrive with the terms record (L2).
+- Linux needs GStreamer plugins (`gstreamer1.0-libav`, `gstreamer1.0-plugins-bad`) for MP3/AAC
+  under WebKitGTK. Untested there.
+- Settings persist through `localStorage`; `tauri-plugin-store` is wired but unused.
+- The release audit's findings not yet fixed are the tasks in Phase 2.
+
+---
+
+# Part 7 — Parked research
+
+Kept in case Tunescape ever adds a "continuous music" mode. The full notes are on branch
+`mvp/audius` (`docs/EXECUTION.md` there).
+
+| Source | What it offers | Allowed in a paid app? |
+|---|---|---|
+| Audius | Open catalog and free API; audio plays without the proxy | Yes: Audius Open Music License (§1.2 grants music players a royalty-free licence; §1.5 requires credit and a link). Thin in quiet genres: only 17 of 26 genres reach 5 verified artists |
+| Free Music Archive | CC-BY and CC0 tracks, including Field Recordings and Brazilian | Yes for CC-BY/CC0, self-hosted only (no hotlinking) |
+| Musopen | Public-domain classical and piano | Per recording (CC0, CC BY-SA) |
+| Kevin MacLeod (incompetech) | Large CC BY 4.0 catalog | Yes, with the exact credit line |
+| National Park Service | Public-domain nature recordings | Yes |
+| Freesound | CC0 and CC-BY sounds | Yes if downloaded and self-hosted; its API is non-commercial |
+| OpenGameArt | Game music | Yes, with credit |
+| Cloudflare R2 | Hosting for self-hosted files | Free tier: 10 GB, no bandwidth charges |
+| Jamendo, Chillhop, Lofi Girl, Pixabay | — | No: non-commercial only, or no restreaming |
+
+---
+
+## Changelog
+
+- **2026-09-27** Consolidated: `docs/music-plan.md` (Part 2), `docs/no-ai-music.md` (Parts 3.2 and
+  4), the Music Rights and Accessibility pages (Parts 3.1 and 5) and the README's status and
+  known gaps (Part 6) now live here. Decisions renamed C1–C16 and release tasks S1–S5 so they
+  don't clash with the policy's R1–R8 and D1–D6. The audit prompt moved to git history.
+- **2026-09-27** Purpose confirmed as audience and a personal project (C15, C16).
 - **2026-09-27** Created. Tunescape becomes a free, open-source radio player (GPL-3.0). The paid,
   Audius-only plan is parked on `mvp/audius`.
