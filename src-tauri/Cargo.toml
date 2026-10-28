@@ -29,6 +29,11 @@ reqwest = { version = "0.12", features = ["stream"] }
 futures-util = "0.3"
 async-stream = "0.3"
 bytes = "1"
+# The per-session token that gates the proxy; see src/proxy.rs.
+getrandom = "0.3"
+# Parsing and judging upstream URLs before fetching them. reqwest re-exports
+# `Url` but not `Host`, which is the part the address checks match on.
+url = "2"
 # File picker for adding local audio.
 tauri-plugin-dialog = "2"
 

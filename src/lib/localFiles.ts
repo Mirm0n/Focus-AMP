@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 
 import type { Station } from "../data/stations";
-import { isTauri } from "./proxy";
+import { isTauri, type ProxyAccess } from "./proxy";
 
 /**
  * Your own audio files, played alongside the radio.
@@ -27,8 +27,9 @@ export function localPath(station: Station): string {
   return station.url.slice(LOCAL_PREFIX.length);
 }
 
-export function localUrl(port: number, path: string): string {
-  return `http://127.0.0.1:${port}/file?path=${encodeURIComponent(path)}`;
+export function localUrl({ port, token }: ProxyAccess, path: string): string {
+  const q = new URLSearchParams({ path, t: token });
+  return `http://127.0.0.1:${port}/file?${q}`;
 }
 
 function fileName(path: string): { name: string; ext: string } {
