@@ -2,6 +2,7 @@ import { ExternalLink } from "lucide-react";
 
 import { FieldGroup, Hint } from "./fields";
 import { MAKER, PROJECT, type Link } from "../../data/maker";
+import { openExternal as open } from "../../lib/openExternal";
 
 /**
  * About — what this is, who made it, and what it promises.
@@ -10,21 +11,6 @@ import { MAKER, PROJECT, type Link } from "../../data/maker";
  * anything blank is left out rather than shown empty, so an unfinished detail
  * never reaches a listener as a placeholder.
  */
-
-/**
- * Opens in the real browser. The webview must not navigate away from the app,
- * and `https` only: the capability allows opening a URL, and there is no
- * reason for this screen to hand the OS anything else.
- */
-async function open(url: string) {
-  if (!url.startsWith("https://")) return;
-  try {
-    const { openUrl } = await import("@tauri-apps/plugin-opener");
-    await openUrl(url);
-  } catch {
-    /* outside Tauri, or the user declined: nothing useful to say */
-  }
-}
 
 function LinkRow({ label, url, note }: Link) {
   return (
@@ -117,8 +103,11 @@ export function AboutTab() {
           to be removed is removed, without having to give a reason.
         </p>
         <Hint>
-          It has no account, no server of its own and no tracking. What it fetches, it fetches
-          for you: the stations you play, and the station directory.
+          It has no account, no server of its own and no tracking. What it fetches, it fetches for
+          you: the stations you play, the station directory when you turn it on, and Apple's
+          iTunes search for album art when you turn that on. Nothing else leaves the app, and the
+          fonts ship inside it, so with album art and the directory off it talks to nobody but
+          the station you are listening to.
         </Hint>
       </FieldGroup>
 
@@ -142,8 +131,10 @@ export function AboutTab() {
         <Hint>
           Station directory by Radio Browser. Picks come from SomaFM, Radio Paradise, FIP,
           Radio Swiss, KEXP, WXPN, The Current and others — each one theirs, and listed with
-          their own terms in mind. Typeset in Chivo and Chivo Mono. Built with Tauri, React and
-          Rust; every dependency and its licence is listed in THIRD-PARTY-NOTICES.md.
+          their own terms in mind. Typeset in Chivo and Chivo Mono by Omnibus-Type, bundled
+          under the SIL Open Font License 1.1. Album art and track links from Apple Music.
+          Built with Tauri, React and Rust; every dependency and its licence is listed in
+          THIRD-PARTY-NOTICES.md.
         </Hint>
       </FieldGroup>
     </div>

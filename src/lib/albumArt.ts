@@ -8,8 +8,13 @@
  * cover is worse than none: none reads as "this station has no art", wrong
  * reads as the app being broken.
  *
- * This sends each track title to Apple. It is a setting for that reason, and
- * nothing is sent when it is off.
+ * This sends each track title to Apple. It is a setting for that reason, it is
+ * off until somebody turns it on, and nothing is sent when it is off.
+ *
+ * Apple's terms for the Search API allow the artwork only as a way to promote
+ * their store, shown next to a link to the item itself. So a result is only
+ * usable when it carries both, and `findAlbumArt` returns the pair or nothing:
+ * a cover with nowhere to go is not something we are licensed to display.
  */
 
 const ENDPOINT = "https://itunes.apple.com/search";
@@ -60,13 +65,23 @@ interface Hit {
   artistName?: string;
   trackName?: string;
   artworkUrl100?: string;
+  trackViewUrl?: string;
+  collectionViewUrl?: string;
+}
+
+/** A cover and the store page it must link to. Never one without the other. */
+export interface AlbumArt {
+  /** The artwork, at 600×600. */
+  url: string;
+  /** The item's page on Apple Music, which the cover links to. */
+  link: string;
 }
 
 // Keyed by the raw title. null is remembered too: a track with no match is not
 // asked about again every time the stream repeats its metadata.
-const cache = new Map<string, string | null>();
+const cache = new Map<string, AlbumArt | null>();
 
-export async function findAlbumArt(title: string, signal?: AbortSignal): Promise<string | null> {
+export async function findAlbumArt(title: string, signal?: AbortSignal): Promise<AlbumArt | null> {
   if (cache.has(title)) return cache.get(title) ?? null;
 
   const parsed = parseTitle(title);
@@ -92,12 +107,17 @@ export async function findAlbumArt(title: string, signal?: AbortSignal): Promise
   const hit = (data.results ?? []).find(
     (r) =>
       r.artworkUrl100 &&
+      (r.trackViewUrl ?? r.collectionViewUrl) &&
       agrees(norm(core(r.artistName ?? "")), artist) &&
       agrees(norm(core(r.trackName ?? "")), track),
   );
 
   // The URL names its own size; ask for one that is sharp at 2x in a big slot.
-  const url = hit?.artworkUrl100?.replace(/\/\d+x\d+bb\./, "/600x600bb.") ?? null;
-  cache.set(title, url);
-  return url;
+  const url = hit?.artworkUrl100?.replace(/\/\d+x\d+bb\./, "/600x600bb.");
+  const link = hit?.trackViewUrl ?? hit?.collectionViewUrl;
+  // Both, or neither: the artwork is licensed only beside its store link, and
+  // `openExternal` will refuse anything that is not https in any case.
+  const found = url && link?.startsWith("https://") ? { url, link } : null;
+  cache.set(title, found);
+  return found;
 }

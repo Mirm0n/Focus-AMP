@@ -36,7 +36,8 @@ function load(): Stored {
     viz: DEFAULT_VIZ,
     options: DEFAULT_OPTIONS,
     layout: DEFAULT_LAYOUT,
-    albumArt: true,
+    // Off until asked for: turning it on sends every track title to Apple.
+    albumArt: false,
   };
   try {
     const raw = localStorage.getItem(STORAGE_KEY);

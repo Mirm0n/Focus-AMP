@@ -97,13 +97,15 @@ export function AppearanceTab({
       <FieldGroup title="Now playing">
         <Toggle
           name="Album art"
-          hint="Show the cover of the current track in the player bar"
+          hint="Show the cover of the current track in the player bar. Off by default: it contacts Apple"
           on={albumArt}
           onChange={setAlbumArt}
         />
         <Hint>
-          Covers are looked up by sending each track title to Apple's iTunes search. Only stations
-          that announce their tracks can have one, and a cover is shown only on a confident match.
+          Covers are looked up by sending each track title to Apple's iTunes search — the only
+          thing this app sends anywhere that is not a station or the directory. Only stations that
+          announce their tracks can have one, and a cover is shown only on a confident match. The
+          cover links to the track on Apple Music, which is the condition Apple puts on using it.
         </Hint>
       </FieldGroup>
 

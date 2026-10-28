@@ -398,7 +398,7 @@ export default function App() {
           title: nowPlaying ?? playing.name,
           artist: nowPlaying ? playing.name : playing.artist,
           album: "Focus AMP",
-          artwork: art ? [{ src: art, sizes: "600x600" }] : [],
+          artwork: art ? [{ src: art.url, sizes: "600x600" }] : [],
         })
       : null;
   }, [playing, nowPlaying, art]);
