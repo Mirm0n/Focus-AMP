@@ -16,6 +16,7 @@ import {
   type Vocals,
 } from "../data/genres";
 import { PICKS, type Station } from "../data/stations";
+import { isDenied } from "../data/denylist";
 
 /**
  * Radio Browser — the directory that fills each genre out behind its Picks.
@@ -244,9 +245,11 @@ function build(rows: Row[], genre: GenreDef, minVotes: number, taken: Set<string
     if (!url || !name || row.hls === 1 || row.votes < minVotes || tooThin(row)) continue;
     if (!recentlyAlive(row)) continue;
 
-    // Every SomaFM channel is already a Pick, under its own name; the
-    // directory lists each several times over on other relays.
-    if (/(^|\.)somafm\.com/i.test(urlKey(url).split("/")[0])) continue;
+    // A broadcaster who refuses third-party players, or who asked to be
+    // removed, must not reappear here just because the directory lists them.
+    // This used to skip SomaFM only, and for the opposite reason: they were
+    // Picks, and the directory repeats each channel across relays.
+    if (isDenied(url)) continue;
 
     const tags = tagsOf(row);
     if (tagged(tags, NOT_MUSIC) || RELIGIOUS_NAME.test(name)) continue;

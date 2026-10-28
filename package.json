@@ -6,12 +6,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "npm run check:stations && tsc --noEmit && vite build",
     "preview": "vite preview",
     "audit:themes": "node scripts/audit-themes.mjs",
     "audit:genres": "node scripts/audit-genres.mjs",
     "notices": "node scripts/third-party-notices.mjs",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "check:stations": "node scripts/check-stations.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.6",

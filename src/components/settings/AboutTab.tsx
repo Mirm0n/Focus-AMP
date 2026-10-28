@@ -75,6 +75,7 @@ export function AboutTab() {
     PROJECT.source && { label: "Source code", url: PROJECT.source, note: "GPL-3.0-or-later" },
     PROJECT.donate && { label: "Support Focus AMP", url: PROJECT.donate, note: "There is no paywall, and never will be" },
     PROJECT.removal && { label: "Request a station's removal", url: PROJECT.removal, note: "Broadcasters: no reason needed, acted on within 7 days" },
+    PROJECT.privacy && { label: "What this app sends, and where", url: PROJECT.privacy, note: "Nothing, unless you switch it on" },
   ].filter(Boolean) as Link[];
 
   return (
@@ -129,11 +130,12 @@ export function AboutTab() {
 
       <FieldGroup title="Credits">
         <Hint>
-          Station directory by Radio Browser. Picks come from SomaFM, Radio Paradise, FIP,
-          Radio Swiss, KEXP, WXPN, The Current and others — each one theirs, and listed with
-          their own terms in mind. Typeset in Chivo and Chivo Mono by Omnibus-Type, bundled
-          under the SIL Open Font License 1.1. Album art and track links from Apple Music.
-          Built with Tauri, React and Rust; every dependency and its licence is listed in
+          Station directory by Radio Browser. Picks come from WFMU, Radio Paradise, KEXP,
+          WXPN, Radio Swiss, The Classical Station, Stereoscenic, Bassdrive and Nightwave
+          Plaza — each one theirs, listed because their own terms allow a player like this
+          one. Typeset in Chivo and Chivo Mono by Omnibus-Type, bundled under the SIL Open
+          Font License 1.1. Album art and track links from Apple Music. Built with Tauri,
+          React and Rust; every dependency and its licence is listed in
           THIRD-PARTY-NOTICES.md.
         </Hint>
       </FieldGroup>

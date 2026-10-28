@@ -75,14 +75,24 @@ A manual click on a dimmed station gives it another chance.
 Focus AMP is a focus-music app that plays music made by people. The catalog is **Picks and
 nothing else**: stations chosen by hand, from broadcasters with named people behind them. The
 sidebar lists the genres that have Picks; opening one lists its stations. A search
-box sits above both levels. A genre with no Picks yet (Solo piano, Nature, Blues) is not shown.
+box sits above both levels. A genre with no Picks yet is not shown at all.
+
+**The catalog is small, and that is the point.** It carried 56 Picks until the broadcasters'
+own terms were read properly; 33 of those had to go, 30 of them SomaFM, whose terms refuse
+third-party clients "even noncommercial ones". Fourteen more are parked pending permission or
+a provenance review. What is left is 18 Picks across 12 genres, every one of which carries a
+`terms` record saying where somebody read that we may play it, and on what date. `npm run
+check:stations` refuses to build a catalog where that is not true, and the broadcasters who
+said no are on a denylist that the directory, favourites and the last-played station are all
+filtered through — so a no stays a no by every route. Filling the empty genres back up
+honestly is the open work (task L3).
 
 That default is the whole of the app's protection against AI-generated music stations, and it
 is deliberate: nothing reaches the list by itself, so nothing unvetted can. The rules for what
 may become a Pick, and which stations may appear at all, are in
 [docs/EXECUTION.md](docs/EXECUTION.md) Part 3.
 
-**Show community directory** (off by default; being restored, task L4) fills each genre out from
+**Show community directory** (off by default) fills each genre out from
 the community directory and brings back the genres with no Picks. A genre holding both then
 splits under two headings, Picks and Community directory, so the two can be told apart. Search, favorites and the remembered last station all
 follow the same setting: with it off they see Picks only, and a directory station starred
@@ -91,8 +101,9 @@ earlier is kept but not listed until it is turned back on.
 With that setting on, a genre is filled from two sources, merged into one list:
 
 - **Picks** (`src/data/stations.ts`) are hand-chosen from broadcasters with named human
-  programmers — SomaFM, Radio Paradise, FIP, Radio Swiss — and marked by hand as
-  instrumental, mixed or vocal. They come first, under their own heading, and need no network.
+  programmers — WFMU, Radio Paradise, KEXP, WXPN, Radio Swiss, WCPE, Stereoscenic, Bassdrive,
+  Nightwave Plaza — and marked by hand as instrumental, mixed or vocal. They come first, under
+  their own heading, and need no network.
 - **The directory** is [Radio Browser](https://www.radio-browser.info), which fills a genre out
   to about sixty stations. A genre is a *set of tags we define* (`src/data/genres.ts`), because
   the directory's tags are free text: "lofi", "lo-fi", "lo fi" and "chillhop" are four

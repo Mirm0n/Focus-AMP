@@ -1,0 +1,48 @@
+## Dependency updates, grouped so they arrive as a few readable pull requests
+## rather than thirty.
+##
+## Monthly, not weekly: this is a desktop app with a small maintainer, and a
+## stream of patch bumps nobody reads is worse than none at all. Security
+## updates are not held to this schedule — GitHub opens those immediately.
+
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    groups:
+      # These move together and breaking one breaks the others.
+      tauri:
+        patterns: ["@tauri-apps/*"]
+      react:
+        patterns: ["react", "react-dom", "@types/react", "@types/react-dom"]
+      radix:
+        patterns: ["@radix-ui/*"]
+      build-tooling:
+        patterns: ["vite", "@vitejs/*", "typescript", "tailwindcss", "@tailwindcss/*"]
+      everything-else:
+        patterns: ["*"]
+        exclude-patterns: ["@tauri-apps/*", "react", "react-dom", "@radix-ui/*", "vite", "@vitejs/*"]
+
+  - package-ecosystem: cargo
+    directory: "/src-tauri"
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    groups:
+      # The npm and crate halves of Tauri have to stay on the same minor
+      # version or the dev command refuses to start, so these are reviewed
+      # together with the npm `tauri` group above.
+      tauri:
+        patterns: ["tauri", "tauri-*"]
+      everything-else:
+        patterns: ["*"]
+        exclude-patterns: ["tauri", "tauri-*"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly

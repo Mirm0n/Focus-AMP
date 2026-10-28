@@ -3,26 +3,56 @@
  *
  * The directory (see `lib/radioBrowser.ts`) fills every genre out to dozens of
  * stations, but nobody vouches for those. These are the ones somebody does:
- * each comes from a broadcaster with named human programmers and a long record
- * — SomaFM, Radio Paradise, FIP (Radio France), Radio Swiss, KEXP, The
- * Current (MPR), WXPN — and
+ * each comes from a broadcaster whose terms allow a player like this one, with
+ * named human programmers and a record you can check — WFMU, Radio Paradise,
+ * KEXP, WXPN, SRG SSR, WCPE, Stereoscenic, Bassdrive, Nightwave Plaza — and
  * each is marked by hand as instrumental, mixed or vocal, which is the only
  * reliable source of that fact anywhere in the app.
  *
- * Every URL below answered with audio on 2026-09-18. None is monitored after
- * that: the player checks a station as it plays (see `useRadioPlayer`) and
- * moves down the list by itself when one fails, so a stale entry costs a few
- * seconds rather than a broken app.
+ * Every URL below answered with audio on 2026-10-29, and every `terms` record
+ * was read on the date it carries. None is monitored after that: the player
+ * checks a station as it plays (see `useRadioPlayer`) and moves down the list
+ * by itself when one fails, so a stale entry costs a few seconds rather than a
+ * broken app.
  *
  * The rules a station must pass to be added here are in docs/EXECUTION.md,
  * §3.2 ("Rules for Picks"). Record the result in its register (Part 4).
  *
+ * # Why this list is shorter than it was
+ *
+ * It used to carry 56 Picks, 30 of them SomaFM. SomaFM's terms refuse
+ * third-party clients "even noncommercial ones", so all 30 had to go, along
+ * with everything else Part 3.1 marked Exclude. Radio France, MPR and laut.fm
+ * are parked pending permission (task L6/U3), and four lofi streams are parked
+ * pending the no-AI review under R1–R8. What is left is small and clean, and
+ * the genres with nothing in them are simply not offered until the community
+ * directory is switched on. Filling them back up honestly is task L3.
+ *
  * Anonymous auto-DJ streams are deliberately not Picks, however good they
- * sound — they are the hardest category to verify for provenance. The Lofi
- * genre is mostly that kind of station, which is why its Picks are thin.
+ * sound — they are the hardest category to verify for provenance, and that is
+ * exactly where AI-generated music collects.
  */
 
 import type { Vocals } from "./genres";
+
+/**
+ * Why we believe we may play this station, and when somebody last checked.
+ *
+ * `check:stations` refuses a build where a Pick has no record, so this cannot
+ * quietly rot: adding a station means reading its terms.
+ *
+ * - `allows-players` — they publish stream URLs for other players, or say so.
+ * - `silent` — no published terms either way. The weakest footing we accept.
+ * - `permission` — they told us yes directly; `source` is the saved email.
+ */
+export interface StationTerms {
+  status: "allows-players" | "silent" | "permission";
+  /** The terms page, stream-URL page, or saved permission. */
+  source: string;
+  /** ISO date a person read it. */
+  checked: string;
+  note?: string;
+}
 
 export interface Station {
   name: string;
@@ -39,111 +69,298 @@ export interface Station {
   vocalsFrom: "hand" | "tags" | "genre";
   /** Hand-chosen. Shown first in its genre, with a badge. */
   pick?: boolean;
+  /** Required on a Pick. Absent on anything the directory supplied. */
+  terms?: StationTerms;
+  /** The station's own page, for the "Visit station" link. */
+  home?: string;
 }
 
-const soma = (id: string) => `https://ice1.somafm.com/${id}-128-mp3`;
-const fip = (id: string) => `https://icecast.radiofrance.fr/${id}-midfi.mp3`;
-
-function pick(name: string, artist: string, url: string, vocals: Vocals): Station {
-  return { name, artist, url, vocals, vocalsFrom: "hand", pick: true };
+function pick(
+  name: string,
+  artist: string,
+  url: string,
+  vocals: Vocals,
+  terms: StationTerms,
+  home: string,
+): Station {
+  return { name, artist, url, vocals, vocalsFrom: "hand", pick: true, terms, home };
 }
 
+// ── Terms records, one per broadcaster ──────────────────────────────────────
+// Shared by that broadcaster's stations so a re-reading updates them together.
+
+const WFMU_TERMS: StationTerms = {
+  status: "allows-players",
+  source: "https://wfmu.org/mobile.shtml",
+  checked: "2026-10-29",
+  note:
+    "“Here is a list of direct urls for our streams which you can use in whatever " +
+    "mobile streaming client you may be using.” Listener-supported, freeform, on air " +
+    "since 1958 and independent since 1994.",
+};
+
+const RADIO_PARADISE_TERMS: StationTerms = {
+  status: "silent",
+  source: "https://hacks.mozilla.org/2013/10/building-a-firefoxos-app-for-my-favorite-internet-radio-station/",
+  checked: "2026-09-27",
+  note:
+    "No published terms either way. Historically welcomes developers — Mozilla documented " +
+    "building a third-party player for it with the station's cooperation. Listener-supported, " +
+    "hand-mixed by Bill Goldsmith.",
+};
+
+const SRG_SSR_TERMS: StationTerms = {
+  status: "allows-players",
+  source: "https://www.radioswissjazz.ch/en/reception/internet",
+  checked: "2026-09-27",
+  note:
+    "Publishes its stream URLs so listeners can add the stations to internet radios. Swiss " +
+    "public broadcaster. Re-check after July 2027: Digris takes over operation of these.",
+};
+
+const KEXP_TERMS: StationTerms = {
+  status: "allows-players",
+  source: "https://www.kexp.org/streaming-urls/",
+  checked: "2026-09-24",
+  note:
+    "Publishes stream URLs for use in third-party players, VLC among them. Non-profit, " +
+    "listener-supported, DJ-programmed, on air since 1972.",
+};
+
+const WXPN_TERMS: StationTerms = {
+  status: "silent",
+  source: "https://xpn.org/privacy-policy/",
+  checked: "2026-09-24",
+  note: "No terms of use published. Public radio from the University of Pennsylvania.",
+};
+
+const WCPE_TERMS: StationTerms = {
+  status: "allows-players",
+  source: "https://theclassicalstation.org/listen/",
+  checked: "2026-10-29",
+  note:
+    "“Copy/paste one of the following stream links into your Windows Media player, VLC " +
+    "or Winamp player.” Listener-supported non-commercial classical broadcaster, on air " +
+    "since 1978.",
+};
+
+const STEREOSCENIC_TERMS: StationTerms = {
+  status: "allows-players",
+  source: "https://www.ambientsleepingpill.com/",
+  checked: "2026-10-29",
+  note:
+    "“These are the links for adding directly to Winamp and other players.” Run by " +
+    "Andrew J Klimek since 2013; much of what it plays is his own and his label's, which is " +
+    "about as direct an answer to R1 as a station can give.",
+};
+
+const NIGHTWAVE_PLAZA_TERMS: StationTerms = {
+  status: "allows-players",
+  source: "https://github.com/nightwaveplaza/plaza",
+  checked: "2026-09-27",
+  note: "Public API and an open-source official client; third-party clients exist and are not discouraged.",
+};
+
+const BASSDRIVE_TERMS: StationTerms = {
+  status: "silent",
+  source: "https://www.bassdrive.com/",
+  checked: "2026-10-29",
+  note:
+    "Publishes .m3u tune-in links and says nothing about third-party players either way. " +
+    "Its footer states: “All music played on Bassdrive is directly licensed by the " +
+    "composers and sound recording copyright owners.” On air since 1999, with named DJs.",
+};
+
+// ── The stations ────────────────────────────────────────────────────────────
 // A station may sit in more than one genre; it is defined once and shared.
-const GROOVE_SALAD = pick("Groove Salad", "SomaFM · Ambient downtempo", soma("groovesalad"), "instrumental");
-const GROOVE_SALAD_CLASSIC = pick("Groove Salad Classic", "SomaFM · Early-2000s downtempo", soma("gsclassic"), "instrumental");
-const DRONE_ZONE = pick("Drone Zone", "SomaFM · Atmospheric ambient", soma("dronezone"), "instrumental");
-const DEEP_SPACE_ONE = pick("Deep Space One", "SomaFM · Deep ambient", soma("deepspaceone"), "instrumental");
-const SPACE_STATION = pick("Space Station Soma", "SomaFM · Spaced-out electronica", soma("spacestation"), "instrumental");
-const SYNPHAERA = pick("Synphaera", "SomaFM · Modern space ambient", soma("synphaera"), "instrumental");
-const MISSION_CONTROL = pick("Mission Control", "SomaFM · Ambient with NASA audio", soma("missioncontrol"), "mixed");
-const DARK_ZONE = pick("The Dark Zone", "SomaFM · Dark ambient", soma("darkzone"), "instrumental");
-const N5MD = pick("n5MD Radio", "SomaFM · Post-rock and ambient", soma("n5md"), "instrumental");
-const FLUID = pick("Fluid", "SomaFM · Instrumental hip-hop and future soul", soma("fluid"), "instrumental");
-const CLIQHOP = pick("cliqhop idm", "SomaFM · Blips and beeps", soma("cliqhop"), "instrumental");
-const DIGITALIS = pick("Digitalis", "SomaFM · Analog-tinged indie electronica", soma("digitalis"), "mixed");
-const LUSH = pick("Lush", "SomaFM · Female vocals, electronic", soma("lush"), "vocal");
-const SECRET_AGENT = pick("Secret Agent", "SomaFM · Spy-film lounge", soma("secretagent"), "mixed");
-const ILL_STREET = pick("Illinois Street Lounge", "SomaFM · Vintage lounge and exotica", soma("illstreet"), "mixed");
-const BEAT_BLENDER = pick("Beat Blender", "SomaFM · Late-night deep house", soma("beatblender"), "mixed");
-const THE_TRIP = pick("The Trip", "SomaFM · Progressive house and trance", soma("thetrip"), "mixed");
-const SUBURBS_OF_GOA = pick("Suburbs of Goa", "SomaFM · Desi-influenced beats", soma("suburbsofgoa"), "mixed");
-const DEFCON = pick("DEF CON Radio", "SomaFM · Music for hacking", soma("defcon"), "instrumental");
-const VAPORWAVES = pick("Vaporwaves", "SomaFM · Vaporwave", soma("vaporwaves"), "mixed");
-const SONIC_UNIVERSE = pick("Sonic Universe", "SomaFM · Avant-garde jazz", soma("sonicuniverse"), "instrumental");
-const BOSSA_BEYOND = pick("Bossa Beyond", "SomaFM · Brazilian bossa and samba", soma("bossa"), "vocal");
-const FOLK_FORWARD = pick("Folk Forward", "SomaFM · Indie and alt folk", soma("folkfwd"), "vocal");
-const THISTLE = pick("ThistleRadio", "SomaFM · Celtic roots", soma("thistle"), "vocal");
-const BOOT_LIQUOR = pick("Boot Liquor", "SomaFM · Americana", soma("bootliquor"), "vocal");
-const HEAVYWEIGHT_REGGAE = pick("Heavyweight Reggae", "SomaFM · Roots, dub and ska", soma("reggae"), "vocal");
-const INDIE_POP_ROCKS = pick("Indie Pop Rocks!", "SomaFM · Indie pop", soma("indiepop"), "vocal");
-const POPTRON = pick("PopTron", "SomaFM · Electropop and indie dance", soma("poptron"), "vocal");
-const SEVEN_INCH_SOUL = pick("Seven Inch Soul", "SomaFM · Vintage soul 45s", soma("7soul"), "vocal");
-const METAL_DETECTOR = pick("Metal Detector", "SomaFM · Metal", soma("metal"), "vocal");
 
-const RP_MELLOW = pick("Radio Paradise Mellow", "Radio Paradise · Hand-mixed, gentle", "https://stream.radioparadise.com/mellow-128", "vocal");
-const RP_ROCK = pick("Radio Paradise Rock", "Radio Paradise · Hand-mixed rock", "https://stream.radioparadise.com/rock-128", "vocal");
-const RP_MAIN = pick("Radio Paradise", "Radio Paradise · Eclectic, hand-mixed", "https://stream.radioparadise.com/mp3-128", "vocal");
+const WFMU_FREEFORM = pick(
+  "WFMU",
+  "Listener-supported freeform, New Jersey",
+  "http://stream0.wfmu.org/freeform-128k.mp3",
+  "vocal",
+  WFMU_TERMS,
+  "https://wfmu.org/",
+);
+const WFMU_ROCKNSOUL = pick(
+  "WFMU Rock'n'Soul Radio",
+  "WFMU · Vintage rock and soul 45s",
+  "http://stream0.wfmu.org/rocknsoul",
+  "vocal",
+  WFMU_TERMS,
+  "https://wfmu.org/",
+);
+const WFMU_DRUMMER = pick(
+  "Give the Drummer Radio",
+  "WFMU · Global and outsider sounds",
+  "http://stream0.wfmu.org/drummer",
+  "mixed",
+  WFMU_TERMS,
+  "https://wfmu.org/",
+);
+const WFMU_SHEENA = pick(
+  "Sheena's Jungle Room",
+  "WFMU · Garage, surf and rock'n'roll",
+  "http://stream0.wfmu.org/sheena",
+  "vocal",
+  WFMU_TERMS,
+  "https://wfmu.org/",
+);
 
-const FIP_JAZZ = pick("FIP Jazz", "Radio France · Jazz", fip("fipjazz"), "mixed");
-const FIP_ELECTRO = pick("FIP Electro", "Radio France · Electronic", fip("fipelectro"), "mixed");
-const FIP_ROCK = pick("FIP Rock", "Radio France · Rock", fip("fiprock"), "vocal");
-const FIP_GROOVE = pick("FIP Groove", "Radio France · Soul, funk and hip-hop", fip("fipgroove"), "vocal");
-const FIP_REGGAE = pick("FIP Reggae", "Radio France · Reggae", fip("fipreggae"), "vocal");
-const FIP_HIPHOP = pick("FIP Hip-Hop", "Radio France · Hip-hop", fip("fiphiphop"), "vocal");
-const FIP_METAL = pick("FIP Metal", "Radio France · Metal", fip("fipmetal"), "vocal");
+const RP_MAIN = pick(
+  "Radio Paradise",
+  "Radio Paradise · Eclectic, hand-mixed",
+  "https://stream.radioparadise.com/mp3-128",
+  "vocal",
+  RADIO_PARADISE_TERMS,
+  "https://radioparadise.com/",
+);
+const RP_MELLOW = pick(
+  "Radio Paradise Mellow",
+  "Radio Paradise · Hand-mixed, gentle",
+  "https://stream.radioparadise.com/mellow-128",
+  "vocal",
+  RADIO_PARADISE_TERMS,
+  "https://radioparadise.com/",
+);
+const RP_ROCK = pick(
+  "Radio Paradise Rock",
+  "Radio Paradise · Hand-mixed rock",
+  "https://stream.radioparadise.com/rock-128",
+  "vocal",
+  RADIO_PARADISE_TERMS,
+  "https://radioparadise.com/",
+);
 
-const SWISS_JAZZ = pick("Radio Swiss Jazz", "SRG SSR · Jazz, no talk", "https://stream.srg-ssr.ch/m/rsj/mp3_128", "mixed");
-const SWISS_CLASSIC = pick("Radio Swiss Classic", "SRG SSR · Classical, no talk", "https://stream.srg-ssr.ch/m/rsc_de/mp3_128", "instrumental");
+const SWISS_JAZZ = pick(
+  "Radio Swiss Jazz",
+  "SRG SSR · Jazz, no talk",
+  "https://stream.srg-ssr.ch/m/rsj/mp3_128",
+  "mixed",
+  SRG_SSR_TERMS,
+  "https://www.radioswissjazz.ch/",
+);
+const SWISS_CLASSIC = pick(
+  "Radio Swiss Classic",
+  "SRG SSR · Classical, no talk",
+  "https://stream.srg-ssr.ch/m/rsc_de/mp3_128",
+  "instrumental",
+  SRG_SSR_TERMS,
+  "https://www.radioswissclassic.ch/",
+);
+const SWISS_POP = pick(
+  "Radio Swiss Pop",
+  "SRG SSR · Pop and indie, no talk",
+  "https://stream.srg-ssr.ch/srgssr/rsp/mp3/128",
+  "vocal",
+  SRG_SSR_TERMS,
+  "https://www.radioswisspop.ch/",
+);
 
-const LOFI_1 = pick("Nightwave Plaza", "Lofi / Synthwave", "https://radio.plaza.one/ogg", "instrumental");
-const LOFI_2 = pick("Laut.fm Lofi", "Lofi Beats", "https://stream.laut.fm/lofi", "instrumental");
-const LOFI_3 = pick("0nlineradio LO-FI", "Lofi Hip Hop", "https://stream.0nlineradio.com/lo-fi", "instrumental");
-const LOFI_5 = pick("CLIAMP Lofi", "Lofi Hip Hop", "https://radio.cliamp.stream/lofi/stream", "instrumental");
-const LOFI_6 = pick("Epic Lounge", "Workday Lounge", "https://stream.epic-lounge.com/workday-lounge", "instrumental");
-const LOFI_8 = pick("Hotmix Lo-Fi", "Lofi & Chill", "https://streaming.hotmixradio.com/hotmix-lofi-en-mp3", "instrumental");
-const LOFI_9 = pick("Hunter.FM Lo-Fi", "Lofi Beats", "https://live.hunter.fm/lofi_normal", "instrumental");
+const KEXP = pick(
+  "KEXP",
+  "Friends of KEXP · Seattle, DJ-picked",
+  "https://kexp-mp3-128.streamguys1.com/kexp128.mp3",
+  "vocal",
+  KEXP_TERMS,
+  "https://www.kexp.org/",
+);
+const WXPN = pick(
+  "WXPN",
+  "University of Pennsylvania · Adult alternative",
+  "https://wxpnhi.xpn.org/xpnhi",
+  "vocal",
+  WXPN_TERMS,
+  "https://xpn.org/",
+);
+const WCPE = pick(
+  "The Classical Station",
+  "WCPE · Listener-supported classical",
+  "http://playerservices.streamtheworld.com/api/livestream-redirect/WCPE_FM.mp3",
+  "instrumental",
+  WCPE_TERMS,
+  "https://theclassicalstation.org/",
+);
 
-// Nightride FM (nightride.mp3, chillsynth.mp3) was removed from the Picks on
-// 2026-09-18: excluded pending provenance. Its own site names no operator and
-// states no licensing, which fails rules R1 and R6 of docs/EXECUTION.md §3.2. That
-// is a gap in what could be established, not a finding about its music: the
-// ten artists sampled were all real, and it has broadcast since 2019. See the
-// register in that file for what would reinstate it.
+const ASP = pick(
+  "Ambient Sleeping Pill",
+  "Stereoscenic · Beatless ambient",
+  "http://radio.stereoscenic.com/asp-s",
+  "instrumental",
+  STEREOSCENIC_TERMS,
+  "https://www.ambientsleepingpill.com/",
+);
+const AM_AMBIENT = pick(
+  "a.m. ambient",
+  "Stereoscenic · Brighter daytime ambient",
+  "http://radio.stereoscenic.com/ama-s",
+  "instrumental",
+  STEREOSCENIC_TERMS,
+  "https://amambient.com/",
+);
+const AMBIENT_MODERN = pick(
+  "Ambient Modern",
+  "Stereoscenic · Contemporary ambient",
+  "http://radio.stereoscenic.com/mod-s",
+  "instrumental",
+  STEREOSCENIC_TERMS,
+  "https://ambientmodern.com/",
+);
 
-// Public and university stations whose whole point is alternative rock. All
-// three were checked on 2026-09-24; see the register in docs/EXECUTION.md Part 4.
-const KEXP = pick("KEXP", "Friends of KEXP · Seattle, DJ-picked", "https://kexp-mp3-128.streamguys1.com/kexp128.mp3", "vocal");
-const THE_CURRENT = pick("The Current", "Minnesota Public Radio · Alternative", "https://current.stream.publicradio.org/kcmp.aac", "vocal");
-const WXPN = pick("WXPN", "University of Pennsylvania · Adult alternative", "https://wxpnhi.xpn.org/xpnhi", "vocal");
+const NIGHTWAVE_PLAZA = pick(
+  "Nightwave Plaza",
+  "Vaporwave and mallsoft",
+  "https://radio.plaza.one/ogg",
+  "instrumental",
+  NIGHTWAVE_PLAZA_TERMS,
+  "https://plaza.one/",
+);
 
-/** Picks by genre id. A genre with none is filled entirely from the directory. */
+const BASSDRIVE = pick(
+  "Bassdrive",
+  "Drum & bass, DJ-programmed",
+  "http://ice.bassdrive.net/stream",
+  "mixed",
+  BASSDRIVE_TERMS,
+  "https://www.bassdrive.com/",
+);
+
+/**
+ * Picks by genre id. A genre with none is filled entirely from the directory,
+ * and is not offered at all until that setting is on.
+ *
+ * Fourteen genres are empty after the Part 3.1 verdicts were applied. That is
+ * task L3, and the gap is recorded rather than papered over: putting a station
+ * in a genre it does not belong to would make the list longer and the app
+ * worse.
+ */
 export const PICKS: Record<string, Station[]> = {
-  lofi: [LOFI_1, LOFI_2, LOFI_3, LOFI_5, LOFI_6, LOFI_8, LOFI_9],
-  ambient: [GROOVE_SALAD, DRONE_ZONE, GROOVE_SALAD_CLASSIC],
-  space: [DEEP_SPACE_ONE, SYNPHAERA, SPACE_STATION, MISSION_CONTROL, DARK_ZONE],
-  classical: [SWISS_CLASSIC],
+  lofi: [NIGHTWAVE_PLAZA],
+  ambient: [ASP, AM_AMBIENT, AMBIENT_MODERN],
+  space: [],
+  classical: [SWISS_CLASSIC, WCPE],
   piano: [],
   scores: [],
   nature: [],
-  jazz: [SWISS_JAZZ, FIP_JAZZ, SONIC_UNIVERSE],
-  bossa: [BOSSA_BEYOND],
-  chillout: [GROOVE_SALAD, SECRET_AGENT, ILL_STREET, LUSH, RP_MELLOW],
-  folk: [FOLK_FORWARD, BOOT_LIQUOR, THISTLE],
-  reggae: [HEAVYWEIGHT_REGGAE, FIP_REGGAE],
-  house: [BEAT_BLENDER, THE_TRIP],
-  techno: [DEFCON, FIP_ELECTRO],
-  trance: [THE_TRIP, SUBURBS_OF_GOA],
-  dnb: [],
-  synthwave: [VAPORWAVES],
-  idm: [CLIQHOP, DIGITALIS, SPACE_STATION],
-  altrock: [KEXP, THE_CURRENT, WXPN],
-  indie: [INDIE_POP_ROCKS, POPTRON, RP_MAIN, KEXP],
-  rock: [RP_ROCK, FIP_ROCK],
-  postrock: [N5MD],
-  metal: [METAL_DETECTOR, FIP_METAL],
+  jazz: [SWISS_JAZZ],
+  bossa: [],
+  chillout: [RP_MELLOW, AM_AMBIENT],
+  folk: [WFMU_DRUMMER],
+  reggae: [],
+  house: [],
+  techno: [],
+  trance: [],
+  dnb: [BASSDRIVE],
+  synthwave: [NIGHTWAVE_PLAZA],
+  idm: [],
+  altrock: [KEXP, WXPN],
+  indie: [RP_MAIN, KEXP, SWISS_POP, WFMU_FREEFORM],
+  rock: [RP_ROCK, WFMU_SHEENA, WFMU_ROCKNSOUL],
+  postrock: [],
+  metal: [],
   blues: [],
-  soul: [SEVEN_INCH_SOUL, FIP_GROOVE],
-  hiphop: [FIP_HIPHOP, FLUID],
+  soul: [WFMU_ROCKNSOUL],
+  hiphop: [],
 };
 
 const PICK_URLS = new Set(Object.values(PICKS).flatMap((list) => list.map((s) => s.url)));
@@ -157,6 +374,15 @@ export function isPick(station: { url: string }): boolean {
   return PICK_URLS.has(station.url);
 }
 
+/** Every Pick, deduplicated. Used by `check:stations` and the audit scripts. */
+export function allPicks(): Station[] {
+  const seen = new Map<string, Station>();
+  for (const list of Object.values(PICKS)) {
+    for (const s of list) if (!seen.has(s.url)) seen.set(s.url, s);
+  }
+  return [...seen.values()];
+}
+
 /** What is selected on a first launch, and the genre it is queued from. */
 export const DEFAULT_GENRE = "ambient";
-export const DEFAULT_STATION = GROOVE_SALAD;
+export const DEFAULT_STATION = ASP;

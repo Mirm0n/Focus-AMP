@@ -1,0 +1,69 @@
+## Builds the Windows installers for a version tag and puts them on a draft
+## GitHub release.
+##
+## Draft, not published: 1.0 is meant to be signed through the SignPath
+## Foundation (task S5), and until that is in place somebody should look at
+## what came out and write the release notes before anyone downloads it. The
+## beta (S3) ships unsigned and says so.
+##
+##   git tag v0.9.0 && git push origin v0.9.0
+##
+## Windows will warn about an unsigned installer. That is expected until
+## signing is approved, and the release notes should say so plainly rather than
+## leaving someone to wonder whether the download is safe.
+
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    name: Windows installers
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: npm ci
+
+      # Fails the release rather than shipping a catalog that cannot account
+      # for itself. Same gate as CI, stated here so it cannot be skipped by
+      # tagging a commit that never ran CI.
+      - name: Check the catalog
+        run: npm run check:stations
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: Focus AMP ${{ github.ref_name }}
+          releaseDraft: true
+          prerelease: false
+          releaseBody: |
+            Windows installers are attached below.
+
+            This build is **not code-signed**, so Windows SmartScreen will warn
+            you: choose "More info" then "Run anyway". Signing is waiting on an
+            application to the SignPath Foundation.
+
+            Focus AMP is free software under GPL-3.0-or-later. It has no
+            account, no telemetry, and contacts nothing but the station you are
+            listening to unless you turn on the community directory or album
+            art.

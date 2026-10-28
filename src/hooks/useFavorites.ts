@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { Station } from "../data/stations";
+import { isDenied } from "../data/denylist";
 
 /**
  * Starred stations.
@@ -17,9 +18,11 @@ function load(): Station[] {
   try {
     const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]");
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (s): s is Station => !!s && typeof s.name === "string" && typeof s.url === "string",
-    );
+    return parsed
+      .filter((s): s is Station => !!s && typeof s.name === "string" && typeof s.url === "string")
+      // A broadcaster who refuses players, or who asked to be removed, does not
+      // keep playing just because somebody starred them before that was known.
+      .filter((s) => !isDenied(s.url));
   } catch {
     return [];
   }
