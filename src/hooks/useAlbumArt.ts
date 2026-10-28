@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 
-import { findAlbumArt } from "../lib/albumArt";
+import { findAlbumArt, type AlbumArt } from "../lib/albumArt";
 
 /**
- * The cover for the current track title, or null — while looking, when there
- * is no confident match, when the lookup fails, or when the setting is off.
+ * The cover for the current track, or null — while looking, when there is no
+ * confident match, when the lookup fails, or when the setting is off.
+ *
+ * What comes back is the artwork *and* the Apple Music link it has to be shown
+ * beside; see `lib/albumArt.ts` for why it is never one without the other.
  */
-export function useAlbumArt(title: string | null, enabled: boolean): string | null {
-  const [art, setArt] = useState<{ title: string; url: string } | null>(null);
+export function useAlbumArt(title: string | null, enabled: boolean): AlbumArt | null {
+  const [art, setArt] = useState<{ title: string; found: AlbumArt } | null>(null);
 
   useEffect(() => {
     if (!enabled || !title) return;
@@ -16,7 +19,7 @@ export function useAlbumArt(title: string | null, enabled: boolean): string | nu
     // track change; wait that out rather than look up a title twice.
     const timer = setTimeout(() => {
       findAlbumArt(title, abort.signal).then(
-        (url) => !abort.signal.aborted && setArt(url ? { title, url } : null),
+        (found) => !abort.signal.aborted && setArt(found ? { title, found } : null),
         () => {
           /* offline or rate-limited: no art, and nothing worth saying about it */
         },
@@ -30,5 +33,5 @@ export function useAlbumArt(title: string | null, enabled: boolean): string | nu
 
   // Matched against the live title so the last track's cover never lingers
   // over the next track while its own lookup is still out.
-  return enabled && art && art.title === title ? art.url : null;
+  return enabled && art && art.title === title ? art.found : null;
 }

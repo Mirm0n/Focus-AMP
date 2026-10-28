@@ -97,8 +97,10 @@ Regenerate this file with \`npm run notices\`. Last generated ${new Date().toISO
 
 ## Fonts
 
-**Chivo** and **Chivo Mono**, by Omnibus-Type — SIL Open Font License 1.1. Focus AMP does not
-redistribute them; \`src/styles/fonts.css\` loads them from Google Fonts at runtime.
+**Chivo** and **Chivo Mono**, by Omnibus-Type — SIL Open Font License 1.1, whose text is in
+\`src/styles/fonts/OFL.txt\` as that licence requires. Focus AMP redistributes them: the woff2
+subsets in \`src/styles/fonts/\` are bundled into the app and declared by
+\`src/styles/fonts.css\`. Nothing is fetched from Google Fonts at runtime.
 
 ## npm packages (${npm.length})
 

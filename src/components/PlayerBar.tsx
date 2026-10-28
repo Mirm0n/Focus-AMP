@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Play, Square, Radio, Loader2, Volume1, Volume2, VolumeX, SkipBack, SkipForward } from "lucide-react";
+import { Play, Square, Radio, Loader2, Volume1, Volume2, VolumeX, SkipBack, SkipForward, ExternalLink } from "lucide-react";
 
 import type { Station } from "../data/stations";
 import type { RadioPlayer } from "../hooks/useRadioPlayer";
@@ -9,11 +9,29 @@ import { StarButton } from "./Sidebar";
 import { EqPopover } from "./EqPopover";
 import { SleepPopover } from "./SleepPopover";
 import { isLocal } from "../lib/localFiles";
+import type { AlbumArt } from "../lib/albumArt";
+import { openExternal } from "../lib/openExternal";
 
 /**
  * Persistent transport. Lives below every view so playback controls never move
  * or disappear as the main area changes.
  */
+
+/**
+ * The 44px slot left of the station name. Shared so the cover and the fallback
+ * icon occupy exactly the same space and nothing shifts when art arrives.
+ */
+const coverFrame: React.CSSProperties = {
+  width: 44,
+  height: 44,
+  flex: "0 0 auto",
+  display: "grid",
+  placeItems: "center",
+  overflow: "hidden",
+  borderRadius: "var(--app-radius-sm)",
+  background: "var(--app-bg-overlay)",
+  border: "1px solid var(--app-border-subtle)",
+};
 
 interface PlayerBarProps {
   station: Station;
@@ -21,8 +39,8 @@ interface PlayerBarProps {
   player: RadioPlayer;
   sleep: SleepTimer;
   nowPlaying: string | null;
-  /** Cover for the current track, when one was found. */
-  art: string | null;
+  /** Cover for the current track and its Apple Music page, when one was found. */
+  art: AlbumArt | null;
   playing: boolean;
   disabled: boolean;
   onPlay: () => void;
@@ -51,7 +69,7 @@ export function PlayerBar({
   // image; a new URL gets a fresh chance.
   const [broken, setBroken] = useState<string | null>(null);
   useEffect(() => setBroken(null), [art]);
-  const cover = art && art !== broken ? art : null;
+  const cover = art && art.url !== broken ? art : null;
 
   const secondary =
     nowPlaying ??
@@ -168,32 +186,57 @@ export function PlayerBar({
 
       {/* Now playing */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: 1 }}>
-        <span
-          style={{
-            width: 44,
-            height: 44,
-            flex: "0 0 auto",
-            display: "grid",
-            placeItems: "center",
-            overflow: "hidden",
-            borderRadius: "var(--app-radius-sm)",
-            background: "var(--app-bg-overlay)",
-            border: "1px solid var(--app-border-subtle)",
-            color: playing ? "var(--app-accent)" : "var(--app-text-faint)",
-          }}
-        >
-          {cover ? (
+        {/* The cover is a link to the track on Apple Music, which is the only
+            footing Apple's Search API terms give us for showing their artwork
+            at all. No link, no cover: `findAlbumArt` never returns one alone. */}
+        {cover ? (
+          <button
+            type="button"
+            onClick={() => openExternal(cover.link)}
+            title="Listen on Apple Music"
+            aria-label={`Listen to ${nowPlaying ?? "this track"} on Apple Music`}
+            style={{
+              ...coverFrame,
+              position: "relative",
+              padding: 0,
+              cursor: "pointer",
+              color: "var(--app-text-faint)",
+            }}
+          >
             <img
-              src={cover}
+              src={cover.url}
               alt=""
               draggable={false}
-              onError={() => setBroken(cover)}
+              onError={() => setBroken(cover.url)}
               style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
             />
-          ) : (
+            {/* Says the cover goes somewhere. Over a corner of the art, which
+                is why it carries its own backing rather than relying on it. */}
+            <span
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                right: 0,
+                bottom: 0,
+                display: "grid",
+                placeItems: "center",
+                width: 14,
+                height: 14,
+                borderTopLeftRadius: 3,
+                background: "rgba(0, 0, 0, 0.55)",
+                color: "#fff",
+              }}
+            >
+              <ExternalLink size={9} />
+            </span>
+          </button>
+        ) : (
+          <span
+            style={{ ...coverFrame, color: playing ? "var(--app-accent)" : "var(--app-text-faint)" }}
+          >
             <Radio size={16} aria-hidden="true" />
-          )}
-        </span>
+          </span>
+        )}
         <div style={{ minWidth: 0 }}>
           <div
             style={{

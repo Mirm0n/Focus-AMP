@@ -118,9 +118,17 @@ between sessions.
 cover is looked up in the iTunes Search API and shown in the player bar. It is used only on a
 confident match — artist and title both agreeing after edit tags like "(Radio Edit)" and
 "feat." are stripped — because a wrong cover reads as a bug and a missing one doesn't. This
-sends each track title to Apple, so it is a setting (Settings → Appearance → Now playing),
-and the CSP allows exactly `itunes.apple.com` and `*.mzstatic.com` for it. Stations that send
-no track titles keep the radio icon.
+sends each track title to Apple, so it is **off by default**, behind a setting
+(Settings → Appearance → Now playing); the CSP allows exactly `itunes.apple.com` and
+`*.mzstatic.com` for it. The cover is a link to the track on Apple Music, which is the
+condition Apple's terms put on showing their artwork, so a result that has artwork but no
+store page is discarded rather than displayed. Stations that send no track titles keep the
+radio icon.
+
+**Fonts are bundled, not fetched.** Chivo and Chivo Mono ship inside the app as woff2 subsets
+under `src/styles/fonts/`, with the SIL Open Font License text beside them. They used to load
+from Google Fonts at runtime, which contacted a third party on every launch and left the
+interface on `system-ui` offline.
 
 `npm run audit:genres` runs the app's own listing code against the live directory and
 reports stations per genre, so a tag set that has quietly dried up gets caught.
