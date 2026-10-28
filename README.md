@@ -329,7 +329,18 @@ five were unused) are down to Chivo and Chivo Mono.
 
 ## Known gaps
 
-See [docs/EXECUTION.md](docs/EXECUTION.md) Part 6.
+Worth knowing before you try it:
+
+- **Fourteen genres have no Picks** and are hidden unless you switch the community directory
+  on — see the catalog section above. Filling them is the main open work.
+- **Windows only** for now. Nothing in the code is deliberately Windows-specific except the
+  tray and the notification AppUserModelID, but nothing else has been tested.
+- **No updater yet**, so a new version means downloading it yourself.
+- **Releases are unsigned**, so Windows SmartScreen will warn about the installer. Signing is
+  waiting on an application to the SignPath Foundation.
+
+The full list, with what is planned and what is deliberately not, is in
+[docs/EXECUTION.md](docs/EXECUTION.md) Part 6.
 
 ## Contributing
 
