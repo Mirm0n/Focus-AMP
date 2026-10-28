@@ -1,11 +1,13 @@
 import { useRef, useState } from "react";
-import { X, Info, LayoutGrid, Palette, Timer, SlidersHorizontal } from "lucide-react";
+import { X, Info, LayoutGrid, Palette, Timer, SlidersHorizontal, Radio } from "lucide-react";
 
 import { AppearanceTab } from "./settings/AppearanceTab";
 import { LayoutTab } from "./settings/LayoutTab";
 import { GeneralTab } from "./settings/GeneralTab";
 
 import { AboutTab } from "./settings/AboutTab";
+import { StationsTab } from "./settings/StationsTab";
+import type { Catalog } from "../hooks/useCatalog";
 import { TimerTab } from "./settings/TimerTab";
 import { useModalDialog } from "../hooks/useModalDialog";
 import type { Appearance } from "../theme/useAppearance";
@@ -26,11 +28,12 @@ import type { Pomodoro } from "../hooks/usePomodoro";
  * switching categories does not resize the window under the pointer.
  */
 
-type TabId = "appearance" | "layout" | "timer" | "general" | "about";
+type TabId = "appearance" | "layout" | "stations" | "timer" | "general" | "about";
 
 const TABS: Array<{ id: TabId; name: string; blurb: string; Icon: typeof Palette }> = [
   { id: "appearance", name: "Appearance", blurb: "Theme and visualizer", Icon: Palette },
   { id: "layout", name: "Layout", blurb: "How the window is arranged", Icon: LayoutGrid },
+  { id: "stations", name: "Stations", blurb: "What the catalog may contain", Icon: Radio },
   { id: "timer", name: "Timer", blurb: "Pomodoro and alerts", Icon: Timer },
   { id: "general", name: "General", blurb: "Tray and media keys", Icon: SlidersHorizontal },
   { id: "about", name: "About", blurb: "Version, licence and credits", Icon: Info },
@@ -39,10 +42,12 @@ const TABS: Array<{ id: TabId; name: string; blurb: string; Icon: typeof Palette
 export function SettingsDialog({
   appearance,
   pom,
+  catalog,
   onClose,
 }: {
   appearance: Appearance;
   pom: Pomodoro;
+  catalog: Catalog;
   onClose: () => void;
 }) {
   const [tab, setTab] = useState<TabId>("appearance");
@@ -247,6 +252,8 @@ export function SettingsDialog({
                 <LayoutTab appearance={appearance} />
               ) : id === "about" ? (
                 <AboutTab />
+              ) : id === "stations" ? (
+                <StationsTab catalog={catalog} />
               ) : id === "general" ? (
                 <GeneralTab />
               ) : (

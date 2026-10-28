@@ -15,6 +15,7 @@ import { useRadioPlayer } from "./hooks/useRadioPlayer";
 import { usePomodoro, type Phase } from "./hooks/usePomodoro";
 import { getGenre } from "./data/genres";
 import { DEFAULT_GENRE, DEFAULT_STATION, PICKS, isPick, type Station } from "./data/stations";
+import { isDenied } from "./data/denylist";
 import { getProxyAccess, proxied, resolveStationUrl, isTauri, type ProxyAccess } from "./lib/proxy";
 import { useAppearance } from "./theme/useAppearance";
 import { useFavorites } from "./hooks/useFavorites";
@@ -50,7 +51,8 @@ function loadLast(): { station: Station; queue: Queue } {
     if (!parsed || !ok(parsed.station)) return fallback;
     // With the catalog at Picks only, a directory station left over from before
     // doesn't get to come back as the thing that is on.
-    const allowed = (s: Station) => loadShowUnverified() || isPick(s) || isLocal(s);
+    const allowed = (s: Station) =>
+      !isDenied(s.url) && (loadShowUnverified() || isPick(s) || isLocal(s));
     if (!allowed(parsed.station)) return fallback;
     const stations = Array.isArray(parsed.queue?.stations)
       ? parsed.queue.stations.filter(ok).filter(allowed)
@@ -494,6 +496,7 @@ export default function App() {
         <SettingsDialog
           appearance={appearance}
           pom={pom}
+          catalog={catalog}
           onClose={() => setSettingsOpen(false)}
         />
       )}

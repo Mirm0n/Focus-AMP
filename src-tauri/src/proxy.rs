@@ -203,7 +203,8 @@ async fn vet_target(raw: &str) -> Result<reqwest::Url, String> {
 /// this is the address the connection actually landed on.
 fn peer_allowed(resp: &reqwest::Response) -> bool {
     // `is_none_or` would need Rust 1.82; this crate declares 1.77.
-    resp.remote_addr().map_or(true, |addr| !is_forbidden_ip(addr.ip()))
+    resp.remote_addr()
+        .map_or(true, |addr| !is_forbidden_ip(addr.ip()))
 }
 
 /// Bind an ephemeral loopback port and serve the proxy on it.
@@ -268,7 +269,11 @@ pub fn spawn(app: AppHandle, allowed: AllowedFiles) -> std::io::Result<(u16, Str
 }
 
 async fn health(headers: HeaderMap) -> impl IntoResponse {
-    (StatusCode::OK, cors_headers(headers.get(header::ORIGIN)), "ok")
+    (
+        StatusCode::OK,
+        cors_headers(headers.get(header::ORIGIN)),
+        "ok",
+    )
 }
 
 /// Origins the app itself runs on. `tauri.localhost` is the packaged app on
@@ -320,7 +325,12 @@ fn served_audio(resp: &reqwest::Response) -> Result<(), String> {
         .get(header::CONTENT_TYPE)
         .and_then(|v| v.to_str().ok())
         .unwrap_or("");
-    let kind = ct.split(';').next().unwrap_or("").trim().to_ascii_lowercase();
+    let kind = ct
+        .split(';')
+        .next()
+        .unwrap_or("")
+        .trim()
+        .to_ascii_lowercase();
     if kind.starts_with("text/html") || kind == "application/xhtml+xml" {
         return Err(format!("upstream served a web page, not audio ({kind})"));
     }
@@ -380,7 +390,11 @@ async fn file_handler(
     let mut file = match tokio::fs::File::open(&path).await {
         Ok(f) => f,
         Err(e) => {
-            return error_response(StatusCode::NOT_FOUND, format!("cannot open file: {e}"), origin)
+            return error_response(
+                StatusCode::NOT_FOUND,
+                format!("cannot open file: {e}"),
+                origin,
+            )
         }
     };
     let len = file.metadata().await.ok().map(|m| m.len());
@@ -397,7 +411,10 @@ async fn file_handler(
     });
 
     let mut out = cors_headers(origin);
-    out.insert(header::CONTENT_TYPE, HeaderValue::from_static(audio_mime(&path)));
+    out.insert(
+        header::CONTENT_TYPE,
+        HeaderValue::from_static(audio_mime(&path)),
+    );
     if let Some(len) = len {
         if let Ok(v) = HeaderValue::from_str(&len.to_string()) {
             out.insert(header::CONTENT_LENGTH, v);
@@ -422,7 +439,11 @@ async fn stream_handler(
     let upstream = match resolve_playlist(&state.client, &q.url).await {
         Ok(u) => u,
         Err(e) => {
-            return error_response(StatusCode::BAD_GATEWAY, format!("resolve failed: {e}"), origin)
+            return error_response(
+                StatusCode::BAD_GATEWAY,
+                format!("resolve failed: {e}"),
+                origin,
+            )
         }
     };
 
@@ -446,7 +467,11 @@ async fn stream_handler(
         // Bounded on the handshake only — never on the body, which is an
         // endless stream. A station that completes TLS and then goes quiet
         // would otherwise hold this connection open forever.
-        let send = state.client.get(upstream.clone()).header("Icy-MetaData", "1").send();
+        let send = state
+            .client
+            .get(upstream.clone())
+            .header("Icy-MetaData", "1")
+            .send();
         match tokio::time::timeout(HANDSHAKE_TIMEOUT, send).await {
             // The name was vetted before the request, but a name can be made to
             // answer differently the second time it is asked. This is the
@@ -473,7 +498,10 @@ async fn stream_handler(
             Err(_) => last = "upstream did not send headers in time".to_string(),
         }
         if attempt < UPSTREAM_RETRIES {
-            println!("[proxy] retry {}/{UPSTREAM_RETRIES} after {last} · {upstream}", attempt + 1);
+            println!(
+                "[proxy] retry {}/{UPSTREAM_RETRIES} after {last} · {upstream}",
+                attempt + 1
+            );
         }
     }
     let Some(resp) = resp else {
@@ -486,7 +514,6 @@ async fn stream_handler(
         .and_then(|v| v.to_str().ok())
         .unwrap_or("audio/mpeg")
         .to_string();
-
 
     // `icy-metaint` is the number of audio bytes between metadata blocks.
     // Absent means the station sends no in-band metadata at all.
@@ -701,10 +728,7 @@ mod tests {
     #[test]
     fn survives_an_apostrophe_in_the_title() {
         let raw = b"StreamTitle='Guns N' Roses - Patience';StreamUrl='';";
-        assert_eq!(
-            parse_stream_title(raw).unwrap(),
-            "Guns N' Roses - Patience"
-        );
+        assert_eq!(parse_stream_title(raw).unwrap(), "Guns N' Roses - Patience");
     }
 
     #[test]

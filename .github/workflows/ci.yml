@@ -1,0 +1,75 @@
+## Every push and every pull request runs the same checks a release does.
+##
+## Split in two because the two halves fail for different reasons and there is
+## no point making a Rust compile wait on a TypeScript error. The web job also
+## runs `check:stations`, which is the gate that keeps a Pick without a terms
+## record out of the catalog — see docs/EXECUTION.md §1.5.
+##
+## The Rust job runs on Windows because that is what 1.0 ships for, and because
+## `src/notify.rs` and the tray are Windows-specific.
+
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+# A second push to the same branch makes the first one irrelevant.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    name: Frontend and catalog
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Runs check:stations, then tsc --noEmit, then the Vite build.
+      - name: Build
+        run: npm run build
+
+  rust:
+    name: Rust
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      # The frontend is not built here, but tauri-build wants the dist folder
+      # to exist before it will configure the crate.
+      - name: Make a placeholder dist
+        shell: bash
+        run: mkdir -p dist && echo '<!doctype html><title>ci</title>' > dist/index.html
+
+      - name: Formatting
+        working-directory: src-tauri
+        run: cargo fmt --check
+
+      - name: Clippy
+        working-directory: src-tauri
+        run: cargo clippy --no-default-features --all-targets -- -D warnings
+
+      - name: Tests
+        working-directory: src-tauri
+        run: cargo test --no-default-features

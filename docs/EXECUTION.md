@@ -62,18 +62,29 @@ This is a reading of published terms, not legal advice.
 
 ## 1.4 The station picture
 
-The 54 current Picks under C4. This is the **starting point for task L1**, which confirms each
-one against the sources in Part 3.1.
+**Applied 2026-10-29 (tasks L1 and L2).** The 56 Picks the app shipped with were checked
+against Part 3.1 and the verdicts carried out. What is left:
 
 | Status | Picks | Stations |
 |---|---|---|
-| **Keep** (terms allow players or are silent) | 8 | KEXP, Radio Swiss Jazz and Classic, Radio Paradise Main, Rock and Mellow, Nightwave Plaza, WXPN |
-| **Hold for the no-AI review** (terms are fine; never reviewed under R1–R8) | 5 | Hotmix Lo-Fi, 0nlineradio LO-FI, Epic Lounge, Hunter.FM Lo-Fi, CLIAMP Lofi |
-| **Ask first** (terms restrict reuse or brand use) | 9 | Radio France FIP ×7, The Current (MPR; its URL also returns 404), laut.fm Lofi |
-| **Exclude** | 32 | SomaFM ×30 (forbids third-party clients even when free), Box Lofi Radio (demoted under R3), BGMVibes (dead) |
+| **Kept** | 9 | KEXP, WXPN, Radio Paradise Main/Rock/Mellow, Radio Swiss Jazz/Classic, Nightwave Plaza |
+| **Added** (task L3, first pass) | 9 | WFMU ×4, Radio Swiss Pop, The Classical Station (WCPE), Ambient Sleeping Pill, a.m. ambient, Ambient Modern, Bassdrive |
+| **Removed to the denylist** | 31 | SomaFM ×30 (terms forbid third-party clients), Box Lofi Radio (zeno.fm) |
+| **Removed, dead** | 1 | BGMVibes |
+| **Parked: awaiting permission** (U3) | 9 | Radio France FIP ×7, The Current (MPR), laut.fm Lofi |
+| **Parked: awaiting the no-AI review** | 5 | Hotmix Lo-Fi, 0nlineradio LO-FI, Epic Lounge, Hunter.FM Lo-Fi, CLIAMP Lofi |
 
-Only 7 genres keep a Pick: Lofi, Jazz, Classical, Chillout, Alternative rock, Indie and Rock.
-The rest are the main work of Phase 1 (task L3).
+18 Picks across 12 genres. `npm run check:stations` prints the count per genre and fails the
+build if any of this drifts.
+
+**The 14 genres with no Picks** — space, piano, scores, nature, bossa, reggae, house, techno,
+trance, idm, postrock, metal, blues, hiphop — are not offered at all unless the community
+directory is switched on. That is the honest state: a genre with nothing vouched for in it
+should not pretend otherwise, and padding it with a station that does not belong there would
+make the list longer and the app worse. Filling them is the rest of **L3**.
+
+Every added station was verified on 2026-10-29: terms read and quoted in its `terms` record,
+and the stream confirmed to answer with audio.
 
 ## 1.5 Specs
 
@@ -133,24 +144,31 @@ register (Part 4). It prints the number of Picks per genre.
 
 ### Phase 1 — A catalog that respects every station (≈ 4–6 h agent time + U2, U3)
 
-- [ ] **L1 Confirm every Pick under C4:** check each of the 54 against its source in Part 3.1 and
+- [x] **L1 Confirm every Pick under C4:** check each of the 54 against its source in Part 3.1 and
       finalise §1.4.
-- [ ] **L2 Apply it:** remove the 32 excluded Picks; move "ask first" and "hold" stations into the
+- [x] **L2 Apply it:** remove the 32 excluded Picks; move "ask first" and "hold" stations into the
       register as parked; add `terms` records and the denylist (§1.5). Filter the directory,
       favorites and the last station through the denylist.
-- [ ] **L3 Replacement Picks:** find stations with permissive or silent terms for every genre left
-      empty, starting with Ambient, Space / Drone, Chillout, Folk, Reggae, House, Techno, Trance,
-      IDM, Post-rock, Metal, Soul and Hip-hop. Each needs terms that allow players, a working
-      stream, and a pass under R1–R8. Target: at least 2 per genre, presented to you for a
-      listen (U2).
-- [ ] **L4 The directory setting works:** restore "Show community directory" (the audit found it
-      forced on in `useCatalog.ts` and its tab unmounted), off by default.
-- [ ] **L5 Presentation:** a "Visit station" link on every station, neutral descriptions, no logos,
-      and a "Request removal" link in Settings → About.
-- [ ] **L6 Permission emails:** a short, friendly email for the "ask first" stations and for any
-      replacement whose terms are unclear. The agent drafts; you send (U3).
-- [ ] **L7 Album art (C12):** off by default, with an Apple Music link beside the cover.
-- [ ] **L8 `check:stations`** (§1.5), wired into `npm run build`.
+- [ ] **L3 Replacement Picks:** *first pass done 2026-10-29* — 9 added (WFMU ×4, Radio Swiss Pop,
+      WCPE, the three Stereoscenic ambient stations, Bassdrive), covering Ambient, Chillout, Folk,
+      Soul, Classical, D&B and filling out Indie and Rock. **Still empty:** space, piano, scores,
+      nature, bossa, reggae, house, techno, trance, idm, postrock, metal, blues, hiphop. Electronic
+      and metal are the hard ones: the long-running stations there mostly publish no terms and name
+      no operator. Each addition needs terms that allow players, a working stream, and a pass under
+      R1–R8. Target: at least 2 per genre, presented to you for a listen (U2).
+- [x] **L4 The directory setting works:** done 2026-10-29. `useCatalog.ts` was hardcoded to
+      `true` with a note to fix it later, and its tab was never mounted in `SettingsDialog`, so
+      the app's own claims about itself were false. It now persists to
+      `focusamp:showUnverified`, defaults to off, and the Stations tab is in the rail.
+- [~] **L5 Presentation:** every Pick now carries a `home` URL and the About screen gains
+      "Request a station's removal" and a privacy link as soon as `PROJECT.source` is set
+      (one line in `data/maker.ts`, task U1). **Still owed:** rendering the "Visit station"
+      link on each station row — the data is there, nothing displays it yet.
+- [x] **L6 Permission emails:** drafted in `docs/permission-emails.md` — Radio France (FIP),
+      MPR (The Current), laut.fm, plus a template for any station whose terms are silent. You
+      send them (U3). No email to SomaFM: their licences do not let them say yes.
+- [x] **L7 Album art (C12):** off by default, with an Apple Music link beside the cover.
+- [x] **L8 `check:stations`** (§1.5), wired into `npm run build`.
 - **Done when:** every visible genre has at least 2 Picks with terms records, nothing on the
   denylist can play from anywhere, and the build refuses a Pick without a terms record.
 
@@ -168,7 +186,8 @@ register (Part 4). It prints the number of Picks per genre.
 - [x] **B5 About screen:** version, GPL licence, source code link, donate link, the station
       policy and removal link, third-party notices, and the C16 "Made by" and "More from the
       maker" section (links supplied by you).
-- [ ] **B6 Docs:** the README catalog section, the register updated, and a privacy policy (the app
+- [~] **B6 Docs:** privacy policy written (`PRIVACY.md`) and the register updated (Part 4).
+      Still owed: the README catalog section rewritten for the smaller catalog. (the app
       contacts the stations you play, Radio Browser when the directory is on, and Apple only when
       album art is on; no accounts, no tracking).
 - **Done when:** the release audit's blockers and majors are closed, with idle CPU under 3% of a
@@ -461,6 +480,16 @@ holds (Hotmix, 0nlineradio, Epic Lounge, Hunter.FM, CLIAMP).
 
 | Date | Station | Action | Reason |
 |---|---|---|---|
+| 2026-10-29 | WFMU, Rock'n'Soul, Give the Drummer, Sheena's Jungle Room | Added as Picks | Publishes direct stream URLs "which you can use in whatever mobile streaming client you may be using"; listener-supported freeform since 1958 |
+| 2026-10-29 | The Classical Station (WCPE) | Added as a Pick | "Copy/paste one of the following stream links into your Windows Media player, VLC or Winamp player"; non-commercial, on air since 1978 |
+| 2026-10-29 | Ambient Sleeping Pill, a.m. ambient, Ambient Modern | Added as Picks | "Links for adding directly to Winamp and other players"; run by Andrew J Klimek since 2013, playing largely his own label's music — a direct R1/R5 pass |
+| 2026-10-29 | Radio Swiss Pop | Added as a Pick | Same SRG SSR terms as Jazz and Classic, already kept |
+| 2026-10-29 | Bassdrive | Added as a Pick | Publishes .m3u tune-in links; states all music is "directly licensed by the composers and sound recording copyright owners"; named DJs since 1999 |
+| 2026-10-29 | Echoes of Bluemars / Cryosleep | Rejected | bluemars.org reads only "Signal lost." — the station is gone |
+| 2026-10-29 | Venice Classic Radio | Rejected | Names no operator and publishes no stream URLs; fails R1 and R6 |
+| 2026-10-29 | SomaFM ×30, Box Lofi Radio | **Removed and denylisted** | L2 carried out. SomaFM's ToS re-read and confirmed verbatim; their music licences do not let them authorise third-party apps, so this is not waivable on request |
+| 2026-10-29 | FIP ×7, The Current, laut.fm Lofi | **Parked** | Removed from Picks pending permission (U3). Not denylisted: a yes would bring them straight back |
+| 2026-10-29 | Hotmix, 0nlineradio, Epic Lounge, Hunter.FM, CLIAMP | **Parked** | Removed from Picks pending the no-AI review under R1–R8 |
 | 2026-09-27 | SomaFM ×30, Box Lofi Radio, BGMVibes | To be removed (L2) | SomaFM's terms forbid third-party clients even when free; Box Lofi failed R3; BGMVibes is dead |
 | 2026-09-27 | FIP ×7, The Current, laut.fm Lofi | To be parked (L2) | Terms restrict reuse or brand use; asked for permission first |
 | 2026-09-24 | KEXP, The Current, WXPN | Added as Picks | Vetted for the new Alternative rock genre |
