@@ -56,12 +56,10 @@ jobs:
         with:
           workspaces: src-tauri
 
-      # The frontend is not built here, but tauri-build wants the dist folder
-      # to exist before it will configure the crate.
-      - name: Make a placeholder dist
-        shell: bash
-        run: mkdir -p dist && echo '<!doctype html><title>ci</title>' > dist/index.html
-
+      # No `npm ci` and no dist here on purpose: tauri-build only needs the
+      # frontend for a bundle, and checked cold, `cargo test` builds fine
+      # without either. Keeping this job independent of the web one is the
+      # point — it should fail for Rust reasons only.
       - name: Formatting
         working-directory: src-tauri
         run: cargo fmt --check
