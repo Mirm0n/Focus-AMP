@@ -9,7 +9,7 @@
 //!
 //! So the id is registered here instead, per user, with the name and icon it
 //! should carry, and the toast is sent under it. Installed or not, the
-//! notification says Tunescape.
+//! notification says Focus AMP.
 //!
 //! macOS and Linux name the application from the bundle and need none of this,
 //! so there the plugin still does the work.
@@ -23,15 +23,15 @@ mod platform {
 
     /// Matches `identifier` in tauri.conf.json, which is what an installed
     /// build registers. Sending under the same id means the two agree.
-    const AUMID: &str = "com.tunescape.desktop";
-    const DISPLAY_NAME: &str = "Tunescape";
+    const AUMID: &str = "com.focusamp.desktop";
+    const DISPLAY_NAME: &str = "Focus AMP";
 
     /// Windows wants an image it can open by path, and an exe's embedded icon
     /// is not one. The PNG rides along in the binary and is unpacked once.
     const ICON: &[u8] = include_bytes!("../icons/128x128@2x.png");
 
     fn icon_path() -> io::Result<PathBuf> {
-        let dir = std::env::temp_dir().join("tunescape");
+        let dir = std::env::temp_dir().join("focus-amp");
         fs::create_dir_all(&dir)?;
         let path = dir.join("icon.png");
         // Rewritten only when missing or the wrong size, so a new icon in a

@@ -11,7 +11,10 @@
 //! Icecast injects into the audio, which is how we get real track titles — a
 //! webview cannot see them at all.
 
+use std::collections::HashSet;
 use std::net::TcpListener as StdTcpListener;
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 
 use axum::{
     body::Body,
@@ -25,20 +28,33 @@ use bytes::Bytes;
 use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter};
+use tokio::io::AsyncReadExt;
 
 /// How long upstream gets to return response headers. The body that follows is
 /// deliberately unbounded — it is a radio stream.
 const HANDSHAKE_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
 
+/// Local files the user has added. The proxy listens on loopback, which any
+/// web page open in a browser can also reach, so it serves exactly these paths
+/// and nothing else on disk.
+#[derive(Clone, Default)]
+pub struct AllowedFiles(pub Arc<Mutex<HashSet<PathBuf>>>);
+
 #[derive(Clone)]
 struct AppState {
     client: reqwest::Client,
     app: AppHandle,
+    allowed: AllowedFiles,
 }
 
 #[derive(Deserialize)]
 struct StreamQuery {
     url: String,
+}
+
+#[derive(Deserialize)]
+struct FileQuery {
+    path: String,
 }
 
 #[derive(Clone, Serialize)]
@@ -51,23 +67,24 @@ pub struct NowPlaying {
 ///
 /// The listener is bound synchronously so the caller gets a real port number
 /// before the app finishes starting; only the accept loop is async.
-pub fn spawn(app: AppHandle) -> std::io::Result<u16> {
+pub fn spawn(app: AppHandle, allowed: AllowedFiles) -> std::io::Result<u16> {
     let std_listener = StdTcpListener::bind("127.0.0.1:0")?;
     let port = std_listener.local_addr()?.port();
     std_listener.set_nonblocking(true)?;
 
     let client = reqwest::Client::builder()
-        .user_agent("Tunescape/2.0")
+        .user_agent("FocusAMP/2.0")
         // Radio streams are infinite; a request timeout would sever playback.
         .connect_timeout(std::time::Duration::from_secs(12))
         .build()
         .map_err(std::io::Error::other)?;
 
-    let state = AppState { client, app };
+    let state = AppState { client, app, allowed };
 
     let router = Router::new()
         .route("/health", get(health))
         .route("/stream", get(stream_handler))
+        .route("/file", get(file_handler))
         .with_state(state);
 
     tauri::async_runtime::spawn(async move {
@@ -101,8 +118,87 @@ fn cors_headers() -> HeaderMap {
     h
 }
 
+/// How many extra attempts a failing upstream gets before the station is
+/// reported dead, and how long to wait between them.
+const UPSTREAM_RETRIES: u32 = 1;
+const RETRY_PAUSE: std::time::Duration = std::time::Duration::from_millis(600);
+
+/// Rejects a 200 that is plainly not a stream. Handing a web page to an
+/// `<audio>` element produces a decode error seconds later, which the app can
+/// only read as "this station is broken"; failing here keeps the reason.
+fn served_audio(resp: &reqwest::Response) -> Result<(), String> {
+    let ct = resp
+        .headers()
+        .get(header::CONTENT_TYPE)
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("");
+    let kind = ct.split(';').next().unwrap_or("").trim().to_ascii_lowercase();
+    if kind.starts_with("text/html") || kind == "application/xhtml+xml" {
+        return Err(format!("upstream served a web page, not audio ({kind})"));
+    }
+    Ok(())
+}
+
 fn error_response(code: StatusCode, msg: String) -> Response {
     (code, cors_headers(), msg).into_response()
+}
+
+fn audio_mime(path: &std::path::Path) -> &'static str {
+    let ext = path
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("")
+        .to_ascii_lowercase();
+    match ext.as_str() {
+        "mp3" => "audio/mpeg",
+        "flac" => "audio/flac",
+        "wav" => "audio/wav",
+        "ogg" | "oga" => "audio/ogg",
+        "opus" => "audio/opus",
+        "m4a" | "aac" => "audio/mp4",
+        "webm" => "audio/webm",
+        _ => "application/octet-stream",
+    }
+}
+
+/// Serve one of the user's own audio files, from the allowlist only.
+async fn file_handler(State(state): State<AppState>, Query(q): Query<FileQuery>) -> Response {
+    let path = PathBuf::from(&q.path);
+    let permitted = state
+        .allowed
+        .0
+        .lock()
+        .map(|set| set.contains(&path))
+        .unwrap_or(false);
+    if !permitted {
+        return error_response(StatusCode::FORBIDDEN, "not an added file".into());
+    }
+
+    let mut file = match tokio::fs::File::open(&path).await {
+        Ok(f) => f,
+        Err(e) => return error_response(StatusCode::NOT_FOUND, format!("cannot open file: {e}")),
+    };
+    let len = file.metadata().await.ok().map(|m| m.len());
+
+    let body = Body::from_stream(async_stream::stream! {
+        let mut buf = vec![0u8; 64 * 1024];
+        loop {
+            match file.read(&mut buf).await {
+                Ok(0) => break,
+                Ok(n) => yield Ok::<Bytes, std::io::Error>(Bytes::copy_from_slice(&buf[..n])),
+                Err(e) => { yield Err(e); break; }
+            }
+        }
+    });
+
+    let mut out = cors_headers();
+    out.insert(header::CONTENT_TYPE, HeaderValue::from_static(audio_mime(&path)));
+    if let Some(len) = len {
+        if let Ok(v) = HeaderValue::from_str(&len.to_string()) {
+            out.insert(header::CONTENT_LENGTH, v);
+        }
+    }
+    (StatusCode::OK, out, body).into_response()
 }
 
 async fn stream_handler(State(state): State<AppState>, Query(q): Query<StreamQuery>) -> Response {
@@ -114,27 +210,42 @@ async fn stream_handler(State(state): State<AppState>, Query(q): Query<StreamQue
         Err(e) => return error_response(StatusCode::BAD_GATEWAY, format!("resolve failed: {e}")),
     };
 
-    // Bounded on the handshake only — never on the body, which is an endless
-    // stream. A station that completes TLS and then goes quiet would otherwise
-    // hold this connection open forever.
-    let send = state.client.get(&upstream).header("Icy-MetaData", "1").send();
-    let resp = match tokio::time::timeout(HANDSHAKE_TIMEOUT, send).await {
-        Ok(Ok(r)) => r,
-        Ok(Err(e)) => return error_response(StatusCode::BAD_GATEWAY, format!("upstream failed: {e}")),
-        Err(_) => {
-            return error_response(
-                StatusCode::GATEWAY_TIMEOUT,
-                "upstream did not send headers in time".to_string(),
-            )
+    // Radio hosts are flaky in a way that is usually not fatal: a CDN edge
+    // 404s, a server refuses one connection, TLS stalls once. Without a second
+    // try the app marks the station dead and skips past it, so a station that
+    // works perfectly on the next attempt is lost for the session.
+    let mut last: String = String::new();
+    let mut resp = None;
+    for attempt in 0..=UPSTREAM_RETRIES {
+        if attempt > 0 {
+            tokio::time::sleep(RETRY_PAUSE).await;
         }
-    };
-
-    if !resp.status().is_success() {
-        return error_response(
-            StatusCode::BAD_GATEWAY,
-            format!("upstream returned {}", resp.status()),
-        );
+        // Bounded on the handshake only — never on the body, which is an
+        // endless stream. A station that completes TLS and then goes quiet
+        // would otherwise hold this connection open forever.
+        let send = state.client.get(&upstream).header("Icy-MetaData", "1").send();
+        match tokio::time::timeout(HANDSHAKE_TIMEOUT, send).await {
+            Ok(Ok(r)) if r.status().is_success() => match served_audio(&r) {
+                Ok(()) => {
+                    resp = Some(r);
+                    break;
+                }
+                // A station that answers 200 with a web page has moved, or is
+                // bouncing us to a landing page this once. Worth another go:
+                // some hosts do it only under load.
+                Err(e) => last = e,
+            },
+            Ok(Ok(r)) => last = format!("upstream returned {}", r.status()),
+            Ok(Err(e)) => last = format!("upstream failed: {e}"),
+            Err(_) => last = "upstream did not send headers in time".to_string(),
+        }
+        if attempt < UPSTREAM_RETRIES {
+            println!("[proxy] retry {}/{UPSTREAM_RETRIES} after {last} · {upstream}", attempt + 1);
+        }
     }
+    let Some(resp) = resp else {
+        return error_response(StatusCode::BAD_GATEWAY, last);
+    };
 
     let headers_in = resp.headers().clone();
     let content_type = headers_in
@@ -142,6 +253,7 @@ async fn stream_handler(State(state): State<AppState>, Query(q): Query<StreamQue
         .and_then(|v| v.to_str().ok())
         .unwrap_or("audio/mpeg")
         .to_string();
+
 
     // `icy-metaint` is the number of audio bytes between metadata blocks.
     // Absent means the station sends no in-band metadata at all.
@@ -190,6 +302,10 @@ async fn stream_handler(State(state): State<AppState>, Query(q): Query<StreamQue
 
 /// If the URL points at a `.pls` or `.m3u` playlist, pull the first entry out
 /// of it. `.m3u8` is left alone — that is HLS, a different thing entirely.
+///
+/// Matched on the extension only. Plenty of stations serve a playlist from a
+/// URL that gives no hint (`/listen`, `/stream`), and those still slip through
+/// to be handed to the audio element as if they were sound.
 async fn resolve_playlist(client: &reqwest::Client, url: &str) -> Result<String, String> {
     let lower = url.split('?').next().unwrap_or(url).to_ascii_lowercase();
     let is_pls = lower.ends_with(".pls");

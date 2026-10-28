@@ -18,7 +18,7 @@ import { DEFAULT_LAYOUT, getLayout, type Layout, type LayoutId } from "../layout
 
 /** Everything the user can change about how the app looks, in one place. */
 
-const STORAGE_KEY = "tunescape:appearance";
+const STORAGE_KEY = "focusamp:appearance";
 
 interface Stored {
   theme: string;

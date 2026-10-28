@@ -104,7 +104,21 @@ interface Row {
   languagecodes: string;
   votes: number;
   clickcount: number;
+  /** 1 when the directory's own checker last reached the stream. */
+  lastcheckok: number;
+  /** When it last tried, ISO 8601. */
+  lastchecktime_iso8601: string;
+  /** Non-zero when the directory hit a TLS problem fetching it. */
+  ssl_error: number;
 }
+
+/**
+ * How stale the directory's own check may be. `hidebroken` only drops stations
+ * that failed their *last* check, and that check can be days old — which is
+ * why roughly one directory station in ten was still dead on arrival. A
+ * station the directory has not reached recently is not offered.
+ */
+const CHECK_MAX_AGE_DAYS = 3;
 
 /** Asked of the directory per tag, before filtering. */
 const PER_TAG = 80;
@@ -177,6 +191,14 @@ export function lacksProvenance(name: string, homepage: string): string | null {
   return null;
 }
 
+/** Reached by the directory's checker, recently, without a TLS problem. */
+function recentlyAlive(row: Row): boolean {
+  if (row.lastcheckok !== 1 || (row.ssl_error ?? 0) !== 0) return false;
+  const checked = Date.parse(row.lastchecktime_iso8601 ?? "");
+  if (Number.isNaN(checked)) return false;
+  return Date.now() - checked <= CHECK_MAX_AGE_DAYS * 86_400_000;
+}
+
 /** A bitrate the codec can't make listenable. Zero means "not reported". */
 function tooThin(row: Row): boolean {
   if (row.bitrate <= 0) return false;
@@ -220,6 +242,7 @@ function build(rows: Row[], genre: GenreDef, minVotes: number, taken: Set<string
     // HLS is a playlist of segments, which an <audio> element in Chromium
     // can't play without a demuxer this app doesn't ship.
     if (!url || !name || row.hls === 1 || row.votes < minVotes || tooThin(row)) continue;
+    if (!recentlyAlive(row)) continue;
 
     // Every SomaFM channel is already a Pick, under its own name; the
     // directory lists each several times over on other relays.

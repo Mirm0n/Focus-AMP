@@ -1,9 +1,11 @@
 import { useRef, useState } from "react";
-import { X, LayoutGrid, Palette, Timer } from "lucide-react";
+import { X, Info, LayoutGrid, Palette, Timer, SlidersHorizontal } from "lucide-react";
 
 import { AppearanceTab } from "./settings/AppearanceTab";
 import { LayoutTab } from "./settings/LayoutTab";
+import { GeneralTab } from "./settings/GeneralTab";
 
+import { AboutTab } from "./settings/AboutTab";
 import { TimerTab } from "./settings/TimerTab";
 import { useModalDialog } from "../hooks/useModalDialog";
 import type { Appearance } from "../theme/useAppearance";
@@ -24,12 +26,14 @@ import type { Pomodoro } from "../hooks/usePomodoro";
  * switching categories does not resize the window under the pointer.
  */
 
-type TabId = "appearance" | "layout" | "timer";
+type TabId = "appearance" | "layout" | "timer" | "general" | "about";
 
 const TABS: Array<{ id: TabId; name: string; blurb: string; Icon: typeof Palette }> = [
   { id: "appearance", name: "Appearance", blurb: "Theme and visualizer", Icon: Palette },
   { id: "layout", name: "Layout", blurb: "How the window is arranged", Icon: LayoutGrid },
   { id: "timer", name: "Timer", blurb: "Pomodoro and alerts", Icon: Timer },
+  { id: "general", name: "General", blurb: "Tray and media keys", Icon: SlidersHorizontal },
+  { id: "about", name: "About", blurb: "Version, licence and credits", Icon: Info },
 ];
 
 export function SettingsDialog({
@@ -241,6 +245,10 @@ export function SettingsDialog({
                 <AppearanceTab appearance={appearance} />
               ) : id === "layout" ? (
                 <LayoutTab appearance={appearance} />
+              ) : id === "about" ? (
+                <AboutTab />
+              ) : id === "general" ? (
+                <GeneralTab />
               ) : (
                 <TimerTab pom={pom} />
               )}

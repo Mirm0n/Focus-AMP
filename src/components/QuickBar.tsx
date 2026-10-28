@@ -139,7 +139,13 @@ function Dropdown({
   };
 
   return (
-    <div ref={rootRef} style={{ position: "relative", flex: "0 0 auto" }}>
+    <div
+      ref={rootRef}
+      // The trigger sits half a pixel inside this wrapper, and that sliver is
+      // part of the title bar, so it drags like the rest of it.
+      data-tauri-drag-region
+      style={{ position: "relative", flex: "0 0 auto" }}
+    >
       <button
         ref={triggerRef}
         type="button"
@@ -317,6 +323,10 @@ export function QuickBar({ appearance, analyser, playing }: QuickBarProps) {
     <div
       role="toolbar"
       aria-label="Quick appearance"
+      // The bar sits in the title bar, so its own background is window chrome:
+      // the gaps between the dropdowns drag the window like any other bare
+      // part of the bar. The triggers themselves are buttons and still click.
+      data-tauri-drag-region
       style={{
         position: "relative",
         zIndex: 20,

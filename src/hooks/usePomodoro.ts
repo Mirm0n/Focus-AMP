@@ -42,7 +42,7 @@ export const PHASE_LABEL: Record<Phase, string> = {
   long: "Long break",
 };
 
-const STORAGE_KEY = "tunescape:pomodoro";
+const STORAGE_KEY = "focusamp:pomodoro";
 
 function loadSettings(): PomodoroSettings {
   try {

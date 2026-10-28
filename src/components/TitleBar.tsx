@@ -1,10 +1,17 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Minus, Square, X } from "lucide-react";
 import { isTauri } from "../lib/proxy";
+import { loadCloseToTray } from "../lib/prefs";
 
 /**
  * Custom chrome — the window is created with `decorations: false`, so the drag
  * region and the three controls have to be ours.
+ *
+ * `data-tauri-drag-region` does not inherit. Only the exact element under the
+ * pointer counts, so every layout wrapper that covers part of the bar needs it
+ * too — otherwise the bar looks draggable and is dead wherever a bare `<div>`
+ * happens to sit, which is most of it. Buttons and inputs inside are
+ * unaffected: they are their own elements and never carry the attribute.
  */
 export function TitleBar({
   nowPlaying,
@@ -41,7 +48,7 @@ export function TitleBar({
         paddingLeft: 15,
       }}
     >
-      <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+      <div data-tauri-drag-region style={{ flex: 1, display: "flex", alignItems: "center" }}>
         {/* The app name is the document's heading — there was no h1 at all,
             so heading navigation found nothing anywhere in the shell. */}
         <h1
@@ -55,7 +62,7 @@ export function TitleBar({
             color: "var(--app-accent)",
           }}
         >
-          Tunescape
+          Focus AMP
         </h1>
       </div>
 
@@ -77,7 +84,10 @@ export function TitleBar({
         </span>
       )}
 
-      <div style={{ flex: 1, display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
+      <div
+        data-tauri-drag-region
+        style={{ flex: 1, display: "flex", justifyContent: "flex-end", alignItems: "center" }}
+      >
         {children}
         {inTauri && (
           <>
@@ -89,7 +99,7 @@ export function TitleBar({
             </button>
             <button
               style={btn}
-              onClick={() => win().close()}
+              onClick={() => (loadCloseToTray() ? win().hide() : win().close())}
               title="Close"
               aria-label="Close"
               onMouseEnter={(e) => {

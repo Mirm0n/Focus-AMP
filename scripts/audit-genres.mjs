@@ -16,7 +16,7 @@ import { pathToFileURL } from "node:url";
 
 const MIN = 8;
 
-const dir = mkdtempSync(join(tmpdir(), "tunescape-genres-"));
+const dir = mkdtempSync(join(tmpdir(), "focus-amp-genres-"));
 const out = join(dir, "catalog.mjs");
 await build({
   stdin: {

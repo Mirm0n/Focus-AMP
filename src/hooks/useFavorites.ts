@@ -11,7 +11,7 @@ import type { Station } from "../data/stations";
  * until its genre happened to be opened again.
  */
 
-const STORAGE_KEY = "tunescape:favorites";
+const STORAGE_KEY = "focusamp:favorites";
 
 function load(): Station[] {
   try {

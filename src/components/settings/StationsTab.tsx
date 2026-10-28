@@ -6,7 +6,7 @@ export function StationsTab({ catalog }: { catalog: Catalog }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
       <FieldGroup title="Catalog">
         <Hint>
-          Tunescape plays music made by people. Every station in the list is a Pick: chosen by
+          Focus AMP plays music made by people. Every station in the list is a Pick: chosen by
           hand, from a broadcaster with named people behind it.
         </Hint>
         <Toggle
