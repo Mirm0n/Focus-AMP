@@ -1,0 +1,44 @@
+name: Station removal request
+description: You represent a station and want it out of Radiodoro.
+title: "Remove: <station name>"
+labels: ["station removal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        We remove stations on request, within seven days. **You do not have to give a reason**,
+        and you do not have to prove anything to us. The fields below just help us find the
+        right entry quickly.
+
+        If you would rather not use GitHub, open an issue saying so and we will arrange
+        another way.
+  - type: input
+    id: station
+    attributes:
+      label: Station name
+      description: As it appears in Radiodoro, if you know.
+    validations:
+      required: true
+  - type: input
+    id: stream
+    attributes:
+      label: Stream URL or website
+      description: Whichever you have. It helps us match the right entry.
+    validations:
+      required: false
+  - type: dropdown
+    id: scope
+    attributes:
+      label: What should we remove?
+      options:
+        - This station
+        - Every station from this broadcaster
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: Optional. A reason is welcome but never required.
+    validations:
+      required: false

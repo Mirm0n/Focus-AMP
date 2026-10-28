@@ -1,0 +1,33 @@
+name: Bug report
+description: Something in the app is broken.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: And what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version and OS
+      placeholder: "0.1.0, Windows 11"
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        **A station that will not play is usually not a bug.** Internet radio streams go down
+        often, and Radiodoro is built to skip past a dead one. Worth reporting if it happens
+        to every station, or if the app hangs rather than moving on.
