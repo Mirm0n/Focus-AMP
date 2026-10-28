@@ -11,14 +11,21 @@ use tauri::{
 
 use proxy::AllowedFiles;
 
-struct ProxyPort(u16);
+/// Where the local audio proxy is, and the token that lets you use it. Held
+/// in memory only, and handed out over IPC — which is the point: a web page
+/// that finds the port cannot ask Tauri for the token, so it cannot get in.
+struct ProxyAccess {
+    port: u16,
+    token: String,
+}
 
 const TRAY_ID: &str = "main";
 
-/// The webview needs the loopback port to build stream URLs.
+/// The webview needs both of these to build stream URLs. See `proxy.rs` for
+/// why the port alone is not enough.
 #[tauri::command]
-fn proxy_port(state: tauri::State<'_, ProxyPort>) -> u16 {
-    state.0
+fn proxy_access(state: tauri::State<'_, ProxyAccess>) -> serde_json::Value {
+    serde_json::json!({ "port": state.port, "token": state.token })
 }
 
 /// Let the proxy serve these local files. Only the app's own webview can call
@@ -102,15 +109,15 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             let allowed = AllowedFiles::default();
-            let port = proxy::spawn(app.handle().clone(), allowed.clone())?;
-            app.manage(ProxyPort(port));
+            let (port, token) = proxy::spawn(app.handle().clone(), allowed.clone())?;
+            app.manage(ProxyAccess { port, token });
             app.manage(allowed);
             notify::register();
             build_tray(app.handle())?;
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            proxy_port,
+            proxy_access,
             allow_local_files,
             set_tray_tooltip,
             notify::notify

@@ -15,7 +15,7 @@ import { useRadioPlayer } from "./hooks/useRadioPlayer";
 import { usePomodoro, type Phase } from "./hooks/usePomodoro";
 import { getGenre } from "./data/genres";
 import { DEFAULT_GENRE, DEFAULT_STATION, PICKS, isPick, type Station } from "./data/stations";
-import { getProxyPort, proxied, resolveStationUrl, isTauri } from "./lib/proxy";
+import { getProxyAccess, proxied, resolveStationUrl, isTauri, type ProxyAccess } from "./lib/proxy";
 import { useAppearance } from "./theme/useAppearance";
 import { useFavorites } from "./hooks/useFavorites";
 import { useAlbumArt } from "./hooks/useAlbumArt";
@@ -67,7 +67,7 @@ function loadLast(): { station: Station; queue: Queue } {
 }
 
 export default function App() {
-  const [port, setPort] = useState<number | null>(null);
+  const [proxy, setProxy] = useState<ProxyAccess | null>(null);
   const [portError, setPortError] = useState<string | null>(null);
   const [last] = useState(loadLast);
   const [selected, setSelected] = useState<Station>(last.station);
@@ -126,8 +126,8 @@ export default function App() {
       setPortError("Not running inside Tauri — start with `npm run tauri dev`.");
       return;
     }
-    getProxyPort()
-      .then(setPort)
+    getProxyAccess()
+      .then(setProxy)
       .catch((e) => setPortError(String(e)));
   }, []);
 
@@ -149,7 +149,7 @@ export default function App() {
 
   const playStation = useCallback(
     async (station: Station) => {
-      if (port === null) return;
+      if (proxy === null) return;
       const seq = ++playSeq.current;
 
       // Show the switch immediately — resolving can take a network round trip
@@ -161,18 +161,18 @@ export default function App() {
       try {
         if (isLocal(station)) {
           // A file on disk: no resolving, and a quiet passage is not dead air.
-          await player.play(localUrl(port, localPath(station)), { watchSilence: false });
+          await player.play(localUrl(proxy, localPath(station)), { watchSilence: false });
           return;
         }
         const upstream = await resolve(station);
         if (seq !== playSeq.current) return; // a later click already won
-        await player.play(proxied(port, upstream));
+        await player.play(proxied(proxy, upstream));
       } catch {
         if (seq !== playSeq.current) return;
         onFailedRef.current("could not be reached");
       }
     },
-    [player, port, resolve],
+    [player, proxy, resolve],
   );
 
   const stopPlayback = useCallback(() => {
@@ -482,7 +482,7 @@ export default function App() {
           nowPlaying={nowPlaying}
           art={art}
           playing={playing !== null}
-          disabled={port === null}
+          disabled={proxy === null}
           onPlay={() => selectAndPlay(selected)}
           onStop={stopPlayback}
           onNext={() => step(1)}

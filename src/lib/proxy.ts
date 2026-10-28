@@ -2,18 +2,30 @@ import { invoke } from "@tauri-apps/api/core";
 
 import { pickMirror } from "./radioBrowser";
 
-let cachedPort: number | null = null;
+/**
+ * Where the audio proxy is, and the token that admits us to it.
+ *
+ * The port alone is not a secret — a loopback port can be found by anything on
+ * the machine, including a web page in a browser. The token can only be had by
+ * asking Tauri, which a web page cannot do. See `src-tauri/src/proxy.rs`.
+ */
+export interface ProxyAccess {
+  port: number;
+  token: string;
+}
 
-/** Loopback port the Rust audio proxy bound at startup. */
-export async function getProxyPort(): Promise<number> {
-  if (cachedPort !== null) return cachedPort;
-  cachedPort = await invoke<number>("proxy_port");
-  return cachedPort;
+let cached: ProxyAccess | null = null;
+
+export async function getProxyAccess(): Promise<ProxyAccess> {
+  if (cached !== null) return cached;
+  cached = await invoke<ProxyAccess>("proxy_access");
+  return cached;
 }
 
 /** Wrap an upstream stream URL so it reaches the webview CORS-clean. */
-export function proxied(port: number, upstream: string): string {
-  return `http://127.0.0.1:${port}/stream?url=${encodeURIComponent(upstream)}`;
+export function proxied({ port, token }: ProxyAccess, upstream: string): string {
+  const q = new URLSearchParams({ url: upstream, t: token });
+  return `http://127.0.0.1:${port}/stream?${q}`;
 }
 
 export function isTauri(): boolean {

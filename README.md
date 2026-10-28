@@ -25,7 +25,7 @@ response carries no `Access-Control-Allow-Origin` header, the node outputs silen
 dead visualizer — dead audio. Most public Icecast endpoints send no CORS headers.
 
 `src-tauri/src/proxy.rs` fetches upstream from Rust (no CORS there), re-serves the bytes from
-`127.0.0.1` with a permissive header, and while it holds them:
+`127.0.0.1` with the header the webview needs, and while it holds them:
 
 - de-interleaves **ICY metadata** into `now-playing` events (a webview cannot see these at all)
 - resolves `.pls` / `.m3u` playlist URLs to the stream behind them
@@ -33,6 +33,24 @@ dead visualizer — dead audio. Most public Icecast endpoints send no CORS heade
 
 Verified against live traffic: `stream.zeno.fm` answers a direct request with 302 and no
 ACAO; through the proxy it is 200 + ACAO with clean MP3 frame sync.
+
+### Why the proxy is not an open relay
+
+A loopback port is not private. Anything else on the machine can reach it, and so can any web
+page in any browser — the ephemeral range takes a second or two to scan. A proxy that takes a
+URL and fetches it is, unguarded, a way for a page to launder requests through this app and
+reach what it cannot: your own services on `127.0.0.1`, your LAN, a cloud metadata endpoint at
+`169.254.169.254`. Three independent guards stop that, each of which has to hold on its own:
+
+| | |
+|---|---|
+| **A token** | 32 random bytes per run, handed to the webview over Tauri IPC and required on every request. It is never printed or written to disk. A page that finds the port cannot ask Tauri for it. |
+| **An origin allowlist** | `Access-Control-Allow-Origin` goes to the app's own webview and nothing else, so a page that somehow had the token still could not read the reply. |
+| **A target allowlist** | Upstream must be `http(s)` and must not resolve to a loopback, private, link-local or carrier-NAT address — checked before the request, on each redirect, and again against the address actually connected to, which is what closes DNS rebinding. |
+
+`cargo test -p focus-amp` covers the address and token rules directly. Against a running
+build, every unauthenticated request is refused with 403, and a valid token aimed at
+`169.254.169.254`, `192.168.1.1`, `file://` or the proxy's own port is refused too.
 
 ## Stream health is automatic
 
