@@ -21,10 +21,19 @@ npm run tauri dev
 Checks worth running before you push:
 
 ```bash
-npm run build          # type-check and bundle the front end
+npm run build          # check the catalog, type-check, and bundle the front end
+npm run check:stations # just the catalog gate, which `build` runs first
 npm run notices        # regenerate THIRD-PARTY-NOTICES.md if dependencies changed
 npm run audit:themes   # contrast, every theme variant
 npm run audit:genres   # station yield per genre, against the live directory
+```
+
+And for the Rust half, from `src-tauri/` — CI runs exactly these:
+
+```bash
+cargo fmt --check
+cargo clippy --no-default-features --all-targets -- -D warnings
+cargo test --no-default-features
 ```
 
 `audit:genres` talks to the Radio Browser directory, so it needs a network connection and takes
