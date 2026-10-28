@@ -8,9 +8,10 @@
  * The accent is what holds constant across a family — it is the family's
  * identity — while the chassis flips.
  *
- * The display stays dark glass in every variant. On a real silver faceplate the
- * meter window is a smoked panel, so it is both period-correct and the reason
- * the visualizer holds up on a bright chassis.
+ * The display flips with the chassis. A lit display emits and reads as colour
+ * on black glass; an unlit one reflects and reads as dark segments on a pale
+ * panel. Each family therefore carries two, and a daylight chassis no longer
+ * has a black hole cut in it.
  */
 
 export type Mode = "light" | "dark" | "system";
@@ -228,7 +229,7 @@ function family(
 }
 
 // ── The displays ────────────────────────────────────────────────────────────
-// Shared within a family — the glass does not change when the chassis flips.
+// One emissive set, used by the dark variants.
 
 const glass = (ground: string, lo: string, mid: string, hi: string, ink: string): Glass => ({
   ground,
@@ -251,219 +252,36 @@ const GRAPE_GLASS = glass("#120c1f", "#a78bfa", "#e879f9", "#fde68a", "#ece4fb")
 const BLUE_GLASS = glass("#0c1a26", "#3ad0ff", "#2a8fef", "#b6dcff", "#dceaf7");
 
 
+/**
+ * The light-mode displays. A lit display and an unlit one are different
+ * objects: a VFD or an LED ladder *emits*, so it reads as colour on black
+ * glass, while a passive LCD *reflects*, so it reads as dark segments on a
+ * pale panel. Flipping the chassis to daylight and leaving the display black
+ * looks like a hole cut in the faceplate.
+ *
+ * So each family gets a reflective counterpart: the same hue, inverted. The
+ * ground is pale and tinted, the segments are dark. `variant()` still pushes
+ * the lit colour until it clears 4.6:1 on that ground, so these are as
+ * legible as the emissive ones.
+ */
+const PAPER_GLASS = glass("#f4f4f4", "#4a4a4a", "#2b2b2b", "#000000", "#000000");
+const AMBER_PAPER = glass("#e9e4d9", "#2f7a4e", "#9a6208", "#9c2f1e", "#1a1613");
+const TEAL_PAPER = glass("#e3ebe8", "#0f6b5a", "#8a6410", "#a03a26", "#121a18");
+const DIAL_PAPER = glass("#efe5d3", "#8a6410", "#a8521a", "#9c2f1e", "#221a0e");
+const BRAUN_PAPER = glass("#ecebe5", "#2f6b38", "#8a5f10", "#a63f12", "#171716");
+const GREEN_PAPER = glass("#e7f1e8", "#156638", "#0d7a44", "#073a20", "#0a1c10");
+const AMBER_CRT_PAPER = glass("#f6eede", "#8a5a10", "#a06c18", "#653c06", "#231803");
+const RED_PAPER = glass("#f7eceb", "#9c1f18", "#b52a20", "#68110d", "#2a0606");
+const LCD_PAPER = glass("#c4cfa1", "#39542c", "#26401f", "#121d0e", "#0f1a0c");
+const NEON_PAPER = glass("#f7e7ef", "#a3186b", "#7a1f8a", "#8a5208", "#2a1230");
+const GRAPE_PAPER = glass("#efe8f8", "#5a3aa3", "#8a2f9c", "#7a5c08", "#231a33");
+const BLUE_PAPER = glass("#e5edf6", "#0f5a8a", "#1a5aa8", "#0a3a66", "#16232e");
+
 // ── The families ────────────────────────────────────────────────────────────
-// Hi-fi first, then the monochrome tubes, then the colourful ones, then 1-bit.
+// Classic leads: it is the default, and the plainest thing here. Then the
+// hi-fi separates, the monochrome tubes, and the colourful ones.
 
 export const THEMES: Theme[] = [
-  family(
-    "graphite",
-    "Graphite",
-    [6, 10],
-    {
-      era: "Black-face separate, early 80s",
-      chassis: "#1b1917",
-      ink: "#f1ece3",
-      accent: "#e8a33d",
-      glass: AMBER_GLASS,
-    },
-    {
-      era: "Silver-face separate, 1979",
-      chassis: "#e7e4dc",
-      ink: "#201e1a",
-      accent: "#9a6208",
-      glass: AMBER_GLASS,
-    },
-  ),
-  family(
-    "marine",
-    "Marine",
-    [6, 10],
-    {
-      era: "Black-face receiver, teal dial lamp",
-      chassis: "#16201e",
-      ink: "#e4efed",
-      accent: "#4fd6c9",
-      glass: TEAL_GLASS,
-    },
-    {
-      era: "Brushed aluminium receiver, 1977",
-      chassis: "#e9e7e1",
-      ink: "#22201c",
-      accent: "#1c6b6b",
-      glass: TEAL_GLASS,
-    },
-  ),
-  family(
-    "walnut",
-    "Walnut",
-    [5, 8],
-    {
-      era: "Wood-cabinet receiver, 1974",
-      chassis: "#2b1d13",
-      ink: "#f3e6d3",
-      accent: "#ff8a3d",
-      glass: DIAL_GLASS,
-    },
-    {
-      era: "Cream faceplate, walnut ends",
-      chassis: "#efe3cf",
-      ink: "#2b1a0e",
-      accent: "#a3470f",
-      glass: DIAL_GLASS,
-    },
-  ),
-  family(
-    "braun",
-    "Braun",
-    [3, 5],
-    {
-      era: "Braun black series, 1970s",
-      chassis: "#1c1c1b",
-      ink: "#f0efe9",
-      accent: "#ff6a2b",
-      glass: BRAUN_GLASS,
-    },
-    {
-      era: "Braun T3 pocket radio, 1958",
-      chassis: "#ecebe6",
-      ink: "#1b1b1a",
-      accent: "#d9480f",
-      glass: BRAUN_GLASS,
-    },
-  ),
-  family(
-    "phosphor",
-    "Phosphor",
-    [2, 4],
-    {
-      era: "P31 green monitor, 1983",
-      chassis: "#0b150e",
-      ink: "#aaffc8",
-      accent: "#4ef08a",
-      glass: GREEN_GLASS,
-    },
-    {
-      era: "Reverse video, same tube",
-      chassis: "#f1f7f2",
-      ink: "#0a1c10",
-      accent: "#0f6b33",
-      glass: GREEN_GLASS,
-    },
-  ),
-  family(
-    "amber",
-    "Amber",
-    [2, 4],
-    {
-      era: "Amber monochrome monitor, 1985",
-      chassis: "#150f06",
-      ink: "#ffdaa2",
-      accent: "#ffb74d",
-      glass: AMBER_CRT_GLASS,
-    },
-    {
-      era: "Reverse video, same tube",
-      chassis: "#f8f2e7",
-      ink: "#231803",
-      accent: "#8a5200",
-      glass: AMBER_CRT_GLASS,
-    },
-  ),
-  family(
-    "virtual",
-    "Virtual",
-    [2, 4],
-    {
-      era: "Virtual Boy, 1995",
-      chassis: "#170506",
-      ink: "#ffc9c4",
-      accent: "#ff3b30",
-      glass: RED_GLASS,
-    },
-    {
-      era: "Reverse video, same LEDs",
-      chassis: "#fbefee",
-      ink: "#2a0606",
-      accent: "#b3140c",
-      glass: RED_GLASS,
-    },
-  ),
-  family(
-    "dmg",
-    "DMG",
-    [4, 6],
-    {
-      era: "Game Boy Light, backlit, 1998",
-      chassis: "#17230f",
-      ink: "#d7e8b0",
-      accent: "#9bbc0f",
-      glass: LCD_GLASS,
-    },
-    {
-      era: "Game Boy, 1989",
-      chassis: "#c4cfa1",
-      ink: "#1a2410",
-      accent: "#2f5a2f",
-      glass: LCD_GLASS,
-    },
-  ),
-  family(
-    "outrun",
-    "Outrun",
-    [6, 10],
-    {
-      era: "Arcade cabinet, 1986",
-      chassis: "#1b1033",
-      ink: "#f4e9ff",
-      accent: "#ff4fa3",
-      glass: NEON_GLASS,
-    },
-    {
-      era: "Miami pastel, same summer",
-      chassis: "#fbeef3",
-      ink: "#2a1230",
-      accent: "#c2185b",
-      glass: NEON_GLASS,
-    },
-  ),
-  family(
-    "grape",
-    "Grape",
-    [9, 14],
-    {
-      era: "Translucent shell, lights off",
-      chassis: "#1d162b",
-      ink: "#ece4fb",
-      accent: "#b79bff",
-      glass: GRAPE_GLASS,
-    },
-    {
-      era: "iMac G3 Grape, 1999",
-      chassis: "#f1ecf8",
-      ink: "#231a33",
-      accent: "#6b3fb5",
-      glass: GRAPE_GLASS,
-    },
-  ),
-  family(
-    "aqua",
-    "Aqua",
-    [8, 12],
-    {
-      era: "The Graphite appearance, same year",
-      chassis: "#151f2a",
-      ink: "#dce9f5",
-      accent: "#4aa3ff",
-      glass: BLUE_GLASS,
-    },
-    {
-      era: "Mac OS X 10.0, 2001",
-      chassis: "#f3f7fb",
-      ink: "#16232e",
-      accent: "#1a72d8",
-      glass: BLUE_GLASS,
-    },
-  ),
   family(
     "classic",
     "Classic",
@@ -486,13 +304,222 @@ export const THEMES: Theme[] = [
       chassis: "#ffffff",
       ink: "#000000",
       accent: "#000000",
-      glass: NEON_GLASS,
+      glass: PAPER_GLASS,
       override: { "--app-border-default": "#000000" },
+    },
+  ),
+  family(
+    "graphite",
+    "Graphite",
+    [6, 10],
+    {
+      era: "Black-face separate, early 80s",
+      chassis: "#1b1917",
+      ink: "#f1ece3",
+      accent: "#e8a33d",
+      glass: AMBER_GLASS,
+    },
+    {
+      era: "Silver-face separate, 1979",
+      chassis: "#e7e4dc",
+      ink: "#201e1a",
+      accent: "#9a6208",
+      glass: AMBER_PAPER,
+    },
+  ),
+  family(
+    "marine",
+    "Marine",
+    [6, 10],
+    {
+      era: "Black-face receiver, teal dial lamp",
+      chassis: "#16201e",
+      ink: "#e4efed",
+      accent: "#4fd6c9",
+      glass: TEAL_GLASS,
+    },
+    {
+      era: "Brushed aluminium receiver, 1977",
+      chassis: "#e9e7e1",
+      ink: "#22201c",
+      accent: "#1c6b6b",
+      glass: TEAL_PAPER,
+    },
+  ),
+  family(
+    "walnut",
+    "Walnut",
+    [5, 8],
+    {
+      era: "Wood-cabinet receiver, 1974",
+      chassis: "#2b1d13",
+      ink: "#f3e6d3",
+      accent: "#ff8a3d",
+      glass: DIAL_GLASS,
+    },
+    {
+      era: "Cream faceplate, walnut ends",
+      chassis: "#efe3cf",
+      ink: "#2b1a0e",
+      accent: "#a3470f",
+      glass: DIAL_PAPER,
+    },
+  ),
+  family(
+    "braun",
+    "Braun",
+    [3, 5],
+    {
+      era: "Braun black series, 1970s",
+      chassis: "#1c1c1b",
+      ink: "#f0efe9",
+      accent: "#ff6a2b",
+      glass: BRAUN_GLASS,
+    },
+    {
+      era: "Braun T3 pocket radio, 1958",
+      chassis: "#ecebe6",
+      ink: "#1b1b1a",
+      accent: "#d9480f",
+      glass: BRAUN_PAPER,
+    },
+  ),
+  family(
+    "phosphor",
+    "Phosphor",
+    [2, 4],
+    {
+      era: "P31 green monitor, 1983",
+      chassis: "#0b150e",
+      ink: "#aaffc8",
+      accent: "#4ef08a",
+      glass: GREEN_GLASS,
+    },
+    {
+      era: "Reverse video, same tube",
+      chassis: "#f1f7f2",
+      ink: "#0a1c10",
+      accent: "#0f6b33",
+      glass: GREEN_PAPER,
+    },
+  ),
+  family(
+    "amber",
+    "Amber",
+    [2, 4],
+    {
+      era: "Amber monochrome monitor, 1985",
+      chassis: "#150f06",
+      ink: "#ffdaa2",
+      accent: "#ffb74d",
+      glass: AMBER_CRT_GLASS,
+    },
+    {
+      era: "Reverse video, same tube",
+      chassis: "#f8f2e7",
+      ink: "#231803",
+      accent: "#8a5200",
+      glass: AMBER_CRT_PAPER,
+    },
+  ),
+  family(
+    "virtual",
+    "Virtual",
+    [2, 4],
+    {
+      era: "Virtual Boy, 1995",
+      chassis: "#170506",
+      ink: "#ffc9c4",
+      accent: "#ff3b30",
+      glass: RED_GLASS,
+    },
+    {
+      era: "Reverse video, same LEDs",
+      chassis: "#fbefee",
+      ink: "#2a0606",
+      accent: "#b3140c",
+      glass: RED_PAPER,
+    },
+  ),
+  family(
+    "dmg",
+    "DMG",
+    [4, 6],
+    {
+      era: "Game Boy Light, backlit, 1998",
+      chassis: "#17230f",
+      ink: "#d7e8b0",
+      accent: "#9bbc0f",
+      glass: LCD_GLASS,
+    },
+    {
+      era: "Game Boy, 1989",
+      chassis: "#c4cfa1",
+      ink: "#1a2410",
+      accent: "#2f5a2f",
+      glass: LCD_PAPER,
+    },
+  ),
+  family(
+    "outrun",
+    "Outrun",
+    [6, 10],
+    {
+      era: "Arcade cabinet, 1986",
+      chassis: "#1b1033",
+      ink: "#f4e9ff",
+      accent: "#ff4fa3",
+      glass: NEON_GLASS,
+    },
+    {
+      era: "Miami pastel, same summer",
+      chassis: "#fbeef3",
+      ink: "#2a1230",
+      accent: "#c2185b",
+      glass: NEON_PAPER,
+    },
+  ),
+  family(
+    "grape",
+    "Grape",
+    [9, 14],
+    {
+      era: "Translucent shell, lights off",
+      chassis: "#1d162b",
+      ink: "#ece4fb",
+      accent: "#b79bff",
+      glass: GRAPE_GLASS,
+    },
+    {
+      era: "iMac G3 Grape, 1999",
+      chassis: "#f1ecf8",
+      ink: "#231a33",
+      accent: "#6b3fb5",
+      glass: GRAPE_PAPER,
+    },
+  ),
+  family(
+    "aqua",
+    "Aqua",
+    [8, 12],
+    {
+      era: "The Graphite appearance, same year",
+      chassis: "#151f2a",
+      ink: "#dce9f5",
+      accent: "#4aa3ff",
+      glass: BLUE_GLASS,
+    },
+    {
+      era: "Mac OS X 10.0, 2001",
+      chassis: "#f3f7fb",
+      ink: "#16232e",
+      accent: "#1a72d8",
+      glass: BLUE_PAPER,
     },
   ),
 ];
 
-export const DEFAULT_THEME = "graphite";
+export const DEFAULT_THEME = "classic";
 export const DEFAULT_MODE: Mode = "system";
 
 /** Families renamed since a preference may already be stored. */

@@ -98,12 +98,10 @@ const SWISS_CLASSIC = pick("Radio Swiss Classic", "SRG SSR · Classical, no talk
 const LOFI_1 = pick("Nightwave Plaza", "Lofi / Synthwave", "https://radio.plaza.one/ogg", "instrumental");
 const LOFI_2 = pick("Laut.fm Lofi", "Lofi Beats", "https://stream.laut.fm/lofi", "instrumental");
 const LOFI_3 = pick("0nlineradio LO-FI", "Lofi Hip Hop", "https://stream.0nlineradio.com/lo-fi", "instrumental");
-const LOFI_4 = pick("BGMVibes", "Lofi & Chill", "https://radio.sutekihost.com/listen/bgmvibes/radio.mp3", "instrumental");
 const LOFI_5 = pick("CLIAMP Lofi", "Lofi Hip Hop", "https://radio.cliamp.stream/lofi/stream", "instrumental");
 const LOFI_6 = pick("Epic Lounge", "Workday Lounge", "https://stream.epic-lounge.com/workday-lounge", "instrumental");
 const LOFI_8 = pick("Hotmix Lo-Fi", "Lofi & Chill", "https://streaming.hotmixradio.com/hotmix-lofi-en-mp3", "instrumental");
 const LOFI_9 = pick("Hunter.FM Lo-Fi", "Lofi Beats", "https://live.hunter.fm/lofi_normal", "instrumental");
-const LOFI_10 = pick("Box Lofi Radio", "Lofi Hip Hop", "https://stream.zeno.fm/tabzverz0fctv", "instrumental");
 
 // Nightride FM (nightride.mp3, chillsynth.mp3) was removed from the Picks on
 // 2026-09-18: excluded pending provenance. Its own site names no operator and
@@ -115,12 +113,12 @@ const LOFI_10 = pick("Box Lofi Radio", "Lofi Hip Hop", "https://stream.zeno.fm/t
 // Public and university stations whose whole point is alternative rock. All
 // three were checked on 2026-09-24; see the register in docs/EXECUTION.md Part 4.
 const KEXP = pick("KEXP", "Friends of KEXP · Seattle, DJ-picked", "https://kexp-mp3-128.streamguys1.com/kexp128.mp3", "vocal");
-const THE_CURRENT = pick("The Current", "Minnesota Public Radio · Alternative", "https://current.stream.publicradio.org/kcmp.mp3", "vocal");
+const THE_CURRENT = pick("The Current", "Minnesota Public Radio · Alternative", "https://current.stream.publicradio.org/kcmp.aac", "vocal");
 const WXPN = pick("WXPN", "University of Pennsylvania · Adult alternative", "https://wxpnhi.xpn.org/xpnhi", "vocal");
 
 /** Picks by genre id. A genre with none is filled entirely from the directory. */
 export const PICKS: Record<string, Station[]> = {
-  lofi: [LOFI_1, LOFI_2, LOFI_3, LOFI_4, LOFI_5, LOFI_6, LOFI_8, LOFI_9, LOFI_10],
+  lofi: [LOFI_1, LOFI_2, LOFI_3, LOFI_5, LOFI_6, LOFI_8, LOFI_9],
   ambient: [GROOVE_SALAD, DRONE_ZONE, GROOVE_SALAD_CLASSIC],
   space: [DEEP_SPACE_ONE, SYNPHAERA, SPACE_STATION, MISSION_CONTROL, DARK_ZONE],
   classical: [SWISS_CLASSIC],

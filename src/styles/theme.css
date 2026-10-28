@@ -1,33 +1,33 @@
-/* Structural tokens plus the Graphite palette as the first-paint baseline.
+/* Structural tokens plus the Classic palette as the first-paint baseline.
    Colour tokens are overwritten at runtime by applyTheme(); these values keep
    the very first frame from rendering against undefined variables. */
 
 :root {
   /* ── Colour: Graphite (see src/theme/themes.ts) ── */
-  --app-bg-base: #131210;
-  --app-bg-surface: #211f1c;
-  --app-bg-header: #0b0b0a;
-  --app-bg-overlay: #2b2925;
+  --app-bg-base: #000000;
+  --app-bg-surface: #191919;
+  --app-bg-header: #000000;
+  --app-bg-overlay: #242424;
 
-  --app-border-subtle: #3d3a36;
-  --app-border-muted: #514f4a;
-  --app-border-default: #6f6b66;
-  --app-border-input: rgba(241, 236, 227, 0.2);
+  --app-border-subtle: #363636;
+  --app-border-muted: #4b4b4b;
+  --app-border-default: #ffffff;
+  --app-border-input: rgba(255,255,255,0.2);
 
-  --app-accent: #e8a33d;
-  --app-accent-ink: #1c1407;
+  --app-accent: #ffffff;
+  --app-accent-ink: #1f1f1f;
 
-  --app-text-primary: #f1ece3;
-  --app-text-muted: #b8b4ac;
-  --app-text-faint: #94918a;
+  --app-text-primary: #ffffff;
+  --app-text-muted: #afafaf;
+  --app-text-faint: #8c8c8c;
   --app-danger: #ff6b5e;
 
-  --viz-ground: #0a0908;
-  --viz-grid: #2c2b28;
-  --viz-lo: #57c98a;
-  --viz-mid: #e8a33d;
-  --viz-hi: #e0553c;
-  --viz-ink: #f1ece3;
+  --viz-ground: #0d0620;
+  --viz-grid: #2f2841;
+  --viz-lo: #35e0ff;
+  --viz-mid: #ff4fa3;
+  --viz-hi: #ffd84d;
+  --viz-ink: #f6eaff;
 
   /* ── Structure ── */
   --app-radius-sm: 6px;

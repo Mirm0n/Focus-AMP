@@ -1,4 +1,4 @@
-# Tunescape V2
+# Focus AMP V2
 
 A single-player desktop radio player. Tauri, no database, no multiplayer — pick a genre,
 get a retro spectrum visualizer, listen.
@@ -54,7 +54,7 @@ A manual click on a dimmed station gives it another chance.
 
 ## The catalog: music only, Picks only
 
-Tunescape is a focus-music app that plays music made by people. The catalog is **Picks and
+Focus AMP is a focus-music app that plays music made by people. The catalog is **Picks and
 nothing else**: stations chosen by hand, from broadcasters with named people behind them. The
 sidebar lists the genres that have Picks; opening one lists its stations. A search
 box sits above both levels. A genre with no Picks yet (Solo piano, Nature, Blues) is not shown.
@@ -65,8 +65,8 @@ may become a Pick, and which stations may appear at all, are in
 [docs/EXECUTION.md](docs/EXECUTION.md) Part 3.
 
 **Show community directory** (off by default; being restored, task L4) fills each genre out from
-the community directory and brings back the genres with no Picks. Picks then carry a PICK
-badge so the two can be told apart. Search, favorites and the remembered last station all
+the community directory and brings back the genres with no Picks. A genre holding both then
+splits under two headings, Picks and Community directory, so the two can be told apart. Search, favorites and the remembered last station all
 follow the same setting: with it off they see Picks only, and a directory station starred
 earlier is kept but not listed until it is turned back on.
 
@@ -74,7 +74,7 @@ With that setting on, a genre is filled from two sources, merged into one list:
 
 - **Picks** (`src/data/stations.ts`) are hand-chosen from broadcasters with named human
   programmers — SomaFM, Radio Paradise, FIP, Radio Swiss — and marked by hand as
-  instrumental, mixed or vocal. They come first, with a badge, and need no network.
+  instrumental, mixed or vocal. They come first, under their own heading, and need no network.
 - **The directory** is [Radio Browser](https://www.radio-browser.info), which fills a genre out
   to about sixty stations. A genre is a *set of tags we define* (`src/data/genres.ts`), because
   the directory's tags are free text: "lofi", "lo-fi", "lo fi" and "chillhop" are four
@@ -92,8 +92,9 @@ With that setting on, a genre is filled from two sources, merged into one list:
 
 Stations also carry a vocals mark (instrumental, mixed or vocal). The directory has no such
 field, so it comes from a Pick's hand mark, else the station's own tags ("instrumental",
-"vocal", "choir"…), else the genre's default. A row is labelled INST or VOX only when one of
-the first two says so. There was a filter on it; it was removed as not worth its space.
+"vocal", "choir"…), else the genre's default. It is data the catalog keeps, not something the
+list shows: the filter that used it, and the INST / VOX row marks, were both removed — in a
+genre of mostly instrumental stations the marks sat on nearly every row and said nothing.
 
 Whichever list a station was picked from travels with it as its queue, so the automatic
 failover below moves to the next station *in that list*. It gives up after five dead stations
@@ -138,7 +139,7 @@ JS API. Windows files a toast under an AppUserModelID, not under the process tha
 the plugin registers ours only for an installed build — so in development every alert arrived
 as "Windows PowerShell", with PowerShell's icon. `src-tauri/src/notify.rs` registers the id
 under HKCU with the app's name and icon and sends the toast under it, so the notification says
-Tunescape whether the app is installed or run from source. macOS and Linux take the name from
+Focus AMP whether the app is installed or run from source. macOS and Linux take the name from
 the bundle and still go through the plugin.
 
 The one integration a radio app can offer that a standalone timer cannot: **pause radio on
@@ -213,7 +214,7 @@ integration is in the history (`f97e653`) if it is ever wanted back, along with 
 component-surface hook on the `Visualizer` contract that let a library own its own canvas.
 
 [audioMotion-analyzer](https://github.com/hvianna/audioMotion-analyzer) is the other strong
-option and was rejected on licensing: it is AGPL-3.0-or-later, which would require Tunescape
+option and was rejected on licensing: it is AGPL-3.0-or-later, which would require Focus AMP
 itself to ship with source available. Not a reason to avoid it, but a deliberate decision
 rather than an accidental one.
 
@@ -292,3 +293,33 @@ five were unused) are down to Chivo and Chivo Mono.
 ## Known gaps
 
 See [docs/EXECUTION.md](docs/EXECUTION.md) Part 6.
+
+## Contributing
+
+Bug reports, platform fixes and new visualizers are welcome. Start with
+[CONTRIBUTING.md](CONTRIBUTING.md) — it covers the build, the checks worth running, and the two
+rules that are not style preferences: stations need a provenance record, and a broadcaster's own
+terms come first.
+
+**Broadcasters:** to have a station removed, open a *Station removal request* issue. No reason
+needed, and we aim to act within seven days.
+
+**Security:** please don't open a public issue. See [SECURITY.md](SECURITY.md).
+
+## Licence
+
+**GPL-3.0-or-later.** See [LICENSE](LICENSE). Anyone may use, study, change and share
+Focus AMP; anyone who distributes a changed version has to pass the same freedoms on, which
+means nobody can take it closed and sell it.
+
+Focus AMP is free, and free is not incidental: most stations license *personal listening*, and
+a player being sold would make their streams part of a product. The reasoning is in
+[docs/EXECUTION.md](docs/EXECUTION.md) §1.2.
+
+Third-party dependencies keep their own licences, listed in
+[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) (`npm run notices` regenerates it).
+
+## Donations
+
+Not set up yet. When there is a public release there will be a GitHub Sponsors or Ko-fi link
+here. There will never be a paywall on the radio.

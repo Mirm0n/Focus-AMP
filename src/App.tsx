@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
@@ -19,18 +20,23 @@ import { useAppearance } from "./theme/useAppearance";
 import { useFavorites } from "./hooks/useFavorites";
 import { useAlbumArt } from "./hooks/useAlbumArt";
 import { loadShowUnverified, useCatalog } from "./hooks/useCatalog";
+import { useSleepTimer } from "./hooks/useSleepTimer";
+import { isLocal, localPath, localUrl, useLocalLibrary } from "./lib/localFiles";
 
 /** How many dead stations in a row the player will step over by itself. The
     world lists are uncurated, and without a limit one bad country could have
     it walking down eighty streams. */
 const MAX_AUTO_SKIPS = 5;
 
+/** Failures before a station is dimmed and skipped for the rest of the session. */
+const FAILURES_BEFORE_UNAVAILABLE = 2;
+
 /**
  * The last station and the list it came from, so a restart puts back what was
  * on rather than the default. It is selected, not played: a radio that starts
  * by itself when the app opens is a surprise nobody asked for.
  */
-const LAST_KEY = "tunescape:last";
+const LAST_KEY = "focusamp:last";
 
 function loadLast(): { station: Station; queue: Queue } {
   const fallback = {
@@ -44,7 +50,7 @@ function loadLast(): { station: Station; queue: Queue } {
     if (!parsed || !ok(parsed.station)) return fallback;
     // With the catalog at Picks only, a directory station left over from before
     // doesn't get to come back as the thing that is on.
-    const allowed = (s: Station) => loadShowUnverified() || isPick(s);
+    const allowed = (s: Station) => loadShowUnverified() || isPick(s) || isLocal(s);
     if (!allowed(parsed.station)) return fallback;
     const stations = Array.isArray(parsed.queue?.stations)
       ? parsed.queue.stations.filter(ok).filter(allowed)
@@ -69,6 +75,14 @@ export default function App() {
   const [nowPlaying, setNowPlaying] = useState<string | null>(null);
   /** Stations that failed while we were listening. Dimmed, and skipped over. */
   const [unavailable, setUnavailable] = useState<Set<string>>(new Set());
+  /**
+   * How many times each station has failed this session. The proxy already
+   * retries the handshake, so one failure here means two refusals a second
+   * apart — but radio hosts recover, and dimming a station forever on the
+   * strength of one bad minute is how a working catalog comes to look broken.
+   * It is only struck off on the second.
+   */
+  const strikes = useRef(new Map<string, number>());
   const [note, setNote] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   /** What a screen reader should hear. The app changes station by itself when
@@ -80,6 +94,7 @@ export default function App() {
   const appearance = useAppearance();
   const favorites = useFavorites();
   const catalog = useCatalog();
+  const local = useLocalLibrary();
 
   const resolvedCache = useRef(new Map<string, string>());
   /** Rising token so a slow resolve from an earlier click can't land after a later one. */
@@ -97,8 +112,13 @@ export default function App() {
   /** What to put back on when a break ends. */
   const resumeRef = useRef<Station | null>(null);
   const onPhaseRef = useRef<(next: Phase, previous: Phase) => void>(() => {});
+  /** Moves on when a local file finishes; defined further down. */
+  const onEndedRef = useRef<() => void>(() => {});
 
-  const player = useRadioPlayer({ onFailed: (reason) => onFailedRef.current(reason) });
+  const player = useRadioPlayer({
+    onFailed: (reason) => onFailedRef.current(reason),
+    onEnded: () => onEndedRef.current(),
+  });
   const pom = usePomodoro({ onPhaseChange: (n, p) => onPhaseRef.current(n, p) });
 
   useEffect(() => {
@@ -139,6 +159,11 @@ export default function App() {
       setNowPlaying(null);
 
       try {
+        if (isLocal(station)) {
+          // A file on disk: no resolving, and a quiet passage is not dead air.
+          await player.play(localUrl(port, localPath(station)), { watchSilence: false });
+          return;
+        }
         const upstream = await resolve(station);
         if (seq !== playSeq.current) return; // a later click already won
         await player.play(proxied(port, upstream));
@@ -190,7 +215,12 @@ export default function App() {
 
   // A station that actually plays clears the run of failures.
   useEffect(() => {
-    if (player.status === "playing") autoSkips.current = 0;
+    if (player.status !== "playing") return;
+    autoSkips.current = 0;
+    const live = playingRef.current;
+    // It works, so whatever went wrong before did not last. Forget it, or a
+    // blip now and another next week would retire a perfectly good station.
+    if (live) strikes.current.delete(live.url);
   }, [player.status]);
 
   /**
@@ -201,7 +231,13 @@ export default function App() {
     const failed = playingRef.current;
     if (!failed) return;
 
-    const skip = new Set(unavailable).add(failed.url);
+    const count = (strikes.current.get(failed.url) ?? 0) + 1;
+    strikes.current.set(failed.url, count);
+
+    // Struck off on the second failure; on the first it stays in the list and
+    // is simply passed over for now.
+    const skip = new Set(unavailable);
+    if (count >= FAILURES_BEFORE_UNAVAILABLE) skip.add(failed.url);
     setUnavailable(skip);
 
     // The next live one after it, wrapping — not the first live one from the
@@ -210,7 +246,8 @@ export default function App() {
     const at = queue.stations.findIndex((s) => s.url === failed.url);
     const order = [...queue.stations.slice(at + 1), ...queue.stations.slice(0, Math.max(0, at))];
     const next =
-      autoSkips.current < MAX_AUTO_SKIPS ? order.find((s) => !skip.has(s.url)) : undefined;
+      autoSkips.current < MAX_AUTO_SKIPS ? order.find((s) => !skip.has(s.url) && s.url !== failed.url)
+        : undefined;
 
     if (next) {
       autoSkips.current++;
@@ -244,15 +281,127 @@ export default function App() {
   };
 
   // On a desktop the window title is how a screen reader user picks this
-  // window out of the list. Static "Tunescape" tells them nothing.
+  // window out of the list. Static "Focus AMP" tells them nothing.
   useEffect(() => {
     if (!isTauri()) return;
-    const title = playing ? `${playing.name} — Tunescape` : "Tunescape";
+    const title = playing ? `${playing.name} — Focus AMP` : "Focus AMP";
     getCurrentWindow().setTitle(title).catch(() => {});
   }, [playing]);
 
+  /** The station `by` places along the current list from the one on now,
+      wrapping, stepping over anything struck off this session. */
+  const stepFrom = (by: 1 | -1): Station | undefined => {
+    const list = queueRef.current.stations;
+    if (list.length === 0) return undefined;
+    const from = playingRef.current ?? selected;
+    const at = list.findIndex((s) => s.url === from.url);
+    for (let i = 1; i <= list.length; i++) {
+      const s = list[(((at + by * i) % list.length) + list.length) % list.length];
+      if (!unavailable.has(s.url) && s.url !== from.url) return s;
+    }
+    return undefined;
+  };
+
+  const step = (by: 1 | -1) => {
+    const next = stepFrom(by);
+    if (next) selectAndPlay(next);
+  };
+
+  const togglePlayback = () => {
+    if (playingRef.current) stopPlayback();
+    else selectAndPlay(selected);
+  };
+
+  // A local file ran out: carry on down the list, as an album would.
+  onEndedRef.current = () => {
+    const next = stepFrom(1);
+    if (next) {
+      setSelected(next);
+      void playStation(next);
+    } else {
+      playingRef.current = null;
+      setPlaying(null);
+    }
+  };
+
+  // Tray menu, OS media keys and the tray all call through here, so they
+  // always act on this render's state rather than whatever they closed over.
+  const transportRef = useRef({ toggle: togglePlayback, next: () => step(1), prev: () => step(-1) });
+  transportRef.current = { toggle: togglePlayback, next: () => step(1), prev: () => step(-1) };
+
+  const sleep = useSleepTimer({
+    onFadeStart: (seconds) => player.fadeTo(0, seconds),
+    onFadeCancel: () => player.fadeTo(1, 0.4),
+    onExpire: () => {
+      setAnnouncement("Sleep timer ended. Radio stopped.");
+      stopPlayback();
+      // Back to full for whenever it is next switched on.
+      player.fadeTo(1, 0.05);
+    },
+  });
+
+  useEffect(() => {
+    if (!isTauri()) return;
+    const un = listen<string>("tray-action", (e) => {
+      if (e.payload === "toggle") transportRef.current.toggle();
+      else if (e.payload === "next") transportRef.current.next();
+    });
+    return () => {
+      un.then((f) => f());
+    };
+  }, []);
+
+  // Hardware media keys and the Windows media overlay. The webview routes
+  // them through the Media Session API; nothing is grabbed system-wide.
+  useEffect(() => {
+    const ms = typeof navigator !== "undefined" ? navigator.mediaSession : undefined;
+    if (!ms) return;
+    const set = (action: MediaSessionAction, fn: () => void) => {
+      try {
+        ms.setActionHandler(action, fn);
+      } catch {
+        /* action not supported here */
+      }
+    };
+    set("play", () => !playingRef.current && transportRef.current.toggle());
+    set("pause", () => playingRef.current && transportRef.current.toggle());
+    set("stop", () => playingRef.current && transportRef.current.toggle());
+    set("nexttrack", () => transportRef.current.next());
+    set("previoustrack", () => transportRef.current.prev());
+  }, []);
+
+  useEffect(() => {
+    const ms = typeof navigator !== "undefined" ? navigator.mediaSession : undefined;
+    if (!ms) return;
+    ms.playbackState = playing ? "playing" : "paused";
+  }, [playing]);
+
+  useEffect(() => {
+    if (!isTauri()) return;
+    const text = playing
+      ? nowPlaying
+        ? `${playing.name} — ${nowPlaying}`
+        : playing.name
+      : "Focus AMP";
+    // Windows truncates tray tooltips at 127 characters.
+    invoke("set_tray_tooltip", { text: text.slice(0, 120) }).catch(() => {});
+  }, [playing, nowPlaying]);
+
   const live = playing ?? selected;
   const art = useAlbumArt(playing ? nowPlaying : null, appearance.albumArt);
+
+  useEffect(() => {
+    const ms = typeof navigator !== "undefined" ? navigator.mediaSession : undefined;
+    if (!ms || typeof MediaMetadata === "undefined") return;
+    ms.metadata = playing
+      ? new MediaMetadata({
+          title: nowPlaying ?? playing.name,
+          artist: nowPlaying ? playing.name : playing.artist,
+          album: "Focus AMP",
+          artwork: art ? [{ src: art, sizes: "600x600" }] : [],
+        })
+      : null;
+  }, [playing, nowPlaying, art]);
 
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column", position: "relative" }}>
@@ -283,6 +432,7 @@ export default function App() {
           favorites={favorites}
           showUnverified={catalog.showUnverified}
           playingFrom={playing ? queue : null}
+          local={local}
           onPick={selectAndPlay}
           onOpenSettings={() => setSettingsOpen(true)}
         />
@@ -328,12 +478,15 @@ export default function App() {
           station={live}
           favorites={favorites}
           player={player}
+          sleep={sleep}
           nowPlaying={nowPlaying}
           art={art}
           playing={playing !== null}
           disabled={port === null}
           onPlay={() => selectAndPlay(selected)}
           onStop={stopPlayback}
+          onNext={() => step(1)}
+          onPrev={() => step(-1)}
         />
       </div>
 

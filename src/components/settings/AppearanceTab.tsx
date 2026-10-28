@@ -35,7 +35,7 @@ export function AppearanceTab({
   const inTauri = isTauri();
   const [alwaysOnTop, setAlwaysOnTop] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem("tunescape:alwaysOnTop") ?? "false");
+      return JSON.parse(localStorage.getItem("focusamp:alwaysOnTop") ?? "false");
     } catch {
       return false;
     }
@@ -115,7 +115,7 @@ export function AppearanceTab({
             on={alwaysOnTop}
             onChange={(v) => {
               setAlwaysOnTop(v);
-              localStorage.setItem("tunescape:alwaysOnTop", JSON.stringify(v));
+              localStorage.setItem("focusamp:alwaysOnTop", JSON.stringify(v));
             }}
           />
         </FieldGroup>

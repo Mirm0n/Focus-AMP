@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { EQ_BANDS, loadEq, saveEq, type EqState } from "../lib/eq";
+
 /**
  * The playback graph, with automatic stream health built in.
  *
@@ -28,6 +30,14 @@ export type PlayerStatus = "idle" | "loading" | "playing" | "error";
 export interface UseRadioPlayerOptions {
   /** Fired when the current stream fails to start or goes silent. */
   onFailed?: (reason: string) => void;
+  /** Fired when a finite source (a local file) plays to its end. Live radio never ends. */
+  onEnded?: () => void;
+}
+
+export interface PlayOptions {
+  /** Trip the dead-air watchdog on sustained silence. Off for local files,
+      where a quiet passage is the recording, not a dead stream. */
+  watchSilence?: boolean;
 }
 
 export interface RadioPlayer {
@@ -35,9 +45,13 @@ export interface RadioPlayer {
   error: string | null;
   volume: number;
   setVolume: (v: number) => void;
-  play: (url: string) => Promise<void>;
+  play: (url: string, opts?: PlayOptions) => Promise<void>;
   stop: () => void;
   analyser: AnalyserNode | null;
+  eq: EqState;
+  setEq: (eq: EqState) => void;
+  /** Ramp the output toward `target` (0–1) over `seconds`, independent of volume. */
+  fadeTo: (target: number, seconds: number) => void;
 }
 
 /** MediaError codes, phrased to read inside "<Station> …". */
@@ -52,8 +66,13 @@ export function useRadioPlayer(opts: UseRadioPlayerOptions = {}): RadioPlayer {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const ctxRef = useRef<AudioContext | null>(null);
   const gainRef = useRef<GainNode | null>(null);
+  /** After the volume, so a sleep fade never moves the volume slider. */
+  const fadeRef = useRef<GainNode | null>(null);
+  const filtersRef = useRef<BiquadFilterNode[]>([]);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const watchRef = useRef<number | null>(null);
+  /** Whether the current source is watched for dead air. */
+  const watchSilenceRef = useRef(true);
   /** True between play() and stop(). Guards against a late event from a
       previous station tripping the watchdog for the current one. */
   const activeRef = useRef(false);
@@ -63,6 +82,8 @@ export function useRadioPlayer(opts: UseRadioPlayerOptions = {}): RadioPlayer {
   // Held in refs so listeners registered once never close over stale values.
   const onFailedRef = useRef(opts.onFailed);
   onFailedRef.current = opts.onFailed;
+  const onEndedRef = useRef(opts.onEnded);
+  onEndedRef.current = opts.onEnded;
   const failRef = useRef<(reason: string) => void>(() => {});
 
   const [status, setStatus] = useState<PlayerStatus>("idle");
@@ -70,6 +91,9 @@ export function useRadioPlayer(opts: UseRadioPlayerOptions = {}): RadioPlayer {
   const [volume, setVolumeState] = useState(0.8);
   const volumeRef = useRef(volume);
   volumeRef.current = volume;
+  const [eq, setEqState] = useState<EqState>(loadEq);
+  const eqRef = useRef(eq);
+  eqRef.current = eq;
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
 
   const stopWatchdog = useCallback(() => {
@@ -119,10 +143,40 @@ export function useRadioPlayer(opts: UseRadioPlayerOptions = {}): RadioPlayer {
     gain.gain.value = volumeRef.current;
     gainRef.current = gain;
 
-    // Analyser sits ahead of the gain, so volume never affects what it reads.
+    const fade = ctx.createGain();
+    fade.gain.value = 1;
+    fadeRef.current = fade;
+
+    const live = eqRef.current;
+    const filters = EQ_BANDS.map((band, i) => {
+      const f = ctx.createBiquadFilter();
+      f.type = band.type;
+      f.frequency.value = band.freq;
+      if (band.type === "peaking") f.Q.value = 1;
+      f.gain.value = live.enabled ? live.gains[i] : 0;
+      return f;
+    });
+    filtersRef.current = filters;
+
+    // Analyser sits ahead of the EQ and the gain, so the visualizer shows the
+    // station as broadcast — neither the volume nor the tone controls bend it.
     source.connect(an);
-    an.connect(gain);
-    gain.connect(ctx.destination);
+    let tail: AudioNode = an;
+    for (const f of filters) {
+      tail.connect(f);
+      tail = f;
+    }
+    tail.connect(gain);
+    gain.connect(fade);
+    fade.connect(ctx.destination);
+
+    audio.addEventListener("ended", () => {
+      if (!activeRef.current) return;
+      activeRef.current = false;
+      stopWatchdog();
+      setStatus("idle");
+      onEndedRef.current?.();
+    });
 
     audio.addEventListener("playing", () => {
       if (!activeRef.current) return;
@@ -184,6 +238,7 @@ export function useRadioPlayer(opts: UseRadioPlayerOptions = {}): RadioPlayer {
         }
         return;
       }
+      if (!watchSilenceRef.current) return;
 
       analyserNode.getByteFrequencyData(bins);
       let max = 0;
@@ -203,7 +258,7 @@ export function useRadioPlayer(opts: UseRadioPlayerOptions = {}): RadioPlayer {
   }, [fail, stopWatchdog]);
 
   const play = useCallback(
-    async (url: string) => {
+    async (url: string, opts: PlayOptions = {}) => {
       ensureGraph();
       const audio = audioRef.current!;
       const ctx = ctxRef.current!;
@@ -212,6 +267,7 @@ export function useRadioPlayer(opts: UseRadioPlayerOptions = {}): RadioPlayer {
 
       activeRef.current = true;
       failedRef.current = false;
+      watchSilenceRef.current = opts.watchSilence ?? true;
       setStatus("loading");
       setError(null);
       audio.src = url;
@@ -263,6 +319,26 @@ export function useRadioPlayer(opts: UseRadioPlayerOptions = {}): RadioPlayer {
     }
   }, []);
 
+  const setEq = useCallback((next: EqState) => {
+    setEqState(next);
+    saveEq(next);
+    const ctx = ctxRef.current;
+    if (!ctx) return; // applied from eqRef when the graph is built
+    filtersRef.current.forEach((f, i) => {
+      f.gain.setTargetAtTime(next.enabled ? next.gains[i] : 0, ctx.currentTime, 0.03);
+    });
+  }, []);
+
+  const fadeTo = useCallback((target: number, seconds: number) => {
+    const fade = fadeRef.current;
+    const ctx = ctxRef.current;
+    if (!fade || !ctx) return;
+    const now = ctx.currentTime;
+    fade.gain.cancelScheduledValues(now);
+    fade.gain.setValueAtTime(fade.gain.value, now);
+    fade.gain.linearRampToValueAtTime(Math.max(0, Math.min(1, target)), now + Math.max(0.01, seconds));
+  }, []);
+
   useEffect(() => {
     return () => {
       activeRef.current = false;
@@ -276,8 +352,10 @@ export function useRadioPlayer(opts: UseRadioPlayerOptions = {}): RadioPlayer {
       ctxRef.current = null;
       analyserRef.current = null;
       gainRef.current = null;
+      fadeRef.current = null;
+      filtersRef.current = [];
     };
   }, [stopWatchdog]);
 
-  return { status, error, volume, setVolume, play, stop, analyser };
+  return { status, error, volume, setVolume, play, stop, analyser, eq, setEq, fadeTo };
 }

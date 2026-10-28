@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-const dir = mkdtempSync(join(tmpdir(), "tunescape-themes-"));
+const dir = mkdtempSync(join(tmpdir(), "focus-amp-themes-"));
 const out = join(dir, "themes.mjs");
 await build({ entryPoints: ["src/theme/themes.ts"], outfile: out, format: "esm", logLevel: "error" });
 const { THEMES, contrast } = await import(pathToFileURL(out).href);

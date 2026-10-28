@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Tunescape",
+  "productName": "Focus AMP",
   "version": "0.1.0",
-  "identifier": "com.tunescape.desktop",
+  "identifier": "com.focusamp.desktop",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -14,7 +14,7 @@
       {
         "label": "main",
         "zoomHotkeysEnabled": true,
-        "title": "Tunescape",
+        "title": "Focus AMP",
         "width": 1120,
         "height": 740,
         "minWidth": 880,
