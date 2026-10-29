@@ -40,9 +40,14 @@ The work that made the repository fit to be public.
   (Radio Swiss, Český rozhlas), college stations (WFMU, KFJC, KALX, WMBR,
   KZSU, KEXP, WXPN), listener-supported non-profits (WBGO, WCPE, Alpha Boys
   School Radio) and foundations (Concertzender's eleven channels) — leaving 38
-  Picks across 16 genres. Twelve genres are still hidden until the community
-  directory is switched on, because the long-running stations in them either
-  forbid third-party players or name nobody who could vouch for the music.
+  Picks across 16 genres.
+- **Twelve genres were removed for 1.0** — space, piano, nature, bossa, house,
+  techno, trance, idm, post-rock, metal, blues and hip-hop. None found a single
+  station anyone could vouch for: their long-running stations are
+  overwhelmingly commercial networks whose terms forbid a player like this, or
+  anonymous streams with no operator to ask. They keep their tag sets in
+  `PLANNED_GENRES` and come back one at a time as Picks are found. The build
+  now refuses to offer a genre that has none.
 - **Album art is off by default**, and the cover now links to the track on
   Apple Music, which is the condition Apple's terms place on showing it.
 - The About screen's description of what the app contacts is now accurate; it

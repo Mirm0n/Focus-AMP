@@ -46,26 +46,12 @@ export const GENRES: GenreDef[] = [
     vocals: "instrumental",
   },
   {
-    id: "space",
-    name: "Space / Drone",
-
-    tags: ["drone", "space music", "spacemusic", "dark ambient", "space"],
-    vocals: "instrumental",
-  },
-  {
     id: "classical",
     name: "Classical",
 
     tags: ["classical", "classical music", "baroque", "orchestral", "chamber music", "symphonic"],
     // Opera is classical, and it is the opposite of something to work to.
     exclude: ["opera"],
-    vocals: "instrumental",
-  },
-  {
-    id: "piano",
-    name: "Solo piano",
-
-    tags: ["piano", "solo piano", "piano music"],
     vocals: "instrumental",
   },
   {
@@ -83,27 +69,12 @@ export const GENRES: GenreDef[] = [
     ],
     vocals: "instrumental",
   },
-  {
-    id: "nature",
-    name: "Nature & soundscapes",
-
-    tags: ["nature", "nature sounds", "relaxation", "meditation", "new age", "sleep"],
-    vocals: "instrumental",
-  },
-
   // ── Easy ──────────────────────────────────────────────────────────────────
   {
     id: "jazz",
     name: "Jazz",
 
     tags: ["jazz", "smooth jazz", "bebop", "swing", "cool jazz"],
-    vocals: "mixed",
-  },
-  {
-    id: "bossa",
-    name: "Bossa & latin jazz",
-
-    tags: ["bossa nova", "bossanova", "bossa", "latin jazz", "mpb"],
     vocals: "mixed",
   },
   {
@@ -127,29 +98,6 @@ export const GENRES: GenreDef[] = [
     tags: ["reggae", "dub", "roots reggae", "ska"],
     vocals: "vocal",
   },
-
-  // ── Electronic ────────────────────────────────────────────────────────────
-  {
-    id: "house",
-    name: "Deep house",
-
-    tags: ["deep house", "house", "tech house", "progressive house"],
-    vocals: "mixed",
-  },
-  {
-    id: "techno",
-    name: "Techno",
-
-    tags: ["techno", "minimal", "minimal techno"],
-    vocals: "instrumental",
-  },
-  {
-    id: "trance",
-    name: "Trance",
-
-    tags: ["trance", "progressive trance", "psytrance", "goa"],
-    vocals: "mixed",
-  },
   {
     id: "dnb",
     name: "Drum & bass",
@@ -164,14 +112,6 @@ export const GENRES: GenreDef[] = [
     tags: ["synthwave", "retrowave", "outrun", "vaporwave", "chillsynth"],
     vocals: "instrumental",
   },
-  {
-    id: "idm",
-    name: "IDM / Electronica",
-
-    tags: ["idm", "electronica", "glitch", "experimental electronic", "leftfield"],
-    vocals: "instrumental",
-  },
-
   // ── Wide ──────────────────────────────────────────────────────────────────
   // Two genres that describe what a station *is* rather than what it plays.
   // They were added once the Picks stopped being organised around one
@@ -197,7 +137,6 @@ export const GENRES: GenreDef[] = [
     exclude: ["gospel", "christian", "religious"],
     vocals: "vocal",
   },
-
   // ── Band ──────────────────────────────────────────────────────────────────
   {
     id: "indie",
@@ -232,6 +171,91 @@ export const GENRES: GenreDef[] = [
     vocals: "vocal",
   },
   {
+    id: "soul",
+    name: "Soul & funk",
+
+    tags: ["soul", "funk", "motown", "rnb", "r&b", "disco"],
+    vocals: "vocal",
+  },
+];
+
+/**
+ * Genres with their tag sets worked out, waiting on Picks.
+ *
+ * These were in `GENRES` until 2026-10-29 and were removed for 1.0 — not
+ * because the tags are wrong, but because none of them has a single station
+ * anyone has vouched for. docs/EXECUTION.md Part 4 records what was tried:
+ * their long-running stations are overwhelmingly commercial networks whose
+ * terms forbid a player like this, or anonymous streams with no operator to
+ * ask. Shipping a genre that is empty by default, and filled only by stations
+ * nobody checked, would be the app quietly dropping its own standard.
+ *
+ * They are kept whole rather than deleted so that putting one back is moving
+ * its entry into `GENRES` and adding a `PICKS` row — not reconstructing the
+ * tag set from scratch. The tags were checked against the live directory and
+ * each yields plenty; the gap is Picks, nothing else.
+ *
+ * Nothing reads this array. It is a record, and the build does not ship it.
+ */
+export const PLANNED_GENRES: GenreDef[] = [
+  {
+    id: "space",
+    name: "Space / Drone",
+
+    tags: ["drone", "space music", "spacemusic", "dark ambient", "space"],
+    vocals: "instrumental",
+  },
+  {
+    id: "piano",
+    name: "Solo piano",
+
+    tags: ["piano", "solo piano", "piano music"],
+    vocals: "instrumental",
+  },
+  {
+    id: "nature",
+    name: "Nature & soundscapes",
+
+    tags: ["nature", "nature sounds", "relaxation", "meditation", "new age", "sleep"],
+    vocals: "instrumental",
+  },
+  {
+    id: "bossa",
+    name: "Bossa & latin jazz",
+
+    tags: ["bossa nova", "bossanova", "bossa", "latin jazz", "mpb"],
+    vocals: "mixed",
+  },
+  // ── Electronic ────────────────────────────────────────────────────────────
+  {
+    id: "house",
+    name: "Deep house",
+
+    tags: ["deep house", "house", "tech house", "progressive house"],
+    vocals: "mixed",
+  },
+  {
+    id: "techno",
+    name: "Techno",
+
+    tags: ["techno", "minimal", "minimal techno"],
+    vocals: "instrumental",
+  },
+  {
+    id: "trance",
+    name: "Trance",
+
+    tags: ["trance", "progressive trance", "psytrance", "goa"],
+    vocals: "mixed",
+  },
+  {
+    id: "idm",
+    name: "IDM / Electronica",
+
+    tags: ["idm", "electronica", "glitch", "experimental electronic", "leftfield"],
+    vocals: "instrumental",
+  },
+  {
     id: "postrock",
     name: "Post-rock",
 
@@ -250,13 +274,6 @@ export const GENRES: GenreDef[] = [
     name: "Blues",
 
     tags: ["blues", "blues rock"],
-    vocals: "vocal",
-  },
-  {
-    id: "soul",
-    name: "Soul & funk",
-
-    tags: ["soul", "funk", "motown", "rnb", "r&b", "disco"],
     vocals: "vocal",
   },
   {
@@ -397,6 +414,8 @@ export const ROYALTY_FREE_WORDING =
  * station must show some sign of somebody being behind it (see
  * `lacksProvenance` in radioBrowser.ts).
  */
+// Includes ids from PLANNED_GENRES (space, piano, nature). They match nothing
+// while those genres are out, and are right again the moment one returns.
 export const HIGH_RISK_GENRES = new Set([
   "lofi",
   "ambient",

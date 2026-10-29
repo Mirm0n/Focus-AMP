@@ -592,40 +592,29 @@ const BASSDRIVE = pick(
  * Picks by genre id. A genre with none is filled entirely from the directory,
  * and is not offered at all until that setting is on.
  *
- * Fourteen genres are empty after the Part 3.1 verdicts were applied. That is
- * task L3, and the gap is recorded rather than papered over: putting a station
- * in a genre it does not belong to would make the list longer and the app
- * worse.
+ * Every genre here has at least one Pick. The twelve that did not are in
+ * `PLANNED_GENRES` in `genres.ts` with their tag sets intact, waiting on a
+ * station somebody can vouch for; see docs/EXECUTION.md Part 4 for what was
+ * tried. Putting a station in a genre it does not belong to would make this
+ * list longer and the app worse, so the gap is recorded instead.
  */
 export const PICKS: Record<string, Station[]> = {
   lofi: [NIGHTWAVE_PLAZA],
   ambient: [ASP, AM_AMBIENT, AMBIENT_MODERN, CZ_STILTE],
-  space: [],
   classical: [SWISS_CLASSIC, WCPE, CZ_KLASSIEK, CZ_OUDE, CZ_NIEUWE],
-  piano: [],
   scores: [CZ_FILM],
-  nature: [],
   jazz: [SWISS_JAZZ, WBGO, CZ_JAZZ, CZ_HARDBOP, CRO_JAZZ],
-  bossa: [],
   chillout: [RP_MELLOW, AM_AMBIENT],
   folk: [WFMU_DRUMMER, RP_GLOBAL, CZ_FOLK],
   reggae: [ALPHA_BOYS],
-  house: [],
-  techno: [],
-  trance: [],
   dnb: [BASSDRIVE],
   synthwave: [NIGHTWAVE_PLAZA],
-  idm: [],
   eclectic: [WFMU_FREEFORM, KFJC, KALX, WMBR, KZSU, CRO_WAVE, RP_MAIN, WFMU_DRUMMER, RP_GLOBAL],
   world: [RP_GLOBAL, ALPHA_BOYS, WFMU_DRUMMER, CZ_WERELD, CZ_CHANSON],
   altrock: [KEXP, WXPN, KALX, CRO_WAVE],
   indie: [RP_MAIN, KEXP, SWISS_POP, WFMU_FREEFORM, KFJC, CZ_POP],
   rock: [RP_ROCK, WFMU_SHEENA, WFMU_ROCKNSOUL],
-  postrock: [],
-  metal: [],
-  blues: [],
   soul: [WFMU_ROCKNSOUL],
-  hiphop: [],
 };
 
 const PICK_URLS = new Set(Object.values(PICKS).flatMap((list) => list.map((s) => s.url)));

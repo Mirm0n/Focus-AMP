@@ -80,7 +80,8 @@ box sits above both levels. A genre with no Picks yet is not shown at all.
 **The catalog is small, and that is the point.** It carried 56 Picks until the broadcasters'
 own terms were read properly; 33 of those had to go, 30 of them SomaFM, whose terms refuse
 third-party clients "even noncommercial ones". Fourteen more are parked pending permission or
-a provenance review. What is left is 38 Picks across 16 genres, every one of which carries a
+a provenance review. What is left is 38 Picks across 16 genres — and 16 is the whole genre
+list, because a genre with nothing vouched for in it is not offered at all. Every Pick carries a
 `terms` record saying where somebody read that we may play it, and on what date. `npm run
 check:stations` refuses to build a catalog where that is not true, and the broadcasters who
 said no are on a denylist that the directory, favourites and the last-played station are all
@@ -332,10 +333,12 @@ five were unused) are down to Chivo and Chivo Mono.
 
 Worth knowing before you try it:
 
-- **Twelve genres have no Picks** and are hidden unless you switch the community directory
-  on — see the catalog section above. Filling them is the main open work, and it is harder
+- **Twelve genres are not here yet** — space/drone, solo piano, nature, bossa, house, techno,
+  trance, IDM, post-rock, metal, blues and hip-hop. Each has its tag set ready in
+  `PLANNED_GENRES`, and each is waiting on one station somebody can vouch for. That is harder
   than it sounds: the long-running stations in those genres mostly either forbid third-party
-  players or name nobody who could vouch for what they play.
+  players or name nobody who could vouch for what they play. Filling them is the main open
+  work, and `npm run check:stations` will not let one back into the app without a Pick.
 - **Windows only** for now. Nothing in the code is deliberately Windows-specific except the
   tray and the notification AppUserModelID, but nothing else has been tested.
 - **No updater yet**, so a new version means downloading it yourself.
