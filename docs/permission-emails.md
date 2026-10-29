@@ -118,6 +118,45 @@ distinction.
 
 ---
 
+## NRK (Norway) — Jazz, Klassisk, Folkemusikk, P3 and more
+
+Added 2026-10-29. NRK is the most promising single reply on this page after
+Radio France. It publishes every stream URL openly at lyd.nrk.no, and the only
+thing standing in the way is a sentence asking to be asked:
+
+> Livestrømmer og kanaler fra NRK Radio er utviklet for privat bruk … enhver
+> annen bruk av disse for å skape nye tjenester, uten godkjenning av NRK, er
+> derfor ikke tillatt.
+
+A yes would fill Jazz, Classical, Folk and more from one broadcaster, all of it
+public-service programming with impeccable provenance.
+
+**To:** the contact route on nrk.no
+**Subject:** Tillatelse til å bruke NRK Radios strømmer i en gratis open source-radiospiller
+
+> Hei,
+>
+> Jeg utvikler Focus AMP, en gratis radiospiller for skrivebordet med åpen
+> kildekode (GPL-3.0, uten reklame, abonnement eller brukerkontoer). Den
+> spiller kanaler fra deres egne offentlige strøm-URL-er, slik VLC gjør —
+> ingenting videresendes, tas opp eller endres, og hver kanal vises med sitt
+> eget navn og en lenke til deres side.
+>
+> Jeg vil gjerne ta med NRK Jazz, NRK Klassisk, NRK Folkemusikk og NRK P3.
+> Siden lyd.nrk.no sier at annen bruk for å lage nye tjenester krever NRKs
+> godkjenning, spør jeg heller enn å anta, og har holdt kanalene utenfor
+> appen i mellomtiden.
+>
+> Kildekoden er offentlig hvis dere vil se nøyaktig hva appen gjør med
+> strømmen: <repository URL>.
+>
+> Et nei er helt greit, og da spør jeg ikke igjen.
+>
+> Vennlig hilsen,
+> Marwan Hazem
+
+---
+
 ## For a station whose terms are silent
 
 Use this when adding a Pick whose terms say nothing either way. Not required —

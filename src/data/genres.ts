@@ -172,6 +172,32 @@ export const GENRES: GenreDef[] = [
     vocals: "instrumental",
   },
 
+  // ── Wide ──────────────────────────────────────────────────────────────────
+  // Two genres that describe what a station *is* rather than what it plays.
+  // They were added once the Picks stopped being organised around one
+  // broadcaster's channel list: the strongest stations left — WFMU, Radio
+  // Paradise, Give the Drummer — are deliberately not single-genre, and
+  // filing them under Indie or Folk said something untrue about them.
+  {
+    id: "eclectic",
+    name: "Freeform & eclectic",
+    // Stations where a human picks the next record and it could be anything.
+    // "variety" is left out on purpose: in the directory it mostly means a
+    // talk-and-music mix rather than freeform music.
+    tags: ["freeform", "eclectic", "college radio", "community radio", "mixed"],
+    exclude: ["talk", "news"],
+    vocals: "mixed",
+  },
+  {
+    id: "world",
+    name: "World",
+    tags: ["world", "world music", "worldmusic", "global", "afrobeat", "afro", "latin"],
+    // Religious broadcasting is a large part of this tag space in the
+    // directory, and RELIGIOUS_NAME only catches the obvious names.
+    exclude: ["gospel", "christian", "religious"],
+    vocals: "vocal",
+  },
+
   // ── Band ──────────────────────────────────────────────────────────────────
   {
     id: "indie",
