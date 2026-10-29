@@ -465,7 +465,9 @@ register (Part 4). One failure, or one "couldn't find out", means it isn't a Pic
   near-identical channels with no staff.
 - **R8. Hand-marked, dated, re-checked:** every Pick carries its check date and is re-checked
   every six months, or at once after a change of ownership or format. One that can't be
-  re-verified is demoted.
+  re-verified is demoted. `npm run check:streams` does the "is it still on the air" half: it
+  asks every Pick for actual audio, retries once, and exits non-zero if any is really gone.
+  The terms half still needs a person.
 
 ### Rules for directory stations
 
@@ -615,7 +617,10 @@ check the sidebar isn't tedious to get past. 200% zoom is known to fail and is t
 # Part 6 — Known gaps
 
 - HLS-only streams are left out: the webview can't play them without a demuxer.
-- Picks aren't monitored between checks; R8 dates arrive with the terms record (L2).
+- Picks aren't monitored between checks, but `npm run check:streams` makes checking them a
+  single command. All 38 were on the air on 2026-10-30. WBGO's CDN refuses a connection now and
+  then — it failed one run in three by hand — which is why that script, like the proxy, gives
+  each station a second try before calling it dead.
 - Linux needs GStreamer plugins for MP3/AAC under WebKitGTK. The `.deb` now declares
   `gstreamer1.0-libav`, `gstreamer1.0-plugins-good` and `gstreamer1.0-plugins-bad` as
   dependencies so apt pulls them in; AppImage and `.rpm` users may still have to install them,

@@ -43,6 +43,11 @@ The work that made the repository fit to be public.
   The `.deb` declares the GStreamer codecs WebKitGTK needs for MP3 and AAC,
   because without them a station connects, reports healthy playback and plays
   silence.
+- `npm run check:streams`, which asks every Pick for actual audio — not just a
+  200, since a dead mount often answers cheerfully and then sends nothing. It
+  gives each station a second try before calling it dead, because the first
+  run reported one down that answered three times in a row a moment later.
+  Rule R8 asks for a re-check every six months and had no tool behind it.
 - `docs/RELEASING.md`, the maintainer's runbook: backing up the signing key,
   the GitHub secrets, bumping the version in three files, the draft-then-
   publish step that keeps a bad build from ever reaching anyone, how to prove

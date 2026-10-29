@@ -112,6 +112,7 @@ updater is broken" long after the release that caused it.
 ```bash
 npm run build          # catalog, types, bundle
 npm run check:release  # versions, endpoint, source URL
+npm run check:streams  # every Pick still on the air (slow; needs network)
 cd src-tauri && cargo fmt --check && cargo clippy --no-default-features --all-targets -- -D warnings && cargo test --no-default-features
 ```
 
