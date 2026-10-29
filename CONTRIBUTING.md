@@ -28,6 +28,9 @@ npm run audit:themes   # contrast, every theme variant
 npm run audit:genres   # station yield per genre, against the live directory
 ```
 
+`check:release` is for the maintainer at release time, not for contributors; it fails on a
+checkout until the repository URL is set. The runbook is [docs/RELEASING.md](docs/RELEASING.md).
+
 And for the Rust half, from `src-tauri/` — CI runs exactly these:
 
 ```bash

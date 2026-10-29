@@ -370,6 +370,9 @@ needed, and we aim to act within seven days.
 
 **Security:** please don't open a public issue. See [SECURITY.md](SECURITY.md).
 
+**Releasing:** [docs/RELEASING.md](docs/RELEASING.md). Read §0 before the first one — the
+updater's signing key cannot be recovered, and losing it strands every installed copy.
+
 ## Licence
 
 **GPL-3.0-or-later.** See [LICENSE](LICENSE). Anyone may use, study, change and share

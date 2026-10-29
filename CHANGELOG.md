@@ -32,9 +32,14 @@ The work that made the repository fit to be public.
   On by default, declared in `PRIVACY.md`, and switched off in
   Settings → General.
 - `npm run check:release`, which refuses to build a release whose updater
-  endpoint is still a placeholder or whose About screen would ship with no
-  source link — two blanks that only matter at the moment of publishing, which
-  is exactly when they are easiest to forget.
+  endpoint is still a placeholder, whose About screen would ship with no source
+  link, or whose version disagrees between `package.json`, `Cargo.toml`,
+  `tauri.conf.json` and the tag being released. All of these only matter at the
+  moment of publishing, which is exactly when they are easiest to forget.
+- `docs/RELEASING.md`, the maintainer's runbook: backing up the signing key,
+  the GitHub secrets, bumping the version in three files, the draft-then-
+  publish step that keeps a bad build from ever reaching anyone, how to prove
+  the updater works, and what can and cannot be undone when it goes wrong.
 - Two genres, **Freeform & eclectic** and **World**. The genre list had been
   built around one broadcaster's channel lineup; with that broadcaster gone it
   described a catalog that no longer existed, and the best stations left are

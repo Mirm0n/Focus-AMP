@@ -16,7 +16,14 @@
  *     source link, no way for a broadcaster to ask to be removed, and no
  *     privacy policy — on a GPL app whose own screen promises all three.
  *
- * Neither matters while developing, which is exactly why this runs at the
+ * It also checks that the version agrees in all three places that carry one,
+ * and with the tag being released. The version in tauri.conf.json is what a
+ * built app reports about itself, and the version in latest.json is what it
+ * gets compared against. If those two drift apart the updater either never
+ * offers anything or offers the same release forever, and both failures look
+ * like "the updater is broken" long after the release that caused them.
+ *
+ * None of this matters while developing, which is exactly why it runs at the
  * point where it starts to.
  */
 import { readFileSync } from "node:fs";
@@ -29,6 +36,36 @@ const read = (p) => readFileSync(join(root, p), "utf8");
 const errors = [];
 const conf = JSON.parse(read("src-tauri/tauri.conf.json"));
 const makerSrc = read("src/data/maker.ts");
+const pkg = JSON.parse(read("package.json"));
+const cargoSrc = read("src-tauri/Cargo.toml");
+
+// ── One version, in all the places that carry it ────────────────────────────
+const cargoVersion = /^version = "([^"]+)"/m.exec(cargoSrc)?.[1];
+const versions = {
+  "package.json": pkg.version,
+  "src-tauri/tauri.conf.json": conf.version,
+  "src-tauri/Cargo.toml": cargoVersion,
+};
+const distinct = [...new Set(Object.values(versions))];
+if (distinct.length !== 1) {
+  const lines = Object.entries(versions).map(
+    ([file, v]) => `      ${v ?? "(unreadable)"}  ${file}`,
+  );
+  errors.push(["the version differs between files:", ...lines].join("\n"));
+}
+
+// In CI on a tag, the tag is the release, so it has to agree too.
+const ref = process.env.GITHUB_REF_NAME ?? "";
+if (/^v\d/.test(ref)) {
+  const tagVersion = ref.slice(1);
+  if (distinct.length === 1 && tagVersion !== distinct[0]) {
+    errors.push(
+      `the tag is ${ref} but the app is version ${distinct[0]}. The build would be ` +
+        `published as ${ref} while reporting ${distinct[0]} about itself, and the updater ` +
+        `compares those two.`,
+    );
+  }
+}
 
 // ── The updater endpoint ────────────────────────────────────────────────────
 const updater = conf.plugins?.updater;
@@ -82,5 +119,6 @@ if (errors.length) {
   process.exit(1);
 }
 
+console.log(`check:release — version ${distinct[0]} in all three files`);
 console.log(`check:release — updater points at ${endpoint}`);
 console.log(`check:release — About screen links to ${source}`);
