@@ -68,17 +68,17 @@ against Part 3.1 and the verdicts carried out. What is left:
 | Status | Picks | Stations |
 |---|---|---|
 | **Kept** | 9 | KEXP, WXPN, Radio Paradise Main/Rock/Mellow, Radio Swiss Jazz/Classic, Nightwave Plaza |
-| **Added** (task L3, first pass) | 9 | WFMU ×4, Radio Swiss Pop, The Classical Station (WCPE), Ambient Sleeping Pill, a.m. ambient, Ambient Modern, Bassdrive |
+| **Added** (task L3) | 11 | WFMU ×4, Radio Paradise Global, Radio Swiss Pop, The Classical Station (WCPE), Ambient Sleeping Pill, a.m. ambient, Ambient Modern, Bassdrive, Alpha Boys School Radio |
 | **Removed to the denylist** | 31 | SomaFM ×30 (terms forbid third-party clients), Box Lofi Radio (zeno.fm) |
 | **Removed, dead** | 1 | BGMVibes |
 | **Parked: awaiting permission** (U3) | 9 | Radio France FIP ×7, The Current (MPR), laut.fm Lofi |
 | **Parked: awaiting the no-AI review** | 5 | Hotmix Lo-Fi, 0nlineradio LO-FI, Epic Lounge, Hunter.FM Lo-Fi, CLIAMP Lofi |
 
-18 Picks across 12 genres. `npm run check:stations` prints the count per genre and fails the
+20 Picks across 13 genres. `npm run check:stations` prints the count per genre and fails the
 build if any of this drifts.
 
-**The 14 genres with no Picks** — space, piano, scores, nature, bossa, reggae, house, techno,
-trance, idm, postrock, metal, blues, hiphop — are not offered at all unless the community
+**The 13 genres with no Picks** — space, piano, scores, nature, bossa, house, techno, trance,
+idm, postrock, metal, blues, hiphop — are not offered at all unless the community
 directory is switched on. That is the honest state: a genre with nothing vouched for in it
 should not pretend otherwise, and padding it with a station that does not belong there would
 make the list longer and the app worse. Filling them is the rest of **L3**.
@@ -149,12 +149,30 @@ register (Part 4). It prints the number of Picks per genre.
 - [x] **L2 Apply it:** remove the 32 excluded Picks; move "ask first" and "hold" stations into the
       register as parked; add `terms` records and the denylist (§1.5). Filter the directory,
       favorites and the last station through the denylist.
-- [ ] **L3 Replacement Picks:** *first pass done 2026-10-29* — 9 added (WFMU ×4, Radio Swiss Pop,
-      WCPE, the three Stereoscenic ambient stations, Bassdrive), covering Ambient, Chillout, Folk,
-      Soul, Classical, D&B and filling out Indie and Rock. **Still empty:** space, piano, scores,
-      nature, bossa, reggae, house, techno, trance, idm, postrock, metal, blues, hiphop. Electronic
-      and metal are the hard ones: the long-running stations there mostly publish no terms and name
-      no operator. Each addition needs terms that allow players, a working stream, and a pass under
+- [ ] **L3 Replacement Picks:** *two passes done 2026-10-29* — 11 added, bringing the catalog to
+      20 Picks across 13 genres. **Still empty (13):** space, piano, scores, nature, bossa, house,
+      techno, trance, idm, postrock, metal, blues, hiphop.
+
+      The second pass worked the directory itself rather than guessing at station names, and the
+      result is worth recording because it is not an accident: **the empty genres are empty for a
+      structural reason.** Their long-running stations are either commercial networks whose terms
+      forbid this (1.FM, Sunshine Live, Intense Radio, Calm Radio), streams on free hosts with no
+      site of their own, bare IP addresses with no operator (the whole Radio Caprice family), or —
+      in the electronic and "relaxation" genres especially — exactly the anonymous auto-DJ output
+      that rules R1–R8 exist to keep out. Seven specific candidates were vetted and rejected this
+      pass; each is in the register below with its reason, so nobody has to redo that work.
+
+      What would actually move this on, in rough order of likely yield:
+      1. **Permission from Radio France (U3).** FIP alone covered reggae, electronic, rock, groove,
+         hip-hop and metal. One reply fills six genres; nothing else comes close.
+      2. **Public broadcasters with genre channels** — WDR COSMO (world, hip-hop, reggae), NPO
+         Radio 6 Soul & Jazz, ABC Jazz and ABC Classic, BR-Klassik. All were unreachable from this
+         machine this pass (403/404/blocked), not refused on their merits. Worth retrying.
+      3. **Writing to the silent ones.** WWOZ, KDHX and WEVL are listener-supported community
+         stations with impeccable provenance whose terms pages could not be read. The template in
+         `docs/permission-emails.md` is for exactly this.
+
+      Each addition still needs terms that allow players, a working stream, and a pass under
       R1–R8. Target: at least 2 per genre, presented to you for a listen (U2).
 - [x] **L4 The directory setting works:** done 2026-10-29. `useCatalog.ts` was hardcoded to
       `true` with a note to fix it later, and its tab was never mounted in `SettingsDialog`, so
@@ -485,7 +503,13 @@ holds (Hotmix, 0nlineradio, Epic Lounge, Hunter.FM, CLIAMP).
 | 2026-10-29 | Ambient Sleeping Pill, a.m. ambient, Ambient Modern | Added as Picks | "Links for adding directly to Winamp and other players"; run by Andrew J Klimek since 2013, playing largely his own label's music — a direct R1/R5 pass |
 | 2026-10-29 | Radio Swiss Pop | Added as a Pick | Same SRG SSR terms as Jazz and Classic, already kept |
 | 2026-10-29 | Bassdrive | Added as a Pick | Publishes .m3u tune-in links; states all music is "directly licensed by the composers and sound recording copyright owners"; named DJs since 1999 |
-| 2026-10-29 | Echoes of Bluemars / Cryosleep | Rejected | bluemars.org reads only "Signal lost." — the station is gone |
+| 2026-10-29 | Alpha Boys School Radio | Added as a Pick | Supports the Alpha School of Music, Kingston, run by the Sisters of Mercy since 1890; every record features an Alpha alumnus. Terms silent (site read) |
+| 2026-10-29 | Radio Paradise Global Mix | Added as a Pick | A genuine fourth RP channel, under the terms record already held |
+| 2026-10-29 | RP "eclectic-128" and "world-128" | Rejected | Both return `icy-name: Global Mix` — aliases, not channels. Adding them would have listed one stream three times |
+| 2026-10-29 | Rainwave (game, chiptune, OCReMix) | Rejected | Names no operator, and its creator has stated publicly that the playlist is "not anywhere near 100% licensed … a mix of tacit, unofficial, and official permission". Fails R1 and R6 |
+| 2026-10-29 | HBR1 (Trance, Tronic, Ambient) | Rejected | Publishes .m3u links for external players, but names no operator anywhere on the site. Fails R1 — the same reason Nightride FM went |
+| 2026-10-29 | Echoes of Bluemars / Cryosleep | Rejected | Streams are alive and correctly named, but bluemars.org reads only "Signal lost.", echoesofbluemars.org refuses connections, and no operator is named. Fails R1, exactly as Nightride FM did. Not a finding about its music |
+| 2026-10-29 | WWOZ, La Grosse Radio, KDHX, WEVL, Metal Express Radio | Not established | Terms pages returned 403, 404 or 410. "Silent" means a page was read and said nothing; these could not be read at all, which is not the same thing and is not a basis for adding them |
 | 2026-10-29 | Venice Classic Radio | Rejected | Names no operator and publishes no stream URLs; fails R1 and R6 |
 | 2026-10-29 | SomaFM ×30, Box Lofi Radio | **Removed and denylisted** | L2 carried out. SomaFM's ToS re-read and confirmed verbatim; their music licences do not let them authorise third-party apps, so this is not waivable on request |
 | 2026-10-29 | FIP ×7, The Current, laut.fm Lofi | **Parked** | Removed from Picks pending permission (U3). Not denylisted: a yes would bring them straight back |
