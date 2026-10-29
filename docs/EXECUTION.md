@@ -74,9 +74,10 @@ against Part 3.1 and the verdicts carried out. What is left:
 | **Parked: awaiting permission** (U3) | 9 | Radio France FIP ×7, The Current (MPR), laut.fm Lofi |
 | **Parked: awaiting the no-AI review** | 5 | Hotmix Lo-Fi, 0nlineradio LO-FI, Epic Lounge, Hunter.FM Lo-Fi, CLIAMP Lofi |
 
-**38 Picks across 16 genres, and 16 is now the whole list.** The twelve that never found a
-Pick were taken out of `GENRES` on 2026-10-29 and moved to `PLANNED_GENRES` in the same file,
-tag sets intact. The app offers no genre it cannot vouch for.
+**38 Picks across 15 genres, and 15 is now the whole list.** The thirteen that never found a
+Pick were taken out of `GENRES` and moved to `PLANNED_GENRES` in the same file, tag sets
+intact — twelve on 2026-10-29, and Lofi on 2026-10-30 once the one station in it turned out to
+belong in Synthwave. The app offers no genre it cannot vouch for.
 
 That is a real trade and it is worth naming: those twelve worked perfectly well with the
 community directory switched on — around sixty stations each. Taking them out costs that. The
@@ -112,8 +113,8 @@ something untrue about them. **Freeform & eclectic** (6 Picks) and **World** (3)
 actually are. Both also yield ~60 directory stations each, so they work with the setting on as
 well as off.
 
-**The twelve planned genres** — space, piano, nature, bossa, house, techno, trance, idm,
-postrock, metal, blues, hiphop — are in `PLANNED_GENRES`, not offered anywhere. Their tags were
+**The thirteen planned genres** — lofi, space, piano, nature, bossa, house, techno, trance,
+idm, postrock, metal, blues, hiphop — are in `PLANNED_GENRES`, not offered anywhere. Their tags were
 checked against the live directory and each yields plenty; the gap is Picks and nothing else. That is the honest state: a genre with nothing vouched for in it
 should not pretend otherwise, and padding it with a station that does not belong there would
 make the list longer and the app worse. Filling them is the rest of **L3**.
@@ -561,6 +562,8 @@ holds (Hotmix, 0nlineradio, Epic Lounge, Hunter.FM, CLIAMP).
 | 2026-10-29 | Ambient Sleeping Pill, a.m. ambient, Ambient Modern | Added as Picks | "Links for adding directly to Winamp and other players"; run by Andrew J Klimek since 2013, playing largely his own label's music — a direct R1/R5 pass |
 | 2026-10-29 | Radio Swiss Pop | Added as a Pick | Same SRG SSR terms as Jazz and Classic, already kept |
 | 2026-10-29 | Bassdrive | Added as a Pick | Publishes .m3u tune-in links; states all music is "directly licensed by the composers and sound recording copyright owners"; named DJs since 1999 |
+| 2026-10-30 | Nightwave Plaza | Moved out of Lofi | It is a vaporwave station — its own stream announces `icy-genre: Vaporwave`, and the catalog's description of it already read "Vaporwave and mallsoft" while it sat under Lofi. The app contradicted itself on screen. It stays in Synthwave, whose tags include vaporwave |
+| 2026-10-30 | Lofi | **Moved to PLANNED_GENRES** | Removing the one station that did not belong left it empty, which puts it exactly where the other twelve are. Fitting, since Lofi is the most AI-saturated genre there is and the reason `HIGH_RISK_GENRES` exists: of 60 directory candidates with a site of their own, every one was a news station mis-tagged by bitrate, a "24/7 study beats" name the policy already flags, a commercial network of near-identical channels with no staff (R7), or one of the five already parked for the no-AI review |
 | 2026-10-29 | Concertzender ×11 (Filmmuziek, Wereldmuziek, World of Jazz, Hard Bop, Klassiek, Oude Muziek, Nieuwe Muziek, Folk it!, Chanson, De Gehoorde Stilte, Pop) | Added as Picks | Stichting Concertzender, a volunteer foundation in Utrecht broadcasting since 1982, nationally by cable, designated an NOS side activity in 1999. Its own /streams/ link resolves to the public Icecast page listing every mount. Each channel re-broadcasts its own dated programme archive. **Filmmuziek fills the empty Film & game scores genre** |
 | 2026-10-29 | Concertzender Radiophonics | Not added | Field recording and radio art. The only genre that could take it is "Nature & soundscapes", which is tagged for relaxation, meditation and sleep — filing it there would have been false |
 | 2026-10-29 | WMBR (MIT) | Added as a Pick | Publishes a .m3u labelled "Live Stream (m3u)". Student- and community-run non-profit |

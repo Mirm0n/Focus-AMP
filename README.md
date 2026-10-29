@@ -90,7 +90,7 @@ box sits above both levels. A genre with no Picks yet is not shown at all.
 **The catalog is small, and that is the point.** It carried 56 Picks until the broadcasters'
 own terms were read properly; 33 of those had to go, 30 of them SomaFM, whose terms refuse
 third-party clients "even noncommercial ones". Fourteen more are parked pending permission or
-a provenance review. What is left is 38 Picks across 16 genres — and 16 is the whole genre
+a provenance review. What is left is 38 Picks across 15 genres — and 15 is the whole genre
 list, because a genre with nothing vouched for in it is not offered at all. Every Pick carries a
 `terms` record saying where somebody read that we may play it, and on what date. `npm run
 check:stations` refuses to build a catalog where that is not true, and the broadcasters who
@@ -351,8 +351,10 @@ five were unused) are down to Chivo and Chivo Mono.
 
 Worth knowing before you try it:
 
-- **Twelve genres are not here yet** — space/drone, solo piano, nature, bossa, house, techno,
-  trance, IDM, post-rock, metal, blues and hip-hop. Each has its tag set ready in
+- **Thirteen genres are not here yet** — lofi, space/drone, solo piano, nature, bossa, house,
+  techno, trance, IDM, post-rock, metal, blues and hip-hop. Lofi is the sharpest example of why:
+  it is the genre most saturated with anonymous auto-DJ and AI-generated streams, so the ones
+  that would fill it are exactly the ones the rules exist to keep out. Each has its tag set ready in
   `PLANNED_GENRES`, and each is waiting on one station somebody can vouch for. That is harder
   than it sounds: the long-running stations in those genres mostly either forbid third-party
   players or name nobody who could vouch for what they play. Filling them is the main open
