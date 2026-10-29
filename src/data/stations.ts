@@ -204,6 +204,46 @@ const ALPHA_BOYS_TERMS: StationTerms = {
     "Skatalites, Yellowman, Johnny “Dizzy” Moore among them.",
 };
 
+const CONCERTZENDER_TERMS: StationTerms = {
+  status: "silent",
+  source: "https://streams.greenhost.nl:8006/",
+  checked: "2026-10-29",
+  note:
+    "Stichting Concertzender, a volunteer foundation in Utrecht making radio since 1982 and "
+    + "distributed nationally by cable; it publishes annual reports and was designated a side "
+    + "activity of the NOS in 1999. Its own /streams/ link resolves to the public Icecast status "
+    + "page used here, which lists every mount. No terms were found either way. Each channel is a "
+    + "themed re-broadcast of its own programme archive, so what plays is work its own editors "
+    + "made and dated — about as far from an auto-DJ as a stream gets.",
+};
+
+const CESKY_ROZHLAS_TERMS: StationTerms = {
+  status: "allows-players",
+  source: "https://jazz.rozhlas.cz/about-us-5176836",
+  checked: "2026-10-29",
+  note:
+    "Český rozhlas, the Czech public broadcaster and an EBU member. Its own station "
+    + "pages publish .m3u and .asx playlist files to open in an audio player. The https URLs "
+    + "used here are the direct equivalents of those playlists — confirmed on 2026-10-29 to "
+    + "answer with the same icy-name as the published api.play.cz m3u resolves to.",
+};
+
+const WMBR_TERMS: StationTerms = {
+  status: "allows-players",
+  source: "https://wmbr.org/",
+  checked: "2026-10-29",
+  note: "Publishes a .m3u for external players, labelled “Live Stream (m3u)”. "
+    + "Student- and community-run non-profit at MIT.",
+};
+
+const KZSU_TERMS: StationTerms = {
+  status: "allows-players",
+  source: "https://kzsu.stanford.edu/live/",
+  checked: "2026-10-29",
+  note: "Publishes its streams in four formats under the heading “Use your own player”. "
+    + "Student-run at Stanford, on air since 1964.",
+};
+
 const BASSDRIVE_TERMS: StationTerms = {
   status: "silent",
   source: "https://www.bassdrive.com/",
@@ -377,6 +417,141 @@ const KALX = pick(
   "https://kalx.berkeley.edu/",
 );
 
+const CZ_FILM = pick(
+  "Concertzender Filmmuziek",
+  "Stichting Concertzender · Film music",
+  "https://streams.greenhost.nl:8006/film",
+  "instrumental",
+  CONCERTZENDER_TERMS,
+  "https://www.concertzender.nl/",
+);
+
+const CZ_WERELD = pick(
+  "Concertzender Wereldmuziek",
+  "Stichting Concertzender · Music of the world",
+  "https://streams.greenhost.nl:8006/wereldmuziek",
+  "vocal",
+  CONCERTZENDER_TERMS,
+  "https://www.concertzender.nl/",
+);
+
+const CZ_JAZZ = pick(
+  "World of Jazz",
+  "Stichting Concertzender · Jazz",
+  "https://streams.greenhost.nl:8006/jazz",
+  "mixed",
+  CONCERTZENDER_TERMS,
+  "https://www.concertzender.nl/",
+);
+
+const CZ_HARDBOP = pick(
+  "Concertzender Hard Bop",
+  "Stichting Concertzender · Hard bop",
+  "https://streams.greenhost.nl:8006/hardbop",
+  "instrumental",
+  CONCERTZENDER_TERMS,
+  "https://www.concertzender.nl/",
+);
+
+const CZ_KLASSIEK = pick(
+  "Concertzender Klassiek",
+  "Stichting Concertzender · Classical",
+  "https://streams.greenhost.nl:8006/klassiek",
+  "instrumental",
+  CONCERTZENDER_TERMS,
+  "https://www.concertzender.nl/",
+);
+
+const CZ_OUDE = pick(
+  "Concertzender Oude Muziek",
+  "Stichting Concertzender · Early music",
+  "https://streams.greenhost.nl:8006/oudemuziek",
+  "mixed",
+  CONCERTZENDER_TERMS,
+  "https://www.concertzender.nl/",
+);
+
+const CZ_NIEUWE = pick(
+  "Concertzender Nieuwe Muziek",
+  "Stichting Concertzender · Contemporary composed",
+  "https://streams.greenhost.nl:8006/nieuwemuziek",
+  "instrumental",
+  CONCERTZENDER_TERMS,
+  "https://www.concertzender.nl/",
+);
+
+const CZ_FOLK = pick(
+  "Folk it!",
+  "Stichting Concertzender · Folk",
+  "https://streams.greenhost.nl:8006/folkit",
+  "vocal",
+  CONCERTZENDER_TERMS,
+  "https://www.concertzender.nl/",
+);
+
+const CZ_CHANSON = pick(
+  "Concertzender Chanson",
+  "Stichting Concertzender · Chanson",
+  "https://streams.greenhost.nl:8006/chanson",
+  "vocal",
+  CONCERTZENDER_TERMS,
+  "https://www.concertzender.nl/",
+);
+
+const CZ_STILTE = pick(
+  "De Gehoorde Stilte",
+  "Stichting Concertzender · Ambient and quiet",
+  "https://streams.greenhost.nl:8006/gehoordestilte",
+  "instrumental",
+  CONCERTZENDER_TERMS,
+  "https://www.concertzender.nl/",
+);
+
+const CZ_POP = pick(
+  "Concertzender Pop",
+  "Stichting Concertzender · Off the beaten track",
+  "https://streams.greenhost.nl:8006/pop",
+  "vocal",
+  CONCERTZENDER_TERMS,
+  "https://www.concertzender.nl/",
+);
+
+const CRO_JAZZ = pick(
+  "ČRo Jazz",
+  "Český rozhlas · Czech and European jazz",
+  "https://rozhlas.stream/jazz.mp3",
+  "mixed",
+  CESKY_ROZHLAS_TERMS,
+  "https://jazz.rozhlas.cz/",
+);
+
+const CRO_WAVE = pick(
+  "ČRo Radio Wave",
+  "Český rozhlas · Alternative and electronic",
+  "https://rozhlas.stream/radio_wave.mp3",
+  "mixed",
+  CESKY_ROZHLAS_TERMS,
+  "https://wave.rozhlas.cz/",
+);
+
+const WMBR = pick(
+  "WMBR",
+  "MIT · Student and community freeform",
+  "https://wmbr.org:8002/hi",
+  "mixed",
+  WMBR_TERMS,
+  "https://wmbr.org/",
+);
+
+const KZSU = pick(
+  "KZSU",
+  "Stanford · Student freeform",
+  "http://kzsu-streams.stanford.edu:80/kzsu-1-128.mp3",
+  "mixed",
+  KZSU_TERMS,
+  "https://kzsu.stanford.edu/",
+);
+
 const NIGHTWAVE_PLAZA = pick(
   "Nightwave Plaza",
   "Vaporwave and mallsoft",
@@ -424,16 +599,16 @@ const BASSDRIVE = pick(
  */
 export const PICKS: Record<string, Station[]> = {
   lofi: [NIGHTWAVE_PLAZA],
-  ambient: [ASP, AM_AMBIENT, AMBIENT_MODERN],
+  ambient: [ASP, AM_AMBIENT, AMBIENT_MODERN, CZ_STILTE],
   space: [],
-  classical: [SWISS_CLASSIC, WCPE],
+  classical: [SWISS_CLASSIC, WCPE, CZ_KLASSIEK, CZ_OUDE, CZ_NIEUWE],
   piano: [],
-  scores: [],
+  scores: [CZ_FILM],
   nature: [],
-  jazz: [SWISS_JAZZ, WBGO],
+  jazz: [SWISS_JAZZ, WBGO, CZ_JAZZ, CZ_HARDBOP, CRO_JAZZ],
   bossa: [],
   chillout: [RP_MELLOW, AM_AMBIENT],
-  folk: [WFMU_DRUMMER, RP_GLOBAL],
+  folk: [WFMU_DRUMMER, RP_GLOBAL, CZ_FOLK],
   reggae: [ALPHA_BOYS],
   house: [],
   techno: [],
@@ -441,10 +616,10 @@ export const PICKS: Record<string, Station[]> = {
   dnb: [BASSDRIVE],
   synthwave: [NIGHTWAVE_PLAZA],
   idm: [],
-  eclectic: [WFMU_FREEFORM, KFJC, KALX, RP_MAIN, WFMU_DRUMMER, RP_GLOBAL],
-  world: [RP_GLOBAL, ALPHA_BOYS, WFMU_DRUMMER],
-  altrock: [KEXP, WXPN, KALX],
-  indie: [RP_MAIN, KEXP, SWISS_POP, WFMU_FREEFORM, KFJC],
+  eclectic: [WFMU_FREEFORM, KFJC, KALX, WMBR, KZSU, CRO_WAVE, RP_MAIN, WFMU_DRUMMER, RP_GLOBAL],
+  world: [RP_GLOBAL, ALPHA_BOYS, WFMU_DRUMMER, CZ_WERELD, CZ_CHANSON],
+  altrock: [KEXP, WXPN, KALX, CRO_WAVE],
+  indie: [RP_MAIN, KEXP, SWISS_POP, WFMU_FREEFORM, KFJC, CZ_POP],
   rock: [RP_ROCK, WFMU_SHEENA, WFMU_ROCKNSOUL],
   postrock: [],
   metal: [],
