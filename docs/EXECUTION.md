@@ -68,18 +68,28 @@ against Part 3.1 and the verdicts carried out. What is left:
 | Status | Picks | Stations |
 |---|---|---|
 | **Kept** | 9 | KEXP, WXPN, Radio Paradise Main/Rock/Mellow, Radio Swiss Jazz/Classic, Nightwave Plaza |
-| **Added** (task L3) | 11 | WFMU ×4, Radio Paradise Global, Radio Swiss Pop, The Classical Station (WCPE), Ambient Sleeping Pill, a.m. ambient, Ambient Modern, Bassdrive, Alpha Boys School Radio |
+| **Added** (task L3) | 14 | WFMU ×4, Radio Paradise Global, Radio Swiss Pop, The Classical Station (WCPE), Ambient Sleeping Pill, a.m. ambient, Ambient Modern, Bassdrive, Alpha Boys School Radio, WBGO, KFJC, KALX |
 | **Removed to the denylist** | 31 | SomaFM ×30 (terms forbid third-party clients), Box Lofi Radio (zeno.fm) |
 | **Removed, dead** | 1 | BGMVibes |
 | **Parked: awaiting permission** (U3) | 9 | Radio France FIP ×7, The Current (MPR), laut.fm Lofi |
 | **Parked: awaiting the no-AI review** | 5 | Hotmix Lo-Fi, 0nlineradio LO-FI, Epic Lounge, Hunter.FM Lo-Fi, CLIAMP Lofi |
 
-20 Picks across 13 genres. `npm run check:stations` prints the count per genre and fails the
-build if any of this drifts.
+23 Picks across 15 of 28 genres. `npm run check:stations` prints the count per genre and fails
+the build if any of this drifts.
+
+**Two genres were added rather than filled** (2026-10-29). The genre list was built around one
+broadcaster's channel lineup, and once that broadcaster was gone it described a catalog that no
+longer existed. The strongest stations left — WFMU, KFJC, KALX, Radio Paradise, Give the
+Drummer — are *deliberately* not single-genre, and filing them under Indie or Folk said
+something untrue about them. **Freeform & eclectic** (6 Picks) and **World** (3) name what they
+actually are. Both also yield ~60 directory stations each, so they work with the setting on as
+well as off.
 
 **The 13 genres with no Picks** — space, piano, scores, nature, bossa, house, techno, trance,
 idm, postrock, metal, blues, hiphop — are not offered at all unless the community
-directory is switched on. That is the honest state: a genre with nothing vouched for in it
+directory is switched on. They are deliberately **kept** rather than deleted: the directory has
+plenty for each, so removing them would take something away from the setting that exists to
+provide it, and cost nothing to leave. That is the honest state: a genre with nothing vouched for in it
 should not pretend otherwise, and padding it with a station that does not belong there would
 make the list longer and the app worse. Filling them is the rest of **L3**.
 
@@ -166,8 +176,16 @@ register (Part 4). It prints the number of Picks per genre.
       1. **Permission from Radio France (U3).** FIP alone covered reggae, electronic, rock, groove,
          hip-hop and metal. One reply fills six genres; nothing else comes close.
       2. **Public broadcasters with genre channels** — WDR COSMO (world, hip-hop, reggae), NPO
-         Radio 6 Soul & Jazz, ABC Jazz and ABC Classic, BR-Klassik. All were unreachable from this
-         machine this pass (403/404/blocked), not refused on their merits. Worth retrying.
+         Radio 6 Soul & Jazz, ABC Jazz and ABC Classic, BR-Klassik, DR P6 Beat and P8 Jazz. All
+         were unreachable from this machine (403/404/DNS), not refused on their merits. **NRK is
+         the exception and a real lead**: it publishes everything and only asks to be asked, so
+         it belongs with the permission emails rather than this list.
+      2b. **College radio is the richest seam found so far** and is nowhere near exhausted. KFJC
+         and KALX both publish streams with an explicit invitation to use your own player, and
+         they were the first two tried. WSOU (metal, Seton Hall), WKNC, WPRB, WNUR, WHRB, WCBN,
+         KZSU, CKUT and CiTR are all licensed non-commercial stations in the same mould; most
+         were simply unreachable from here. WSOU in particular is a 24/7 metal station, which is
+         one of the hardest gaps.
       3. **Writing to the silent ones.** WWOZ, KDHX and WEVL are listener-supported community
          stations with impeccable provenance whose terms pages could not be read. The template in
          `docs/permission-emails.md` is for exactly this.
@@ -503,6 +521,13 @@ holds (Hotmix, 0nlineradio, Epic Lounge, Hunter.FM, CLIAMP).
 | 2026-10-29 | Ambient Sleeping Pill, a.m. ambient, Ambient Modern | Added as Picks | "Links for adding directly to Winamp and other players"; run by Andrew J Klimek since 2013, playing largely his own label's music — a direct R1/R5 pass |
 | 2026-10-29 | Radio Swiss Pop | Added as a Pick | Same SRG SSR terms as Jazz and Classic, already kept |
 | 2026-10-29 | Bassdrive | Added as a Pick | Publishes .m3u tune-in links; states all music is "directly licensed by the composers and sound recording copyright owners"; named DJs since 1999 |
+| 2026-10-29 | KFJC (Foothill College) | Added as a Pick | "If you'd rather use your own digital media player, we offer the direct streaming options below." Licensed 89.7 FM, freeform since 1959 |
+| 2026-10-29 | KALX (UC Berkeley) | Added as a Pick | Publishes five formats to "listen to KALX with an audio player… in the format of your choice", naming VLC and Winamp. Student- and volunteer-run, on air since 1962 |
+| 2026-10-29 | WBGO (Newark Public Radio) | Added as a Pick | Publishes its current MP3/AAC URLs and separately points listeners at third-party apps. Non-commercial jazz since 1979 |
+| 2026-10-29 | WBGO TOO (HD2) | Not added | A genuinely separate feed — confirmed by comparing ICY titles, not assumed — but it sends no station or track metadata, so what it plays could not be established |
+| 2026-10-29 | NRK (Jazz, Klassisk, Folkemusikk, P3) | **Ask first** | Publishes every stream URL, but lyd.nrk.no states "enhver annen bruk av disse for å skape nye tjenester, uten godkjenning av NRK, er derfor ikke tillatt" — building a service on them needs NRK's approval. Added to the permission list |
+| 2026-10-29 | Mother Earth Radio | Rejected | The station has closed; its site now points to a different, Germany-only service |
+| 2026-10-29 | WXYC, WREK, Jazz24, KNKX | Not established | Real stations with good provenance, but none publishes a stream URL on the pages reachable from here |
 | 2026-10-29 | Alpha Boys School Radio | Added as a Pick | Supports the Alpha School of Music, Kingston, run by the Sisters of Mercy since 1890; every record features an Alpha alumnus. Terms silent (site read) |
 | 2026-10-29 | Radio Paradise Global Mix | Added as a Pick | A genuine fourth RP channel, under the terms record already held |
 | 2026-10-29 | RP "eclectic-128" and "world-128" | Rejected | Both return `icy-name: Global Mix` — aliases, not channels. Adding them would have listed one stream three times |

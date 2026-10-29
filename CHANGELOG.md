@@ -23,6 +23,10 @@ The work that made the repository fit to be public.
   `cargo fmt`, `clippy -D warnings` and tests on Windows.
 - A privacy policy, a code of conduct, a pull request template and Dependabot.
 - `CHANGELOG.md`, which is this file.
+- Two genres, **Freeform & eclectic** and **World**. The genre list had been
+  built around one broadcaster's channel lineup; with that broadcaster gone it
+  described a catalog that no longer existed, and the best stations left are
+  deliberately not single-genre. Calling WFMU "Indie" was simply inaccurate.
 
 ### Changed
 
@@ -31,13 +35,13 @@ The work that made the repository fit to be public.
 - **The catalog is much smaller and now defensible.** 33 Picks were removed
   because their broadcasters' terms do not permit a player like this one —
   SomaFM alone accounted for 30 of them. Nine more are parked pending
-  permission, and five pending the no-AI review. Eleven replacements were
-  found and vetted — WFMU's four channels, Radio Paradise Global, Radio Swiss
-  Pop, The Classical Station, three Stereoscenic ambient stations, Bassdrive
-  and Alpha Boys School Radio — leaving 20 Picks across 13 genres. Thirteen
-  genres are hidden until the community directory is switched on, because the
-  long-running stations in them either forbid third-party players or name
-  nobody who could vouch for the music.
+  permission, and five pending the no-AI review. Fourteen replacements were
+  found and vetted — WFMU's four channels, KFJC, KALX, WBGO, Radio Paradise
+  Global, Radio Swiss Pop, The Classical Station, three Stereoscenic ambient
+  stations, Bassdrive and Alpha Boys School Radio — leaving 23 Picks across 15
+  genres. Thirteen genres are still hidden until the community directory is
+  switched on, because the long-running stations in them either forbid
+  third-party players or name nobody who could vouch for the music.
 - **Album art is off by default**, and the cover now links to the track on
   Apple Music, which is the condition Apple's terms place on showing it.
 - The About screen's description of what the app contacts is now accurate; it

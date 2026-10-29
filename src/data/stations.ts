@@ -144,6 +144,17 @@ const WCPE_TERMS: StationTerms = {
     "since 1978.",
 };
 
+const WBGO_TERMS: StationTerms = {
+  status: "allows-players",
+  source: "https://www.wbgo.org/how-to-listen-online",
+  checked: "2026-10-29",
+  note:
+    "Publishes its direct MP3 and AAC stream URLs, and separately points listeners at the " +
+    "third-party apps it can be found in. Newark Public Radio — non-commercial, NPR/PRX/CPB " +
+    "affiliated, playing jazz since 1979. The page also names two retired streamguys addresses " +
+    "that must not be used; the one here is the current MP3 stream.",
+};
+
 const STEREOSCENIC_TERMS: StationTerms = {
   status: "allows-players",
   source: "https://www.ambientsleepingpill.com/",
@@ -152,6 +163,26 @@ const STEREOSCENIC_TERMS: StationTerms = {
     "“These are the links for adding directly to Winamp and other players.” Run by " +
     "Andrew J Klimek since 2013; much of what it plays is his own and his label's, which is " +
     "about as direct an answer to R1 as a station can give.",
+};
+
+const KFJC_TERMS: StationTerms = {
+  status: "allows-players",
+  source: "https://kfjc.org/listen/",
+  checked: "2026-10-29",
+  note:
+    "“If you’d rather use your own digital media player, we offer the direct " +
+    "streaming options below.” Licensed FM broadcaster (89.7) run by Foothill College, " +
+    "Los Altos Hills, freeform since 1959.",
+};
+
+const KALX_TERMS: StationTerms = {
+  status: "allows-players",
+  source: "https://kalx.berkeley.edu/media/live-streaming/",
+  checked: "2026-10-29",
+  note:
+    "Publishes its streams in five formats so you can “listen to KALX with an audio " +
+    "player over the Internet in the format of your choice”, and names VLC, Winamp and " +
+    "Apple Music as examples. Student- and volunteer-run at UC Berkeley, on air since 1962.",
 };
 
 const NIGHTWAVE_PLAZA_TERMS: StationTerms = {
@@ -328,6 +359,24 @@ const AMBIENT_MODERN = pick(
   "https://ambientmodern.com/",
 );
 
+const KFJC = pick(
+  "KFJC",
+  "Foothill College · Freeform, Los Altos Hills",
+  "http://netcast.kfjc.org/kfjc-128k-mp3",
+  "mixed",
+  KFJC_TERMS,
+  "https://kfjc.org/",
+);
+
+const KALX = pick(
+  "KALX",
+  "UC Berkeley · Student and volunteer freeform",
+  "https://stream.kalx.berkeley.edu:8443/kalx-128.mp3",
+  "mixed",
+  KALX_TERMS,
+  "https://kalx.berkeley.edu/",
+);
+
 const NIGHTWAVE_PLAZA = pick(
   "Nightwave Plaza",
   "Vaporwave and mallsoft",
@@ -335,6 +384,15 @@ const NIGHTWAVE_PLAZA = pick(
   "instrumental",
   NIGHTWAVE_PLAZA_TERMS,
   "https://plaza.one/",
+);
+
+const WBGO = pick(
+  "WBGO",
+  "Newark Public Radio · Jazz since 1979",
+  "https://ais-sa8.cdnstream1.com/3629_128.mp3",
+  "mixed",
+  WBGO_TERMS,
+  "https://www.wbgo.org/",
 );
 
 const ALPHA_BOYS = pick(
@@ -372,7 +430,7 @@ export const PICKS: Record<string, Station[]> = {
   piano: [],
   scores: [],
   nature: [],
-  jazz: [SWISS_JAZZ],
+  jazz: [SWISS_JAZZ, WBGO],
   bossa: [],
   chillout: [RP_MELLOW, AM_AMBIENT],
   folk: [WFMU_DRUMMER, RP_GLOBAL],
@@ -383,8 +441,10 @@ export const PICKS: Record<string, Station[]> = {
   dnb: [BASSDRIVE],
   synthwave: [NIGHTWAVE_PLAZA],
   idm: [],
-  altrock: [KEXP, WXPN],
-  indie: [RP_MAIN, KEXP, SWISS_POP, WFMU_FREEFORM],
+  eclectic: [WFMU_FREEFORM, KFJC, KALX, RP_MAIN, WFMU_DRUMMER, RP_GLOBAL],
+  world: [RP_GLOBAL, ALPHA_BOYS, WFMU_DRUMMER],
+  altrock: [KEXP, WXPN, KALX],
+  indie: [RP_MAIN, KEXP, SWISS_POP, WFMU_FREEFORM, KFJC],
   rock: [RP_ROCK, WFMU_SHEENA, WFMU_ROCKNSOUL],
   postrock: [],
   metal: [],
