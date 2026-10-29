@@ -35,13 +35,14 @@ The work that made the repository fit to be public.
 - **The catalog is much smaller and now defensible.** 33 Picks were removed
   because their broadcasters' terms do not permit a player like this one —
   SomaFM alone accounted for 30 of them. Nine more are parked pending
-  permission, and five pending the no-AI review. Fourteen replacements were
-  found and vetted — WFMU's four channels, KFJC, KALX, WBGO, Radio Paradise
-  Global, Radio Swiss Pop, The Classical Station, three Stereoscenic ambient
-  stations, Bassdrive and Alpha Boys School Radio — leaving 23 Picks across 15
-  genres. Thirteen genres are still hidden until the community directory is
-  switched on, because the long-running stations in them either forbid
-  third-party players or name nobody who could vouch for the music.
+  permission, and five pending the no-AI review. Twenty-nine replacements were
+  found and vetted, every one of them an institution — public broadcasters
+  (Radio Swiss, Český rozhlas), college stations (WFMU, KFJC, KALX, WMBR,
+  KZSU, KEXP, WXPN), listener-supported non-profits (WBGO, WCPE, Alpha Boys
+  School Radio) and foundations (Concertzender's eleven channels) — leaving 38
+  Picks across 16 genres. Twelve genres are still hidden until the community
+  directory is switched on, because the long-running stations in them either
+  forbid third-party players or name nobody who could vouch for the music.
 - **Album art is off by default**, and the cover now links to the track on
   Apple Music, which is the condition Apple's terms place on showing it.
 - The About screen's description of what the app contacts is now accurate; it

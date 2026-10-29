@@ -80,7 +80,7 @@ box sits above both levels. A genre with no Picks yet is not shown at all.
 **The catalog is small, and that is the point.** It carried 56 Picks until the broadcasters'
 own terms were read properly; 33 of those had to go, 30 of them SomaFM, whose terms refuse
 third-party clients "even noncommercial ones". Fourteen more are parked pending permission or
-a provenance review. What is left is 23 Picks across 15 genres, every one of which carries a
+a provenance review. What is left is 38 Picks across 16 genres, every one of which carries a
 `terms` record saying where somebody read that we may play it, and on what date. `npm run
 check:stations` refuses to build a catalog where that is not true, and the broadcasters who
 said no are on a denylist that the directory, favourites and the last-played station are all
@@ -101,9 +101,10 @@ earlier is kept but not listed until it is turned back on.
 With that setting on, a genre is filled from two sources, merged into one list:
 
 - **Picks** (`src/data/stations.ts`) are hand-chosen from broadcasters with named human
-  programmers — WFMU, KFJC, KALX, KEXP, WXPN, WBGO, Radio Paradise, Radio Swiss, WCPE,
-  Stereoscenic, Bassdrive, Alpha Boys School Radio, Nightwave Plaza — and marked by hand as
-  instrumental, mixed or vocal. They come first, under their own heading, and need no network.
+  programmers — WFMU, KFJC, KALX, WMBR, KZSU, KEXP, WXPN, WBGO, Radio Paradise, Radio Swiss,
+  Concertzender, Český rozhlas, WCPE, Stereoscenic, Bassdrive, Alpha Boys School Radio,
+  Nightwave Plaza — and marked by hand as instrumental, mixed or vocal. They come first, under
+  their own heading, and need no network.
 - **The directory** is [Radio Browser](https://www.radio-browser.info), which fills a genre out
   to about sixty stations. A genre is a *set of tags we define* (`src/data/genres.ts`), because
   the directory's tags are free text: "lofi", "lo-fi", "lo fi" and "chillhop" are four
@@ -331,7 +332,7 @@ five were unused) are down to Chivo and Chivo Mono.
 
 Worth knowing before you try it:
 
-- **Thirteen genres have no Picks** and are hidden unless you switch the community directory
+- **Twelve genres have no Picks** and are hidden unless you switch the community directory
   on — see the catalog section above. Filling them is the main open work, and it is harder
   than it sounds: the long-running stations in those genres mostly either forbid third-party
   players or name nobody who could vouch for what they play.

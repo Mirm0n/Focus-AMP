@@ -68,14 +68,29 @@ against Part 3.1 and the verdicts carried out. What is left:
 | Status | Picks | Stations |
 |---|---|---|
 | **Kept** | 9 | KEXP, WXPN, Radio Paradise Main/Rock/Mellow, Radio Swiss Jazz/Classic, Nightwave Plaza |
-| **Added** (task L3) | 14 | WFMU ×4, Radio Paradise Global, Radio Swiss Pop, The Classical Station (WCPE), Ambient Sleeping Pill, a.m. ambient, Ambient Modern, Bassdrive, Alpha Boys School Radio, WBGO, KFJC, KALX |
+| **Added** (task L3) | 29 | WFMU ×4, KFJC, KALX, WMBR, KZSU, WBGO, Radio Paradise Global, Radio Swiss Pop, WCPE, Ambient Sleeping Pill, a.m. ambient, Ambient Modern, Bassdrive, Alpha Boys School Radio, Concertzender ×11, ČRo Jazz, ČRo Radio Wave |
 | **Removed to the denylist** | 31 | SomaFM ×30 (terms forbid third-party clients), Box Lofi Radio (zeno.fm) |
 | **Removed, dead** | 1 | BGMVibes |
 | **Parked: awaiting permission** (U3) | 9 | Radio France FIP ×7, The Current (MPR), laut.fm Lofi |
 | **Parked: awaiting the no-AI review** | 5 | Hotmix Lo-Fi, 0nlineradio LO-FI, Epic Lounge, Hunter.FM Lo-Fi, CLIAMP Lofi |
 
-23 Picks across 15 of 28 genres. `npm run check:stations` prints the count per genre and fails
+38 Picks across 16 of 28 genres. `npm run check:stations` prints the count per genre and fails
 the build if any of this drifts.
+
+**One concentration to keep an eye on.** Concertzender is 11 of the 38 Picks — 29% of the
+catalog on one foundation's Icecast server. That is not the SomaFM problem (their terms are
+silent, not hostile, and the eleven are genuinely distinct programmes), but it is the same
+*shape* of fragility: if Concertzender changed its terms, moved host or closed, Film & game
+scores would empty and classical, jazz, world and folk would all thin out at once. The next
+pass should prefer breadth over another cluster, and `check:stations` could reasonably grow a
+warning when one host exceeds a quarter of the catalog.
+
+**What the three passes taught us**, in one line: *institutions pass, independents fail.* Public
+broadcasters, college stations and foundations clear R1 and R6 almost by definition — they have
+a legal name, named programmers and a licence — and they tend to publish their stream URLs
+because being heard is the point of them. Independent and commercial stations fail one or both
+nearly every time, however good the music. Every station added across all three passes is an
+institution; every rejection but one was an independent that named nobody.
 
 **Two genres were added rather than filled** (2026-10-29). The genre list was built around one
 broadcaster's channel lineup, and once that broadcaster was gone it described a catalog that no
@@ -159,8 +174,8 @@ register (Part 4). It prints the number of Picks per genre.
 - [x] **L2 Apply it:** remove the 32 excluded Picks; move "ask first" and "hold" stations into the
       register as parked; add `terms` records and the denylist (§1.5). Filter the directory,
       favorites and the last station through the denylist.
-- [ ] **L3 Replacement Picks:** *two passes done 2026-10-29* — 11 added, bringing the catalog to
-      20 Picks across 13 genres. **Still empty (13):** space, piano, scores, nature, bossa, house,
+- [ ] **L3 Replacement Picks:** *three passes done 2026-10-29* — 29 added, bringing the catalog
+      to 38 Picks across 16 genres. **Still empty (12):** space, piano, nature, bossa, house,
       techno, trance, idm, postrock, metal, blues, hiphop.
 
       The second pass worked the directory itself rather than guessing at station names, and the
@@ -180,12 +195,15 @@ register (Part 4). It prints the number of Picks per genre.
          were unreachable from this machine (403/404/DNS), not refused on their merits. **NRK is
          the exception and a real lead**: it publishes everything and only asks to be asked, so
          it belongs with the permission emails rather than this list.
-      2b. **College radio is the richest seam found so far** and is nowhere near exhausted. KFJC
-         and KALX both publish streams with an explicit invitation to use your own player, and
-         they were the first two tried. WSOU (metal, Seton Hall), WKNC, WPRB, WNUR, WHRB, WCBN,
-         KZSU, CKUT and CiTR are all licensed non-commercial stations in the same mould; most
-         were simply unreachable from here. WSOU in particular is a 24/7 metal station, which is
-         one of the hardest gaps.
+      2b. **Multi-channel foundations and public broadcasters are the best yield per check.**
+         Concertzender alone gave eleven channels and filled Film & game scores off a single
+         terms record. The same shape is worth trying elsewhere: DR (P6 Beat, P8 Jazz), YLE,
+         Sveriges Radio, RTVE (Radio 3, Radio Clásica), VRT (Klara), ORF FM4, RTP Antena 2,
+         Polskie Radio. All were unreachable from this machine, not refused.
+      2c. **College radio** gave KFJC, KALX, WMBR and KZSU, all publishing streams with an
+         explicit invitation to use your own player. WSOU (24/7 metal, Seton Hall), WPRB, WHRB,
+         WNUR and CiTR run web players only and publish no raw URL — worth an email rather than
+         another search. WSOU would close one of the hardest gaps.
       3. **Writing to the silent ones.** WWOZ, KDHX and WEVL are listener-supported community
          stations with impeccable provenance whose terms pages could not be read. The template in
          `docs/permission-emails.md` is for exactly this.
@@ -521,6 +539,15 @@ holds (Hotmix, 0nlineradio, Epic Lounge, Hunter.FM, CLIAMP).
 | 2026-10-29 | Ambient Sleeping Pill, a.m. ambient, Ambient Modern | Added as Picks | "Links for adding directly to Winamp and other players"; run by Andrew J Klimek since 2013, playing largely his own label's music — a direct R1/R5 pass |
 | 2026-10-29 | Radio Swiss Pop | Added as a Pick | Same SRG SSR terms as Jazz and Classic, already kept |
 | 2026-10-29 | Bassdrive | Added as a Pick | Publishes .m3u tune-in links; states all music is "directly licensed by the composers and sound recording copyright owners"; named DJs since 1999 |
+| 2026-10-29 | Concertzender ×11 (Filmmuziek, Wereldmuziek, World of Jazz, Hard Bop, Klassiek, Oude Muziek, Nieuwe Muziek, Folk it!, Chanson, De Gehoorde Stilte, Pop) | Added as Picks | Stichting Concertzender, a volunteer foundation in Utrecht broadcasting since 1982, nationally by cable, designated an NOS side activity in 1999. Its own /streams/ link resolves to the public Icecast page listing every mount. Each channel re-broadcasts its own dated programme archive. **Filmmuziek fills the empty Film & game scores genre** |
+| 2026-10-29 | Concertzender Radiophonics | Not added | Field recording and radio art. The only genre that could take it is "Nature & soundscapes", which is tagged for relaxation, meditation and sleep — filing it there would have been false |
+| 2026-10-29 | WMBR (MIT) | Added as a Pick | Publishes a .m3u labelled "Live Stream (m3u)". Student- and community-run non-profit |
+| 2026-10-29 | KZSU (Stanford) | Added as a Pick | Publishes four formats under the heading "Use your own player" |
+| 2026-10-29 | KZSU-2 and KZSU-3 | Not added | Live and separate, but neither announces what it plays |
+| 2026-10-29 | ČRo Jazz, ČRo Radio Wave | Added as Picks | Český rozhlas, Czech public broadcaster and EBU member; its station pages publish .m3u and .asx playlists to open in an audio player |
+| 2026-10-29 | ČRo D-dur | Not added | No officially published stream URL found under any name tried; only third-party listings |
+| 2026-10-29 | DKFM Shoegaze Radio | Rejected | Publishes iTunes .pls and Winamp .m3u files and names its DJs, so R2 passes — but no operator is named and nothing is said about licensing. R1 and R6 both "couldn't find out", which §3.2 treats as failure |
+| 2026-10-29 | Whisperings Solo Piano, Bossa Jazz Brasil, Radio Free Fedi, Refuge Worldwide, dublab, WSOU, WPRB, WHRB, WNUR, CiTR, WCBN, ByteFM | Not added | Of these, WSOU, WPRB, WHRB, WNUR and CiTR publish no raw stream URL (web players only); Whisperings and Bossa Jazz Brasil name no operator; the rest were unreachable |
 | 2026-10-29 | KFJC (Foothill College) | Added as a Pick | "If you'd rather use your own digital media player, we offer the direct streaming options below." Licensed 89.7 FM, freeform since 1959 |
 | 2026-10-29 | KALX (UC Berkeley) | Added as a Pick | Publishes five formats to "listen to KALX with an audio player… in the format of your choice", naming VLC and Winamp. Student- and volunteer-run, on air since 1962 |
 | 2026-10-29 | WBGO (Newark Public Radio) | Added as a Pick | Publishes its current MP3/AAC URLs and separately points listeners at third-party apps. Non-commercial jazz since 1979 |
