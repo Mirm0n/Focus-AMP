@@ -47,7 +47,9 @@ The work that made the repository fit to be public.
   200, since a dead mount often answers cheerfully and then sends nothing. It
   gives each station a second try before calling it dead, because the first
   run reported one down that answered three times in a row a moment later.
-  Rule R8 asks for a re-check every six months and had no tool behind it.
+  Rule R8 asks for a re-check every six months and had no tool behind it. It
+  also checks that every `terms.source` page still resolves, since a Pick is
+  only auditable while the page that justified it is still there.
 - `docs/RELEASING.md`, the maintainer's runbook: backing up the signing key,
   the GitHub secrets, bumping the version in three files, the draft-then-
   publish step that keeps a bad build from ever reaching anyone, how to prove
