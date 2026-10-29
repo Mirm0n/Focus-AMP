@@ -42,7 +42,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEY3RUVEQUY0N0E2NEVBQTMKUldTajZtUjY5TnJ1OXpPamN2Q1dCMnRvWkt1REp1dFFMVEdFU3FHR0doQ3JhbzNXU2xITEVkN0MK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDVFNjdCRkI3RDlEMUE5QkQKUldTOXFkSFp0NzluWHJNZStjalh1NUZYd1VOTWhqTEt2WENFMEFYQ3MwSjZneU5ibW93YUdjTlYK",
       "endpoints": [
         "https://github.com/PUT-YOUR-REPO-HERE/releases/latest/download/latest.json"
       ],

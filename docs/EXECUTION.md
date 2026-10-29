@@ -272,6 +272,7 @@ register (Part 4). It prints the number of Picks per genre.
       **Owed before anyone relies on it:** set the endpoint and `SOURCE` to the real repository
       (`npm run check:release` fails until both are set and agree), add the two signing secrets
       to GitHub, then cut v0.9.0 and v0.9.1 and confirm an installed v0.9.0 updates itself.
+      The whole sequence, and what is unrecoverable about it, is in `docs/RELEASING.md`.
 - [ ] **S3 Beta release (v0.9, unsigned):** release notes, and install instructions explaining the
       SmartScreen warning.
 - [ ] **S4 Release verification:** automated checks on the built installer (every visible genre
@@ -284,7 +285,9 @@ register (Part 4). It prints the number of Picks per genre.
       turn on two-factor authentication (SignPath requires it). Public only after O2.
 - [ ] **U2** Listen to the replacement Picks from L3 and approve or reject each one.
 - [ ] **U3** Send the permission emails the agent drafts in L6.
-- [ ] **U4** Publish the v0.9 beta release on GitHub.
+- [ ] **U4** Publish the v0.9 beta release on GitHub, following `docs/RELEASING.md`. **Back up
+      `~/.tauri/focus-amp.key` off this machine first** — losing it strands every installed copy
+      on its version permanently, with no way to reach those users again.
 - [ ] **U5** Apply to the SignPath Foundation for free signing, right after the beta. Review takes
       about 1–2 weeks.
 - [ ] **U6** Optional: set up GitHub Sponsors or Ko-fi.
