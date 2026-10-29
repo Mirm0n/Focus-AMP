@@ -38,8 +38,21 @@ const errors = [];
 const warnings = [];
 
 // ── The genres that exist ───────────────────────────────────────────────────
-const genreIds = new Set([...genresSrc.matchAll(/^\s*id: "([^"]+)",/gm)].map((m) => m[1]));
+// Only the ones the app actually offers. `PLANNED_GENRES` sits in the same
+// file with its tag sets kept whole, and must not be mistaken for a genre
+// that is missing its Picks — that is the whole reason it was moved out.
+const genresArray = genresSrc.slice(
+  genresSrc.indexOf("export const GENRES: GenreDef[] = ["),
+  genresSrc.indexOf("export const PLANNED_GENRES"),
+);
+const genreIds = new Set([...genresArray.matchAll(/^\s*id: "([^"]+)",/gm)].map((m) => m[1]));
 if (genreIds.size === 0) errors.push("could not read any genre ids from src/data/genres.ts");
+
+const plannedSrc = genresSrc.slice(genresSrc.indexOf("export const PLANNED_GENRES"));
+const plannedIds = [...plannedSrc.matchAll(/^\s*id: "([^"]+)",/gm)].map((m) => m[1]);
+for (const id of plannedIds) {
+  if (genreIds.has(id)) errors.push(`genre "${id}" is in both GENRES and PLANNED_GENRES`);
+}
 
 // ── The terms records, by const name ────────────────────────────────────────
 const terms = new Map();
@@ -121,14 +134,36 @@ for (const id of genreIds) {
 // ── Report ──────────────────────────────────────────────────────────────────
 const empty = perGenre.filter(([, ids]) => ids.length === 0).map(([g]) => g);
 const filled = perGenre.filter(([, ids]) => ids.length > 0);
+// An offered genre with no Picks is now an error, not a warning: the twelve
+// that had none were moved to PLANNED_GENRES, so a new one appearing here
+// means a genre was added to GENRES before it had a station to show.
 if (empty.length) {
-  warnings.push(
-    `${empty.length} genres have no Picks and are hidden unless the directory is on ` +
-      `(task L3): ${empty.join(", ")}`,
+  errors.push(
+    `${empty.length} offered genre(s) have no Picks: ${empty.join(", ")}. ` +
+      `Either add a Pick, or move it to PLANNED_GENRES in genres.ts.`,
   );
 }
 
-console.log(`check:stations — ${stations.size} Picks across ${filled.length} genres, ${terms.size} terms records`);
+// One host holding too much of the catalog is the SomaFM shape of fragility,
+// whatever the terms say. See docs/EXECUTION.md Part 4.
+const hosts = new Map();
+for (const s of stations.values()) {
+  const h = hostOf(s.url);
+  if (h) hosts.set(h, (hosts.get(h) ?? 0) + 1);
+}
+for (const [host, n] of [...hosts].sort((a, b) => b[1] - a[1])) {
+  if (n / stations.size > 0.25) {
+    warnings.push(
+      `${host} is ${n} of ${stations.size} Picks (${Math.round((n / stations.size) * 100)}%) — ` +
+        `one host going away would take all of them. Prefer breadth in the next addition.`,
+    );
+  }
+}
+
+console.log(
+  `check:stations — ${stations.size} Picks across ${filled.length} genres, ` +
+    `${terms.size} terms records, ${plannedIds.length} genres planned`,
+);
 for (const [genre, ids] of filled) {
   console.log(`  ${genre.padEnd(12)} ${ids.length}`);
 }

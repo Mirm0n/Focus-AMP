@@ -74,8 +74,20 @@ against Part 3.1 and the verdicts carried out. What is left:
 | **Parked: awaiting permission** (U3) | 9 | Radio France FIP ×7, The Current (MPR), laut.fm Lofi |
 | **Parked: awaiting the no-AI review** | 5 | Hotmix Lo-Fi, 0nlineradio LO-FI, Epic Lounge, Hunter.FM Lo-Fi, CLIAMP Lofi |
 
-38 Picks across 16 of 28 genres. `npm run check:stations` prints the count per genre and fails
-the build if any of this drifts.
+**38 Picks across 16 genres, and 16 is now the whole list.** The twelve that never found a
+Pick were taken out of `GENRES` on 2026-10-29 and moved to `PLANNED_GENRES` in the same file,
+tag sets intact. The app offers no genre it cannot vouch for.
+
+That is a real trade and it is worth naming: those twelve worked perfectly well with the
+community directory switched on — around sixty stations each. Taking them out costs that. The
+decision was that a genre which is empty by default, and filled only by stations nobody has
+checked, is the app quietly dropping the standard it claims on its own About screen. Putting
+one back is moving its entry into `GENRES` and adding a `PICKS` row; nothing has to be rebuilt.
+
+`npm run check:stations` enforces it. An offered genre with no Picks is now an **error**, not a
+warning, so a genre cannot be added back before it has a station to show. It also fails on an
+id that appears in both lists, and warns when any one host holds more than a quarter of the
+catalog.
 
 **One concentration to keep an eye on.** Concertzender is 11 of the 38 Picks — 29% of the
 catalog on one foundation's Icecast server. That is not the SomaFM problem (their terms are
@@ -100,11 +112,9 @@ something untrue about them. **Freeform & eclectic** (6 Picks) and **World** (3)
 actually are. Both also yield ~60 directory stations each, so they work with the setting on as
 well as off.
 
-**The 13 genres with no Picks** — space, piano, scores, nature, bossa, house, techno, trance,
-idm, postrock, metal, blues, hiphop — are not offered at all unless the community
-directory is switched on. They are deliberately **kept** rather than deleted: the directory has
-plenty for each, so removing them would take something away from the setting that exists to
-provide it, and cost nothing to leave. That is the honest state: a genre with nothing vouched for in it
+**The twelve planned genres** — space, piano, nature, bossa, house, techno, trance, idm,
+postrock, metal, blues, hiphop — are in `PLANNED_GENRES`, not offered anywhere. Their tags were
+checked against the live directory and each yields plenty; the gap is Picks and nothing else. That is the honest state: a genre with nothing vouched for in it
 should not pretend otherwise, and padding it with a station that does not belong there would
 make the list longer and the app worse. Filling them is the rest of **L3**.
 
@@ -175,8 +185,11 @@ register (Part 4). It prints the number of Picks per genre.
       register as parked; add `terms` records and the denylist (§1.5). Filter the directory,
       favorites and the last station through the denylist.
 - [ ] **L3 Replacement Picks:** *three passes done 2026-10-29* — 29 added, bringing the catalog
-      to 38 Picks across 16 genres. **Still empty (12):** space, piano, nature, bossa, house,
-      techno, trance, idm, postrock, metal, blues, hiphop.
+      to 38 Picks across 16 genres. The twelve that found nothing were moved to
+      `PLANNED_GENRES` so 1.0 ships offering only what it can vouch for: space, piano, nature,
+      bossa, house, techno, trance, idm, postrock, metal, blues, hiphop. **Each returns by
+      moving its entry back into `GENRES` and adding a `PICKS` row** — the build refuses it
+      without one.
 
       The second pass worked the directory itself rather than guessing at station names, and the
       result is worth recording because it is not an accident: **the empty genres are empty for a
