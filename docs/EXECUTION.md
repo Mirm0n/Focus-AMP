@@ -465,9 +465,11 @@ register (Part 4). One failure, or one "couldn't find out", means it isn't a Pic
   near-identical channels with no staff.
 - **R8. Hand-marked, dated, re-checked:** every Pick carries its check date and is re-checked
   every six months, or at once after a change of ownership or format. One that can't be
-  re-verified is demoted. `npm run check:streams` does the "is it still on the air" half: it
-  asks every Pick for actual audio, retries once, and exits non-zero if any is really gone.
-  The terms half still needs a person.
+  re-verified is demoted. `npm run check:streams` does both halves it can do without judgement:
+  it asks every Pick for actual audio, retrying once, **and** checks that every `terms.source`
+  page still resolves. A dead source does not mean the station is out — it means the evidence
+  for keeping it can no longer be read, which is its own thing worth knowing. Deciding what to
+  do about either still needs a person.
 
 ### Rules for directory stations
 

@@ -129,6 +129,42 @@ console.log(
     `${failed.length} not`,
 );
 
+// ── The terms records' own sources ──────────────────────────────────────────
+// Every Pick is justified by a page somebody read, and that justification is
+// only auditable while the page is still there. A broadcaster quietly dropping
+// the page that said "use your own player" is exactly the change we would want
+// to notice, and it is invisible from the stream itself.
+const sources = [...new Set([...src.matchAll(/source: "(https:\/\/[^"]+)"/g)].map((m) => m[1]))];
+
+async function reachable(url) {
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 15000);
+  try {
+    // Some of these refuse HEAD, so ask for the page and read nothing.
+    const res = await fetch(url, {
+      signal: ctl.signal,
+      redirect: "follow",
+      headers: { "User-Agent": "FocusAMP/2.0 terms-check" },
+    });
+    res.body?.cancel().catch(() => {});
+    return { url, status: res.status, ok: res.status >= 200 && res.status < 400 };
+  } catch (e) {
+    return { url, status: 0, ok: false, error: e.name === "AbortError" ? "timed out" : String(e.message).slice(0, 44) };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+console.log(`\n  terms sources (${sources.length} distinct):`);
+const sourceResults = [];
+for (let i = 0; i < sources.length; i += 5) {
+  sourceResults.push(...(await Promise.all(sources.slice(i, i + 5).map(reachable))));
+}
+const goneSources = sourceResults.filter((r) => !r.ok);
+for (const r of sourceResults) {
+  console.log(`  ${r.ok ? "ok  " : "GONE"} ${String(r.status).padStart(3)}  ${r.url.slice(0, 62)}`);
+}
+
 if (failed.length) {
   console.error("\nNot answering with audio:");
   for (const f of failed) {
@@ -139,5 +175,16 @@ if (failed.length) {
     "\nA station can be down for an hour, so check by hand before removing one.\n" +
       "If it is really gone, replace it and record the change in docs/EXECUTION.md Part 4.",
   );
-  process.exit(1);
 }
+
+if (goneSources.length) {
+  console.error(`\n${goneSources.length} terms source(s) no longer reachable:`);
+  for (const g of goneSources) console.error(`  - ${g.error || `HTTP ${g.status}`}  ${g.url}`);
+  console.error(
+    "\nThis does not mean the station is out. It means the evidence for keeping it\n" +
+      "cannot be re-read, so somebody has to find where those terms live now and\n" +
+      "update the record — or, if they are gone for good, re-decide.",
+  );
+}
+
+if (failed.length || goneSources.length) process.exit(1);
