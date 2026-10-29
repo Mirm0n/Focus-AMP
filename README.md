@@ -17,6 +17,16 @@ npm install
 npm run tauri dev
 ```
 
+On Linux you need the WebKitGTK headers first, and the GStreamer codecs if you want to hear
+anything — WebKitGTK decodes audio through GStreamer, and a stock desktop often ships only the
+free codecs, which do not include MP3 or AAC:
+
+```bash
+sudo apt install libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev \
+  libxdo-dev libssl-dev build-essential curl wget file \
+  gstreamer1.0-libav gstreamer1.0-plugins-good gstreamer1.0-plugins-bad
+```
+
 ## Why there is a Rust proxy
 
 A visualizer needs an `AnalyserNode`, which needs `createMediaElementSource()`. That call
@@ -347,8 +357,14 @@ Worth knowing before you try it:
   than it sounds: the long-running stations in those genres mostly either forbid third-party
   players or name nobody who could vouch for what they play. Filling them is the main open
   work, and `npm run check:stations` will not let one back into the app without a Pick.
-- **Windows only** for now. Nothing in the code is deliberately Windows-specific except the
-  tray and the notification AppUserModelID, but nothing else has been tested.
+- **Windows and Linux.** Both are built and checked by CI. Linux is newer and less exercised —
+  if stations connect and then play silence, it is the GStreamer codecs: the `.deb` asks for
+  them, but an AppImage or `.rpm` install may need
+  `gstreamer1.0-libav gstreamer1.0-plugins-good gstreamer1.0-plugins-bad` added by hand.
+- **macOS is not built.** The code compiles for it in principle — only the tray and the
+  notification AppUserModelID are Windows-specific — but it has never been built or run there,
+  the custom title bar would hide the traffic lights, and distributing it properly needs a paid
+  Apple Developer account for notarization.
 - **The updater is built but not yet proven end to end.** It cannot be tested until a signed
   release exists on a real repository, so the first release should be installed and then
   superseded by a second to confirm an installed copy actually updates itself.

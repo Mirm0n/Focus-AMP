@@ -122,8 +122,11 @@ git tag v0.9.0
 git push origin v0.9.0
 ```
 
-The Release workflow builds the Windows installers, signs the update
-artifacts, writes `latest.json`, and opens a **draft** release.
+The Release workflow builds the Windows installers *and* the Linux packages
+(`.deb`, `.rpm`, AppImage), signs the update artifacts, writes `latest.json`,
+and opens a **draft** release. Both platforms attach to the same draft, so wait
+for both jobs before publishing — a draft with only half its assets will
+happily publish and leave one platform unable to update.
 
 ### Publish the draft
 

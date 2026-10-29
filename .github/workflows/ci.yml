@@ -5,8 +5,9 @@
 ## runs `check:stations`, which is the gate that keeps a Pick without a terms
 ## record out of the catalog — see docs/EXECUTION.md §1.5.
 ##
-## The Rust job runs on Windows because that is what 1.0 ships for, and because
-## `src/notify.rs` and the tray are Windows-specific.
+## The Rust job runs on both Windows and Linux. Windows is what 1.0 ships for;
+## Linux is checked because `src/notify.rs` is split by platform and the
+## non-Windows half would otherwise never be compiled by anything.
 
 name: CI
 
@@ -43,10 +44,30 @@ jobs:
         run: npm run build
 
   rust:
-    name: Rust
-    runs-on: windows-latest
+    name: Rust (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # One platform failing should not hide the other's result.
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-22.04]
     steps:
       - uses: actions/checkout@v4
+
+      # WebKitGTK and friends. Only the dev headers are needed to compile;
+      # what a *user* needs to actually hear anything is a separate list, in
+      # the release notes and README.
+      - name: Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libxdo-dev \
+            libssl-dev \
+            build-essential curl wget file
 
       - uses: dtolnay/rust-toolchain@stable
         with:
@@ -55,12 +76,16 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
+          key: ${{ matrix.os }}
 
-      # No `npm ci` and no dist here on purpose: tauri-build only needs the
-      # frontend for a bundle, and checked cold, `cargo test` builds fine
+      # No `npm ci` and no dist in this job on purpose: tauri-build only needs
+      # the frontend for a bundle, and checked cold, `cargo test` builds fine
       # without either. Keeping this job independent of the web one is the
       # point — it should fail for Rust reasons only.
+
+      # Formatting is platform-independent, so checking it on both is noise.
       - name: Formatting
+        if: runner.os == 'Windows'
         working-directory: src-tauri
         run: cargo fmt --check
 

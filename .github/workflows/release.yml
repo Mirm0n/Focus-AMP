@@ -23,11 +23,37 @@ permissions:
   contents: write
 
 jobs:
-  windows:
-    name: Windows installers
-    runs-on: windows-latest
+  build:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Both platforms attach to the same draft release, so one failing must
+      # not cancel the other — a half-built draft is easier to reason about
+      # than a cancelled one.
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            label: Windows installers
+          # 22.04 rather than latest: the glibc an AppImage is built against
+          # sets the oldest distribution it will run on, so building on the
+          # older image reaches more people.
+          - os: ubuntu-22.04
+            label: Linux packages
     steps:
       - uses: actions/checkout@v4
+
+      - name: Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libxdo-dev \
+            libssl-dev \
+            build-essential curl wget file
 
       - uses: actions/setup-node@v4
         with:
@@ -39,6 +65,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
+          key: ${{ matrix.os }}
 
       - run: npm ci
 
@@ -72,11 +99,24 @@ jobs:
           # already installed ever learns that this release exists.
           includeUpdaterJson: true
           releaseBody: |
-            Windows installers are attached below.
+            Windows installers and Linux packages are attached below.
 
-            This build is **not code-signed**, so Windows SmartScreen will warn
-            you: choose "More info" then "Run anyway". Signing is waiting on an
-            application to the SignPath Foundation.
+            **Windows:** the build is **not code-signed**, so SmartScreen will
+            warn you: choose "More info" then "Run anyway". Signing is waiting
+            on an application to the SignPath Foundation.
+
+            **Linux:** take the `.deb`, `.rpm` or `.AppImage`. All three update
+            themselves in place. Focus AMP plays MP3 and AAC streams through
+            WebKitGTK, which needs the GStreamer codecs — the `.deb` asks for
+            them, but with the AppImage or the `.rpm` install them yourself if
+            stations connect and then stay silent:
+
+            ```
+            sudo apt install gstreamer1.0-libav gstreamer1.0-plugins-good gstreamer1.0-plugins-bad
+            ```
+
+            Linux is newly supported and less tested than Windows; please
+            report anything odd.
 
             Focus AMP is free software under GPL-3.0-or-later. It has no
             account and no telemetry. It contacts the station you are playing,
