@@ -36,6 +36,13 @@ The work that made the repository fit to be public.
   link, or whose version disagrees between `package.json`, `Cargo.toml`,
   `tauri.conf.json` and the tag being released. All of these only matter at the
   moment of publishing, which is exactly when they are easiest to forget.
+- **Linux builds.** CI compiles, lints and tests the Rust half on Ubuntu as
+  well as Windows — until now the `#[cfg(not(windows))]` half of `notify.rs`
+  was never compiled by anything. Releases ship `.deb`, `.rpm` and AppImage
+  alongside the Windows installers, and all three update themselves in place.
+  The `.deb` declares the GStreamer codecs WebKitGTK needs for MP3 and AAC,
+  because without them a station connects, reports healthy playback and plays
+  silence.
 - `docs/RELEASING.md`, the maintainer's runbook: backing up the signing key,
   the GitHub secrets, bumping the version in three files, the draft-then-
   publish step that keeps a bad build from ever reaching anyone, how to prove

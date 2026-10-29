@@ -55,7 +55,7 @@ This is a reading of published terms, not legal advice.
 | C10 | **Money:** donations only (GitHub Sponsors, Ko-fi). No paywall. | Never a paywall on the radio |
 | C11 | **The local stream proxy stays**, because the visualizer needs it for live radio. Its security fix, tracked separately, is a **launch blocker.** | — |
 | C12 | **Album art:** off by default. When on, the cover sits next to an Apple Music link, as Apple's terms require. | — |
-| C13 | **Windows first.** Linux next (Flathub suits open-source apps), macOS later. | After 1.0 |
+| C13 | **Windows first.** Linux next (Flathub suits open-source apps), macOS later. **Linux brought forward to 1.0 on 2026-10-30**: CI builds and tests it, and the release workflow ships .deb, .rpm and AppImage. macOS still later — it needs a paid Apple account to notarize and a title-bar rethink. | After 1.0 |
 | C14 | **The legal review is optional:** a short check of the station-listing policy and privacy policy, if budget allows | — |
 | C15 | **Purpose: audience and a personal project, not revenue.** No paywall and no paid tier planned. Focus AMP gets the time budget in this plan (about 12–16 agent hours plus the U tasks); anything beyond waits until after 1.0, so it doesn't take time from money-making projects. No contributor agreement: contributions come in under GPL-3.0 like everything else. | If a real audience appears and money becomes a goal: the licensed-music "Focus" work on `mvp/audius` is the starting point |
 | C16 | **Audience hooks:** a "Made by" credit and a short "More from the maker" section in About, linking to the maker's site and other projects, plus GitHub star and donate links. Nothing in the player itself, and no tracking. | — |
@@ -613,8 +613,17 @@ check the sidebar isn't tedious to get past. 200% zoom is known to fail and is t
 
 - HLS-only streams are left out: the webview can't play them without a demuxer.
 - Picks aren't monitored between checks; R8 dates arrive with the terms record (L2).
-- Linux needs GStreamer plugins (`gstreamer1.0-libav`, `gstreamer1.0-plugins-bad`) for MP3/AAC
-  under WebKitGTK. Untested there.
+- Linux needs GStreamer plugins for MP3/AAC under WebKitGTK. The `.deb` now declares
+  `gstreamer1.0-libav`, `gstreamer1.0-plugins-good` and `gstreamer1.0-plugins-bad` as
+  dependencies so apt pulls them in; AppImage and `.rpm` users may still have to install them,
+  and the release notes say so. **Still untested on a real Linux desktop** — the Rust half is
+  compiled and tested on Linux by CI, but nobody has yet heard audio come out of it there.
+- macOS is not built at all. `decorations: false` means the app draws its own title bar, which
+  on macOS removes the traffic lights entirely and puts the custom controls on the wrong side.
+- The tray on Linux goes through libayatana-appindicator, where a left click conventionally
+  opens the menu rather than firing a click event. `build_tray` uses a left click to show the
+  window, so that may simply not work there. The menu items all still do. Unverified — nobody
+  has run the tray on a Linux desktop.
 - Settings persist through `localStorage`; `tauri-plugin-store` is wired but unused.
 - The release audit's findings not yet fixed are the tasks in Phase 2.
 

@@ -11,7 +11,9 @@ the change, or that you have the right to submit it under GPL-3.0-or-later.
 ## Building it
 
 You need [Node](https://nodejs.org) 20+, [Rust](https://rustup.rs) 1.77+, and the
-[Tauri prerequisites](https://tauri.app/start/prerequisites/) for your platform.
+[Tauri prerequisites](https://tauri.app/start/prerequisites/) for your platform. On Linux that
+is WebKitGTK and friends, plus the GStreamer codecs if you want audio — the README's "Running
+it" section has the apt line.
 
 ```bash
 npm install
