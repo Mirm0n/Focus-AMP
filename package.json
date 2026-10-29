@@ -13,7 +13,8 @@
     "notices": "node scripts/third-party-notices.mjs",
     "tauri": "tauri",
     "check:stations": "node scripts/check-stations.mjs",
-    "check:release": "node scripts/check-release.mjs"
+    "check:release": "node scripts/check-release.mjs",
+    "check:streams": "node scripts/check-streams.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.6",

@@ -25,6 +25,7 @@ Checks worth running before you push:
 ```bash
 npm run build          # check the catalog, type-check, and bundle the front end
 npm run check:stations # just the catalog gate, which `build` runs first
+npm run check:streams  # asks every Pick whether it is still on the air (needs network)
 npm run notices        # regenerate THIRD-PARTY-NOTICES.md if dependencies changed
 npm run audit:themes   # contrast, every theme variant
 npm run audit:genres   # station yield per genre, against the live directory
