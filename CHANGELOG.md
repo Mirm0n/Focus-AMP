@@ -23,6 +23,18 @@ The work that made the repository fit to be public.
   `cargo fmt`, `clippy -D warnings` and tests on Windows.
 - A privacy policy, a code of conduct, a pull request template and Dependabot.
 - `CHANGELOG.md`, which is this file.
+- **Self-updating.** The app asks GitHub once a launch whether a newer release
+  exists and offers it in a banner; nothing installs without a click. It is
+  pull-only — an installed copy cannot be reached from outside, and someone who
+  never reopens the app never updates. Releases are signed, and an update that
+  does not verify against the public key compiled into the app is refused, so
+  taking over the GitHub account alone is not enough to ship code to anyone.
+  On by default, declared in `PRIVACY.md`, and switched off in
+  Settings → General.
+- `npm run check:release`, which refuses to build a release whose updater
+  endpoint is still a placeholder or whose About screen would ship with no
+  source link — two blanks that only matter at the moment of publishing, which
+  is exactly when they are easiest to forget.
 - Two genres, **Freeform & eclectic** and **World**. The genre list had been
   built around one broadcaster's channel lineup; with that broadcaster gone it
   described a catalog that no longer existed, and the best stations left are

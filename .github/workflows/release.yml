@@ -48,14 +48,29 @@ jobs:
       - name: Check the catalog
         run: npm run check:stations
 
+      # And refuse to build an app wired to a placeholder updater endpoint,
+      # which would leave every install of this version unable to ever find
+      # an update. Nothing outside the app can fix that afterwards.
+      - name: Check the release wiring
+        run: npm run check:release
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Signs the update artifacts. Without these the build still produces
+          # installers, but no .sig files, so no usable latest.json — and an
+          # app will refuse an update it cannot verify.
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: Focus AMP ${{ github.ref_name }}
           releaseDraft: true
           prerelease: false
+          # Writes latest.json beside the installers. This is the file the
+          # endpoint in tauri.conf.json points at, so without it nothing
+          # already installed ever learns that this release exists.
+          includeUpdaterJson: true
           releaseBody: |
             Windows installers are attached below.
 
@@ -64,6 +79,11 @@ jobs:
             application to the SignPath Foundation.
 
             Focus AMP is free software under GPL-3.0-or-later. It has no
-            account, no telemetry, and contacts nothing but the station you are
-            listening to unless you turn on the community directory or album
-            art.
+            account and no telemetry. It contacts the station you are playing,
+            GitHub once a launch to ask whether a newer version exists, and
+            nothing else unless you turn on the community directory or album
+            art. Every one of those is a setting.
+
+            **A release stays a draft until it is published.** Publishing is
+            what makes `latest.json` reachable at `releases/latest`, which is
+            what offers this version to everyone already running the app.

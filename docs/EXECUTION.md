@@ -264,8 +264,14 @@ register (Part 4). It prints the number of Picks per genre.
 
 - [ ] **S1 CI:** a GitHub Actions workflow runs the checks on every push, and on a version tag
       builds the Windows installers and attaches them to a GitHub Release.
-- [ ] **S2 Updater (C9):** `tauri-plugin-updater` against GitHub Releases, with a self-generated
-      key. An installed beta updates itself to the next release.
+- [~] **S2 Updater (C9):** done 2026-10-29 except the end-to-end proof, which needs a real
+      repository. `tauri-plugin-updater` checks `releases/latest/download/latest.json` about
+      eight seconds after launch and offers what it finds in a banner; `tauri-plugin-process`
+      restarts into it. On by default, switchable in Settings → General, declared in
+      `PRIVACY.md`. The release workflow signs the artifacts and publishes `latest.json`.
+      **Owed before anyone relies on it:** set the endpoint and `SOURCE` to the real repository
+      (`npm run check:release` fails until both are set and agree), add the two signing secrets
+      to GitHub, then cut v0.9.0 and v0.9.1 and confirm an installed v0.9.0 updates itself.
 - [ ] **S3 Beta release (v0.9, unsigned):** release notes, and install instructions explaining the
       SmartScreen warning.
 - [ ] **S4 Release verification:** automated checks on the built installer (every visible genre

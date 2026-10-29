@@ -22,7 +22,24 @@ The connection is made by the app's local proxy
 (`src-tauri/src/proxy.rs`), which identifies itself as `FocusAMP/2.0`. It sends
 no identifier of you, because it has none.
 
-**Two things are off until you switch them on.**
+**One thing is on by default.** About eight seconds after launch, the app asks
+GitHub whether a newer version of Focus AMP exists. The request carries no
+account, no identifier and nothing about you — it is an anonymous fetch of a
+public file, like opening the releases page in a browser. GitHub sees an IP
+address, as any website does.
+
+It is on by default because a program that plays streams off the internet and
+cannot be patched is the more dangerous of the two options; version 0.1.0 of
+this app shipped a local HTTP proxy with a real hole in it, and that is the
+kind of thing an update exists to close. **Settings → General → Check for
+updates** turns it off, and then updates have to be fetched by hand.
+
+Nothing is installed without you pressing a button, and nothing can be sent to
+this machine from outside. The app asks; it is never told. Updates are
+signature-checked against a key compiled into the app, so one that has not been
+signed by the maintainer is refused.
+
+**Two more are off until you switch them on.**
 
 | Setting | Where | What it sends | To whom |
 |---|---|---|---|
@@ -34,9 +51,8 @@ about what you are listening to right now. That is why it is off by default and
 why it says so on its own setting.
 
 **Nothing else.** The fonts are bundled in the app rather than fetched from
-Google (`src/styles/fonts/`), so launching it offline contacts nobody at all.
-There is no update check in 0.1.0; if one is added it will be listed here
-before it ships.
+Google (`src/styles/fonts/`), so with the update check off and both settings
+off, launching it offline contacts nobody at all.
 
 ## What stays on your computer
 
@@ -44,6 +60,7 @@ Everything the app remembers lives in your browser-profile storage inside the
 app, under the `focusamp:` prefix, and never leaves the machine:
 
 - your theme, layout and visualizer settings
+- whether the update check is on
 - favourites, pinned genres, and the last station you played
 - the Pomodoro timer's state, and the equaliser
 - the list of local audio files you have added — the paths only, never the

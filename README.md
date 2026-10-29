@@ -156,6 +156,14 @@ condition Apple's terms put on showing their artwork, so a result that has artwo
 store page is discarded rather than displayed. Stations that send no track titles keep the
 radio icon.
 
+**Updates.** The app asks GitHub once a launch whether a newer release exists, and offers it
+in a banner; nothing installs without a click. It is pull-only — there is no way to push
+anything to an installed copy, and someone who never reopens the app never updates. Releases
+are signed with a key held only by the maintainer, and an update that does not verify against
+the public key compiled into the app is refused, so taking over the GitHub account alone is not
+enough to ship code to anyone. Turn it off in Settings → General; `PRIVACY.md` covers what the
+request contains, which is nothing about you.
+
 **Fonts are bundled, not fetched.** Chivo and Chivo Mono ship inside the app as woff2 subsets
 under `src/styles/fonts/`, with the SIL Open Font License text beside them. They used to load
 from Google Fonts at runtime, which contacted a third party on every launch and left the
@@ -341,7 +349,9 @@ Worth knowing before you try it:
   work, and `npm run check:stations` will not let one back into the app without a Pick.
 - **Windows only** for now. Nothing in the code is deliberately Windows-specific except the
   tray and the notification AppUserModelID, but nothing else has been tested.
-- **No updater yet**, so a new version means downloading it yourself.
+- **The updater is built but not yet proven end to end.** It cannot be tested until a signed
+  release exists on a real repository, so the first release should be installed and then
+  superseded by a second to confirm an installed copy actually updates itself.
 - **Releases are unsigned**, so Windows SmartScreen will warn about the installer. Signing is
   waiting on an application to the SignPath Foundation.
 

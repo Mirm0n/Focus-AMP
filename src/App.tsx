@@ -16,6 +16,7 @@ import { usePomodoro, type Phase } from "./hooks/usePomodoro";
 import { getGenre } from "./data/genres";
 import { DEFAULT_GENRE, DEFAULT_STATION, PICKS, isPick, type Station } from "./data/stations";
 import { isDenied } from "./data/denylist";
+import { checkForUpdate, type AvailableUpdate } from "./lib/updates";
 import { getProxyAccess, proxied, resolveStationUrl, isTauri, type ProxyAccess } from "./lib/proxy";
 import { useAppearance } from "./theme/useAppearance";
 import { useFavorites } from "./hooks/useFavorites";
@@ -71,6 +72,10 @@ function loadLast(): { station: Station; queue: Queue } {
 export default function App() {
   const [proxy, setProxy] = useState<ProxyAccess | null>(null);
   const [portError, setPortError] = useState<string | null>(null);
+  // An available update, once the launch check has found one. Dismissing sets
+  // it back to null for this session only — it is offered again next launch.
+  const [update, setUpdate] = useState<AvailableUpdate | null>(null);
+  const [updating, setUpdating] = useState(false);
   const [last] = useState(loadLast);
   const [selected, setSelected] = useState<Station>(last.station);
   const [playing, setPlaying] = useState<Station | null>(null);
@@ -131,6 +136,15 @@ export default function App() {
     getProxyAccess()
       .then(setProxy)
       .catch((e) => setPortError(String(e)));
+  }, []);
+
+  // Once, well after launch: the window should be up and playing before the
+  // app spends anything on asking GitHub a question.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      checkForUpdate().then(setUpdate, () => {});
+    }, 8000);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -449,6 +463,66 @@ export default function App() {
             flexDirection: "column",
           }}
         >
+          {update && (
+            <div
+              style={{
+                ...card,
+                margin: 16,
+                borderColor: "var(--app-accent)",
+                fontSize: 12.5,
+                flex: "0 0 auto",
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+              }}
+            >
+              <span style={{ flex: 1, minWidth: 0, color: "var(--app-text-primary)" }}>
+                Focus AMP {update.version} is available.
+              </span>
+              <button
+                type="button"
+                className="station-row"
+                disabled={updating}
+                onClick={() => {
+                  setUpdating(true);
+                  update.install().catch(() => setUpdating(false));
+                }}
+                style={{
+                  border: "1px solid var(--app-border-subtle)",
+                  background: "transparent",
+                  color: "var(--app-accent)",
+                  borderRadius: "var(--app-radius-sm)",
+                  padding: "5px 11px",
+                  fontSize: 12,
+                  cursor: updating ? "progress" : "pointer",
+                }}
+              >
+                {updating ? "Installing…" : "Install and restart"}
+              </button>
+              <button
+                type="button"
+                className="station-row"
+                onClick={() => setUpdate(null)}
+                title="Not now"
+                // The accessible name has to contain the visible text, or
+                // someone driving the app by voice cannot say what they read
+                // (WCAG 2.5.3, Label in Name — this is an AA criterion and
+                // the rest of the app passes it).
+                aria-label="Not now — dismiss the update notice until next launch"
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  color: "var(--app-text-faint)",
+                  padding: "5px 8px",
+                  fontSize: 12,
+                  cursor: "pointer",
+                }}
+              >
+                Not now
+              </button>
+            </div>
+          )}
+
           {portError && (
             <div
               style={{
