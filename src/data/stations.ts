@@ -161,6 +161,18 @@ const NIGHTWAVE_PLAZA_TERMS: StationTerms = {
   note: "Public API and an open-source official client; third-party clients exist and are not discouraged.",
 };
 
+const ALPHA_BOYS_TERMS: StationTerms = {
+  status: "silent",
+  source: "https://alphaboysschoolradio.com/",
+  checked: "2026-10-29",
+  note:
+    "No terms either way; the site was read and says nothing about third-party players. " +
+    "Provenance instead is about as strong as it gets: the station supports the music " +
+    "programme at the Alpha School of Music in Kingston, run by the Sisters of Mercy of " +
+    "Jamaica since 1890, and every record it plays features an Alpha alumnus — the " +
+    "Skatalites, Yellowman, Johnny “Dizzy” Moore among them.",
+};
+
 const BASSDRIVE_TERMS: StationTerms = {
   status: "silent",
   source: "https://www.bassdrive.com/",
@@ -227,6 +239,15 @@ const RP_ROCK = pick(
   "Radio Paradise Rock",
   "Radio Paradise · Hand-mixed rock",
   "https://stream.radioparadise.com/rock-128",
+  "vocal",
+  RADIO_PARADISE_TERMS,
+  "https://radioparadise.com/",
+);
+
+const RP_GLOBAL = pick(
+  "Radio Paradise Global Mix",
+  "Radio Paradise · Hand-mixed, from everywhere",
+  "https://stream.radioparadise.com/global-128",
   "vocal",
   RADIO_PARADISE_TERMS,
   "https://radioparadise.com/",
@@ -316,6 +337,15 @@ const NIGHTWAVE_PLAZA = pick(
   "https://plaza.one/",
 );
 
+const ALPHA_BOYS = pick(
+  "Alpha Boys School Radio",
+  "Alpha School of Music · Jamaican roots, ska and dub",
+  "http://alphaboys-live.streamguys1.com/alphaboys.mp3",
+  "vocal",
+  ALPHA_BOYS_TERMS,
+  "https://alphaboysschoolradio.com/",
+);
+
 const BASSDRIVE = pick(
   "Bassdrive",
   "Drum & bass, DJ-programmed",
@@ -345,8 +375,8 @@ export const PICKS: Record<string, Station[]> = {
   jazz: [SWISS_JAZZ],
   bossa: [],
   chillout: [RP_MELLOW, AM_AMBIENT],
-  folk: [WFMU_DRUMMER],
-  reggae: [],
+  folk: [WFMU_DRUMMER, RP_GLOBAL],
+  reggae: [ALPHA_BOYS],
   house: [],
   techno: [],
   trance: [],
