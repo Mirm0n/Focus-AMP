@@ -104,11 +104,11 @@ export function AboutTab() {
           to be removed is removed, without having to give a reason.
         </p>
         <Hint>
-          It has no account, no server of its own and no tracking. What it fetches, it fetches for
-          you: the stations you play, the station directory when you turn it on, and Apple's
-          iTunes search for album art when you turn that on. Nothing else leaves the app, and the
-          fonts ship inside it, so with album art and the directory off it talks to nobody but
-          the station you are listening to.
+          It has no account, no server of its own and no tracking. What it fetches, it fetches
+          for you: the stations you play, GitHub once a launch to ask whether a newer version
+          exists, the station directory when you turn it on, and Apple's iTunes search for album
+          art when you turn that on. Every one of those is a setting, the fonts ship inside the
+          app, and nothing else leaves it.
         </Hint>
       </FieldGroup>
 

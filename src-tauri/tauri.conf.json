@@ -37,6 +37,18 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEY3RUVEQUY0N0E2NEVBQTMKUldTajZtUjY5TnJ1OXpPamN2Q1dCMnRvWkt1REp1dFFMVEdFU3FHR0doQ3JhbzNXU2xITEVkN0MK",
+      "endpoints": [
+        "https://github.com/PUT-YOUR-REPO-HERE/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
 }

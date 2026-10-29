@@ -18,6 +18,8 @@
     "store:default",
     "notification:default",
     "opener:allow-open-url",
-    "dialog:allow-open"
+    "dialog:allow-open",
+    "updater:default",
+    "process:allow-restart"
   ]
 }

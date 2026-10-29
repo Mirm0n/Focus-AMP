@@ -30,6 +30,13 @@ pnpm-debug.log*
 Thumbs.db
 desktop.ini
 
+# Updater signing keys. The real one lives outside the repo (~/.tauri), and
+# losing it means never being able to update an installed copy again — but a
+# copy landing in here by accident would be worse. The .pub half is public and
+# lives in tauri.conf.json, not as a file.
+*.key
+*.pem
+
 # Local environment
 .env
 .env.local
