@@ -599,7 +599,6 @@ const BASSDRIVE = pick(
  * list longer and the app worse, so the gap is recorded instead.
  */
 export const PICKS: Record<string, Station[]> = {
-  lofi: [NIGHTWAVE_PLAZA],
   ambient: [ASP, AM_AMBIENT, AMBIENT_MODERN, CZ_STILTE],
   classical: [SWISS_CLASSIC, WCPE, CZ_KLASSIEK, CZ_OUDE, CZ_NIEUWE],
   scores: [CZ_FILM],
