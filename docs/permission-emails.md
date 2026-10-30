@@ -44,7 +44,7 @@ and metal.
 > assuming, and I have removed them from the app in the meantime.
 >
 > If it helps, the source is public and you are welcome to look at exactly what
-> it does with your stream: <repository URL>.
+> it does with your stream: https://github.com/Mirm0n/Focus-AMP.
 >
 > If the answer is no, that is completely fine and I will not ask again.
 >
@@ -78,7 +78,7 @@ returned 404, so ask for the right one while you are there.
 > public stream URL I should use? The one I had has started returning 404.
 >
 > The source is public if you would like to see what the app does with the
-> stream: <repository URL>.
+> stream: https://github.com/Mirm0n/Focus-AMP.
 >
 > A no is absolutely fine and I will not ask again.
 >
@@ -109,7 +109,7 @@ distinction.
 > lieber frage als annehme — ich habe die Streams bis auf Weiteres entfernt.
 >
 > Der Quellcode ist öffentlich, falls Sie sehen möchten, was die App mit dem
-> Stream macht: <repository URL>.
+> Stream macht: https://github.com/Mirm0n/Focus-AMP.
 >
 > Ein Nein ist völlig in Ordnung, dann frage ich nicht erneut.
 >
@@ -148,7 +148,7 @@ public-service programming with impeccable provenance.
 > appen i mellomtiden.
 >
 > Kildekoden er offentlig hvis dere vil se nøyaktig hva appen gjør med
-> strømmen: <repository URL>.
+> strømmen: https://github.com/Mirm0n/Focus-AMP.
 >
 > Et nei er helt greit, og da spør jeg ikke igjen.
 >
@@ -199,7 +199,7 @@ music whose artists are paid.
 > of the few who could fill that gap honestly.
 >
 > The source is public if you would like to see exactly what the app does with
-> a stream: <repository URL>.
+> a stream: https://github.com/Mirm0n/Focus-AMP.
 >
 > A no is completely fine and I will not ask again.
 >
@@ -241,7 +241,7 @@ nobody is named anywhere on the site. Two questions fix that or settle it.
 > (Mell-ø, Hoogway, Joey Pecoraro, Elijah Lee), o que é raro neste gênero.
 >
 > O código é público, caso queiram ver o que o aplicativo faz com a
-> transmissão: <repository URL>.
+> transmissão: https://github.com/Mirm0n/Focus-AMP.
 >
 > Um "não" está perfeitamente bem.
 >
