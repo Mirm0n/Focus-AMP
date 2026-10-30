@@ -17,9 +17,12 @@ export function StationsTab({ catalog }: { catalog: Catalog }) {
         />
         <Hint>
           The directory fills each genre out to around sixty stations and brings back the genres
-          that have no Picks yet. It is filtered for talk, dead streams and anything that says it
-          is AI-generated, but most AI music stations don't say so, and this is where they turn
-          up. Picks keep their badge, so you can always tell the two apart.
+          that have no Picks yet. It also lets the search box look through the whole directory
+          by name instead of only what you have already opened — which means what you type is
+          sent to Radio Browser while this is on, and never while it is off. It is filtered for
+          talk, dead streams and anything that says it is AI-generated, but most AI music
+          stations don't say so, and this is where they turn up. Picks keep their badge, so you
+          can always tell the two apart.
         </Hint>
       </FieldGroup>
     </div>

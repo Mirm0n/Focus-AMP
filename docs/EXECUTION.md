@@ -626,14 +626,11 @@ check the sidebar isn't tedious to get past. 200% zoom is known to fail and is t
 
 # Part 6 — Known gaps
 
-- **Search only looks through genres already opened this session.** `loadedGenres()` is what
-  the search box searches, so a station in a genre you have not opened is unfindable even with
-  the directory on, and nothing reaches the directory by name at all. The practical effect is
-  that the app surfaces at most 15 tag-sets × 60 stations of Radio Browser's ~58,000, and only
-  the ones already fetched. Querying Radio Browser by name when the directory is on would close
-  most of that gap without touching the curated default — it is the one real difference in
-  reach between this and players that simply list the whole directory.
 - HLS-only streams are left out: the webview can't play them without a demuxer.
+- The by-name directory search (added 2026-10-30) applies `lacksProvenance` by the *station's*
+  tags rather than by genre, since a search has no genre. A station tagged lofi or ambient gets
+  the same check it would get inside those genres. A station with no risky tags does not — the
+  same as browsing a genre that is not high-risk.
 - Picks aren't monitored between checks, but `npm run check:streams` makes checking them a
   single command. All 38 were on the air on 2026-10-30. WBGO's CDN refuses a connection now and
   then — it failed one run in three by hand — which is why that script, like the proxy, gives

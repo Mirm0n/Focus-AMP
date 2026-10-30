@@ -43,12 +43,17 @@ signed by the maintainer is refused.
 
 | Setting | Where | What it sends | To whom |
 |---|---|---|---|
-| Community directory | Settings → Stations | The genre tags being browsed | [Radio Browser](https://www.radio-browser.info), a volunteer-run directory |
+| Community directory | Settings → Stations | The genre tags being browsed, **and anything typed in the search box** | [Radio Browser](https://www.radio-browser.info), a volunteer-run directory |
 | Album art | Settings → Appearance → Now playing | The "Artist – Title" line the station is broadcasting | Apple's iTunes Search API |
 
 Album art is the more revealing of the two, because a track title is a fact
 about what you are listening to right now. That is why it is off by default and
 why it says so on its own setting.
+
+The search box is worth its own line. With the community directory on, what you
+type is sent to Radio Browser so it can look through the whole directory rather
+than only the genres you have opened. With it off, nothing you type leaves the
+machine — search then covers the Picks, which are already on disk.
 
 **Nothing else.** The fonts are bundled in the app rather than fetched from
 Google (`src/styles/fonts/`), so with the update check off and both settings

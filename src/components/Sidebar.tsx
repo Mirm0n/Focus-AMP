@@ -4,7 +4,7 @@ import { ChevronDown, ChevronLeft, ChevronRight, Loader2, Pin, Plus, Search, Set
 import { label } from "./primitives";
 import { GENRES, getGenre, type GenreDef } from "../data/genres";
 import { PICKS, isPick, type Station } from "../data/stations";
-import { listGenre, loadedGenres } from "../lib/radioBrowser";
+import { listGenre, loadedGenres, searchDirectory } from "../lib/radioBrowser";
 import type { Favorites } from "../hooks/useFavorites";
 import type { LocalLibrary } from "../lib/localFiles";
 
@@ -480,7 +480,7 @@ function Home({
   onPick: (station: Station, queue: Queue) => void;
 }) {
   // Search looks through every Pick, plus whatever genres have been opened
-  // this session — it can't search a directory listing nobody has fetched.
+  // this session. That is everything it can do without the network.
   const found = useMemo(() => {
     if (!needle) return null;
     const genres = GENRES.filter(
@@ -500,6 +500,57 @@ function Home({
     }
     return { genres, stations: stations.slice(0, 80) };
   }, [needle, state.showUnverified]);
+
+  /**
+   * …and, with the community directory on, the directory itself.
+   *
+   * Without this the app could only find a station in a genre somebody had
+   * already opened, which made most of the directory unreachable however
+   * precisely you typed its name. Picks-only listeners see none of this: it
+   * searches the unvetted listing, so it is offered only to people who have
+   * asked for that listing.
+   */
+  const [fromDirectory, setFromDirectory] = useState<Station[] | null>(null);
+  const [searching, setSearching] = useState(false);
+
+  useEffect(() => {
+    if (!state.showUnverified || needle.length < 2) {
+      setFromDirectory(null);
+      setSearching(false);
+      return;
+    }
+    const abort = new AbortController();
+    // Long enough that typing a station's name is one request, not eight.
+    const timer = setTimeout(() => {
+      setSearching(true);
+      searchDirectory(needle, abort.signal)
+        .then((rows) => {
+          if (!abort.signal.aborted) {
+            setFromDirectory(rows);
+            setSearching(false);
+          }
+        })
+        .catch(() => {
+          // Offline, or a mirror having a bad minute. The local results are
+          // already on screen and are not worth replacing with an error.
+          if (!abort.signal.aborted) {
+            setFromDirectory([]);
+            setSearching(false);
+          }
+        });
+    }, 400);
+    return () => {
+      clearTimeout(timer);
+      abort.abort();
+    };
+  }, [needle, state.showUnverified]);
+
+  /** Whatever the local pass already found should not be listed twice. */
+  const directoryOnly = useMemo(() => {
+    if (!fromDirectory || !found) return [];
+    const already = new Set(found.stations.map((s) => s.station.url));
+    return fromDirectory.filter((s) => !already.has(s.url));
+  }, [fromDirectory, found]);
 
   const genreRow = (genre: GenreDef) => {
     // Only once the genre has been opened: before that the only number to
@@ -610,12 +661,14 @@ function Home({
   }
 
   if (found) {
-    if (found.genres.length === 0 && found.stations.length === 0) {
+    const nothingAnywhere =
+      found.genres.length === 0 && found.stations.length === 0 && directoryOnly.length === 0;
+    if (nothingAnywhere && !searching) {
       return (
         <Status>
           {state.showUnverified
-            ? "Nothing matches that. Search covers the Picks and any genre you've opened."
-            : "Nothing matches that."}
+            ? "Nothing matches that, here or in the community directory."
+            : "Nothing matches that. Only Picks are searched — turn on the community directory in Settings to search the rest."}
         </Status>
       );
     }
@@ -640,6 +693,53 @@ function Home({
             />
           ))}
         </ul>
+
+        {/* The directory's own answer, under its own heading so there is
+            never any doubt which of these somebody has vouched for. */}
+        {state.showUnverified && (searching || directoryOnly.length > 0) && (
+          <>
+            <h2 style={{ ...label, margin: 0, padding: "12px 16px 5px" }}>
+              Community directory
+            </h2>
+            {searching && directoryOnly.length === 0 ? (
+              <p
+                style={{
+                  margin: 0,
+                  padding: "2px 16px 10px",
+                  fontSize: 11.5,
+                  color: "var(--app-text-faint)",
+                }}
+              >
+                Searching…
+              </p>
+            ) : (
+              <ul
+                aria-label="Matching stations from the community directory"
+                style={{ listStyle: "none", margin: 0, padding: 0 }}
+              >
+                {directoryOnly.map((station) => (
+                  <StationRow
+                    key={station.url}
+                    station={station}
+                    state={state}
+                    // The queue is what the search turned up, so Next and
+                    // Previous walk the results rather than jumping into a
+                    // genre the listener never opened.
+                    // No genreId: these came from a search, not a genre, so
+                    // the sidebar has no genre to mark as playing — the same
+                    // way favorites behave.
+                    onPick={() =>
+                      onPick(station, {
+                        name: `Search: ${needle}`,
+                        stations: directoryOnly,
+                      })
+                    }
+                  />
+                ))}
+              </ul>
+            )}
+          </>
+        )}
       </>
     );
   }
