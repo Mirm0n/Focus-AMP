@@ -61,6 +61,18 @@ The work that made the repository fit to be public.
 
 ### Changed
 
+- **Search can reach the whole community directory.** It used to look only
+  through Picks and genres already opened this session, so most of Radio
+  Browser was unfindable however precisely you typed a station's name — an app
+  reaching fifteen tag-sets of sixty out of tens of thousands. With the
+  directory on, the search box now asks Radio Browser by name, debounced, with
+  superseded requests cancelled. Results appear under their own "Community
+  directory" heading so there is never doubt about which stations anyone has
+  vouched for, and they go through the same filters as the genre listing —
+  including the denylist, so searching for a denied broadcaster still finds
+  nothing. With the directory off nothing changes and nothing you type leaves
+  the machine; `PRIVACY.md` says so.
+
 - **Renamed to Focus AMP.** Settings saved under the two earlier names are
   migrated on first launch rather than lost.
 - **The catalog is much smaller and now defensible.** 33 Picks were removed

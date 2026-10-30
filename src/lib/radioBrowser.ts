@@ -5,7 +5,9 @@ import {
   EXCLUDED_LANGUAGES,
   EXCLUDED_SCRIPT,
   FREE_STREAM_HOSTS,
+  GENRES,
   HIGH_RISK_GENRES,
+  PLANNED_GENRES,
   INSTRUMENTAL_TAGS,
   NOT_MUSIC,
   RELIGIOUS_NAME,
@@ -68,9 +70,14 @@ export async function pickMirror(): Promise<string> {
   return mirrorPromise;
 }
 
-async function getOnce<T>(path: string): Promise<T> {
+async function getOnce<T>(path: string, signal?: AbortSignal): Promise<T> {
   const mirror = await pickMirror();
-  const res = await fetch(`${mirror}${path}`, { signal: AbortSignal.timeout(12000) });
+  // The timeout is ours; `signal` is the caller's, for a request whose answer
+  // is no longer wanted — a search box three keystrokes further on.
+  const timeout = AbortSignal.timeout(12000);
+  const res = await fetch(`${mirror}${path}`, {
+    signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
+  });
   if (!res.ok) throw new Error(`Radio Browser returned ${res.status}`);
   return (await res.json()) as T;
 }
@@ -81,11 +88,13 @@ async function getOnce<T>(path: string): Promise<T> {
  * genre's main tag that drops, the genre comes back looking nearly empty
  * rather than failing, which is worse.
  */
-async function get<T>(path: string): Promise<T> {
+async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
   try {
-    return await getOnce<T>(path);
-  } catch {
-    return getOnce<T>(path);
+    return await getOnce<T>(path, signal);
+  } catch (e) {
+    // A cancelled request is not a failure worth retrying.
+    if (signal?.aborted) throw e;
+    return getOnce<T>(path, signal);
   }
 }
 
@@ -354,3 +363,86 @@ export function listGenre(genre: GenreDef): Promise<Station[]> {
 export function loadedGenres(): ReadonlyMap<string, Station[]> {
   return loaded;
 }
+
+/**
+ * Look for a station by name in the directory itself.
+ *
+ * Until this existed, search could only look through genres already opened
+ * this session, so a station in a genre nobody had touched was unfindable —
+ * the app reached at most fifteen tag sets of sixty, out of the directory's
+ * tens of thousands. Someone who knows the name of the station they want
+ * should be able to type it.
+ *
+ * Only reachable with the community directory switched on, because that is
+ * what it searches. It is the same unvetted listing as the genre view, so it
+ * gets the same filters: playable, music, not declared AI, alive recently,
+ * and never a denied host.
+ *
+ * The one genre-shaped rule, `lacksProvenance`, is applied by the station's
+ * own tags rather than by which genre you are in — there is no genre here.
+ * A station tagged lofi or ambient gets the same provenance check it would
+ * get inside those genres, because that is where generated music collects
+ * and a search box is not a reason to drop the guard.
+ */
+export async function searchDirectory(
+  term: string,
+  signal?: AbortSignal,
+): Promise<Station[]> {
+  const name = term.trim();
+  if (name.length < 2) return [];
+
+  const query = new URLSearchParams({
+    name,
+    hidebroken: "true",
+    order: "votes",
+    reverse: "true",
+    limit: "120",
+  });
+  const rows = await get<Row[]>(`/json/stations/search?${query}`, signal);
+
+  // Tag sets of the genres known to attract generated music, flattened once.
+  const riskyTags = GENRES.concat(PLANNED_GENRES)
+    .filter((g) => HIGH_RISK_GENRES.has(g.id))
+    .flatMap((g) => g.tags);
+
+  const seen = new Set<string>();
+  const out: Station[] = [];
+  for (const row of rows) {
+    const url = row.url_resolved || row.url;
+    const stationName = row.name.trim().replace(/\s+/g, " ");
+    if (!url || !stationName || row.hls === 1 || tooThin(row)) continue;
+    if (!recentlyAlive(row)) continue;
+    if (isDenied(url)) continue;
+
+    const tags = tagsOf(row);
+    if (tagged(tags, NOT_MUSIC) || RELIGIOUS_NAME.test(stationName)) continue;
+    if (unwantedLanguage(row, stationName)) continue;
+    if (declaresAI(stationName, tags)) {
+      removedForAI.push(`search: ${stationName}`);
+      continue;
+    }
+    if (tagged(tags, riskyTags)) {
+      const gap = lacksProvenance(stationName, row.homepage ?? "");
+      if (gap) {
+        pendingProvenance.push({ genre: "search", name: stationName, reason: gap });
+        continue;
+      }
+    }
+
+    const key = urlKey(url);
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const { vocals, vocalsFrom } = inferVocals(tags, SEARCH_VOCALS);
+    out.push({ name: stationName, artist: describe(tags, row), url, vocals, vocalsFrom });
+    if (out.length >= 40) break;
+  }
+  return out;
+}
+
+/**
+ * `inferVocals` wants a genre to fall back on and a name search has none, so
+ * it is handed one that says "unknown". `vocalsFrom` then reads "genre",
+ * which is already the app's weakest confidence and the honest answer here.
+ */
+const SEARCH_VOCALS = { id: "search", name: "Search", tags: [], vocals: "mixed" } as GenreDef;

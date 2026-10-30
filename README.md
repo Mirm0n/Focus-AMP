@@ -103,7 +103,9 @@ is deliberate: nothing reaches the list by itself, so nothing unvetted can. The 
 may become a Pick, and which stations may appear at all, are in
 [docs/EXECUTION.md](docs/EXECUTION.md) Part 3.
 
-**Show community directory** (off by default) fills each genre out from
+**Show community directory** (off by default) also lets the search box query the directory by
+name, so a station can be found whether or not its genre has been opened — with the setting
+off, search covers the Picks and nothing you type leaves the machine. It fills each genre out from
 the community directory and brings back the genres with no Picks. A genre holding both then
 splits under two headings, Picks and Community directory, so the two can be told apart. Search, favorites and the remembered last station all
 follow the same setting: with it off they see Picks only, and a directory station starred
