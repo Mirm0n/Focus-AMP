@@ -498,7 +498,10 @@ function Home({
         stations.push({ station, genre });
       }
     }
-    return { genres, stations: stations.slice(0, 80) };
+    // Matches SEARCH_SHOW in radioBrowser: with the directory on, this pass
+    // searches up to sixty stations a genre, so eighty was a real ceiling and
+    // a different one from the directory results listed right below it.
+    return { genres, stations: stations.slice(0, 120) };
   }, [needle, state.showUnverified]);
 
   /**
