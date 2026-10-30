@@ -157,6 +157,57 @@ public-service programming with impeccable provenance.
 
 ---
 
+## Chillhop Music and Lofi Girl — the honest route to a Lofi genre
+
+Added 2026-10-30, after the question "can we just use the 24/7 YouTube lofi
+streams" came up. We can't: YouTube's terms permit listening in their own
+player or embedding their player, and separately forbid streaming any part of
+the Service anywhere else without prior written permission. Taking their audio
+into this player is the thing the clause names. See also `docs/EXECUTION.md`
+Part 4, where thirty SomaFM channels were removed for a far milder restriction.
+
+But the underlying wish is reasonable, and these two are the right people to
+ask. Both are **labels with named, credited artists** — which is the provenance
+R1, R5 and R6 want and which almost nothing else in lofi has. The only thing
+missing is a stream this app can play: both publish to YouTube and Twitch, and
+neither lists a direct URL.
+
+So ask for one. A "no" costs nothing; a "yes" fills the genre properly and with
+music whose artists are paid.
+
+**To:** the contact address on chillhop.com (and separately, lofigirl.com)
+**Subject:** A direct stream URL for a free open-source radio player?
+
+> Hello,
+>
+> I maintain Focus AMP, a free and open-source desktop radio player (GPL-3.0,
+> no adverts, no subscription, no accounts, no tracking). It plays stations
+> from their own public stream URLs, the way VLC does — nothing is
+> rebroadcast, recorded or altered, and every station appears under its own
+> name with a link back to its site.
+>
+> I would like to include your radio, and I am asking rather than working
+> around anything: your streams run on YouTube and Twitch, whose terms do not
+> allow another player to carry them, so I have not tried.
+>
+> Do you have a direct audio stream URL — Icecast, or an .m3u/.pls — that you
+> would be happy for a player like this to use? If you do, may I list it?
+>
+> The reason I am asking you in particular: the app refuses stations whose
+> music cannot be traced to real, credited artists, which rules out most of
+> what calls itself lofi. You are a label with named artists, so you are one
+> of the few who could fill that gap honestly.
+>
+> The source is public if you would like to see exactly what the app does with
+> a stream: <repository URL>.
+>
+> A no is completely fine and I will not ask again.
+>
+> Thank you,
+> Marwan Hazem
+
+---
+
 ## For a station whose terms are silent
 
 Use this when adding a Pick whose terms say nothing either way. Not required —
