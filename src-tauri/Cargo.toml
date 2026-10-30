@@ -25,12 +25,12 @@ serde_json = "1"
 # Local audio proxy
 axum = "0.8"
 tokio = { version = "1", features = ["rt-multi-thread", "net", "macros", "time", "fs", "io-util"] }
-reqwest = { version = "0.12", features = ["stream"] }
+reqwest = { version = "0.13", features = ["stream"] }
 futures-util = "0.3"
 async-stream = "0.3"
 bytes = "1"
 # The per-session token that gates the proxy; see src/proxy.rs.
-getrandom = "0.3"
+getrandom = "0.4"
 # Parsing and judging upstream URLs before fetching them. reqwest re-exports
 # `Url` but not `Host`, which is the part the address checks match on.
 url = "2"
@@ -45,7 +45,7 @@ tauri-plugin-process = "2"
 # src/notify.rs. Both versions are already in the lockfile.
 [target.'cfg(windows)'.dependencies]
 tauri-winrt-notification = "0.7"
-winreg = "0.55"
+winreg = "0.56"
 
 [profile.release]
 codegen-units = 1
