@@ -566,6 +566,7 @@ holds (Hotmix, 0nlineradio, Epic Lounge, Hunter.FM, CLIAMP).
 | 2026-10-29 | Ambient Sleeping Pill, a.m. ambient, Ambient Modern | Added as Picks | "Links for adding directly to Winamp and other players"; run by Andrew J Klimek since 2013, playing largely his own label's music — a direct R1/R5 pass |
 | 2026-10-29 | Radio Swiss Pop | Added as a Pick | Same SRG SSR terms as Jazz and Classic, already kept |
 | 2026-10-29 | Bassdrive | Added as a Pick | Publishes .m3u tune-in links; states all music is "directly licensed by the composers and sound recording copyright owners"; named DJs since 1999 |
+| 2026-10-30 | CLIAMP: what it actually is, and where its "sources" come from | **No usable source; still fails R1** | Looked into on the question of whether its catalog could be borrowed. CLIAMP is a terminal music player (MIT) by the GitHub user `bjarneo`. Its breadth is **Radio Browser** — the README says "about 58,000 online radio stations" — which is the same directory Focus AMP already uses behind "Show community directory". So there is no separate source to adopt. Its own `radio.cliamp.stream/lofi` is one person running `cliamp-server`, a tool whose README says "point it at a directory of audio files and it starts broadcasting"; no music source and no licensing is stated anywhere, and the player's README adds "use this software at your own risk". That is precisely the R1/R6 shape the rules exclude, so it cannot be a Pick or a supplier. One sampled track was HoliznaCC0, a real artist who releases to the public domain deliberately; a second sample returned no metadata at all |
 | 2026-10-30 | **The no-AI review on the five parked lofi stations — finally done** | See below | It had been "pending" since 2026-09-27 and nothing had actually been checked. Track titles were sampled live off each stream for the R5 test |
 | 2026-10-30 | 0nlineradio LO-FI, Epic Lounge (RauteMusik), laut.fm Lofi | **Still parked** | None of the three sends ICY metadata at all, so R5 cannot be tested from the stream. R5 allows a station with no metadata to pass "only through published tracklists" — RauteMusik publishes playlists on its site, so this is answerable, but it needs a person to sit with the list |
 | 2026-10-30 | Hotmix Lo-Fi | **Still parked** | Two titles in four minutes: "Pub" (an advert) and "ROBIN SLAP - Arabian Nights" followed by a UUID. Not enough to judge, and the advert means music is not the whole output |
@@ -625,6 +626,13 @@ check the sidebar isn't tedious to get past. 200% zoom is known to fail and is t
 
 # Part 6 — Known gaps
 
+- **Search only looks through genres already opened this session.** `loadedGenres()` is what
+  the search box searches, so a station in a genre you have not opened is unfindable even with
+  the directory on, and nothing reaches the directory by name at all. The practical effect is
+  that the app surfaces at most 15 tag-sets × 60 stations of Radio Browser's ~58,000, and only
+  the ones already fetched. Querying Radio Browser by name when the directory is on would close
+  most of that gap without touching the curated default — it is the one real difference in
+  reach between this and players that simply list the whole directory.
 - HLS-only streams are left out: the webview can't play them without a demuxer.
 - Picks aren't monitored between checks, but `npm run check:streams` makes checking them a
   single command. All 38 were on the air on 2026-10-30. WBGO's CDN refuses a connection now and
