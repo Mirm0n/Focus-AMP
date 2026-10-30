@@ -627,10 +627,16 @@ check the sidebar isn't tedious to get past. 200% zoom is known to fail and is t
 # Part 6 — Known gaps
 
 - HLS-only streams are left out: the webview can't play them without a demuxer.
-- The by-name directory search (added 2026-10-30) applies `lacksProvenance` by the *station's*
-  tags rather than by genre, since a search has no genre. A station tagged lofi or ambient gets
-  the same check it would get inside those genres. A station with no risky tags does not — the
-  same as browsing a genre that is not high-risk.
+- The directory search (added 2026-10-30) applies `lacksProvenance` by the *station's* tags
+  rather than by genre, since a search has no genre. A station tagged lofi or ambient gets the
+  same check it would get inside those genres. A station with no risky tags does not — the same
+  as browsing a genre that is not high-risk.
+- It asks the directory by name **and** by tag, and accepts a 14-day liveness check where genre
+  browsing accepts 3. Both exist because a search is a different act from browsing: somebody
+  has named what they want. Name-only search found 1 of the 9 WFMU entries the directory holds,
+  and 1 station for "lofi"; with both changes those are 6 and 62. The strict 3-day window still
+  governs genre listings, where nobody asked for any particular station and a doubtful one
+  costs nothing to drop.
 - Picks aren't monitored between checks, but `npm run check:streams` makes checking them a
   single command. All 38 were on the air on 2026-10-30. WBGO's CDN refuses a connection now and
   then — it failed one run in three by hand — which is why that script, like the proxy, gives

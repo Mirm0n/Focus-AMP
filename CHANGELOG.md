@@ -65,8 +65,15 @@ The work that made the repository fit to be public.
   through Picks and genres already opened this session, so most of Radio
   Browser was unfindable however precisely you typed a station's name — an app
   reaching fifteen tag-sets of sixty out of tens of thousands. With the
-  directory on, the search box now asks Radio Browser by name, debounced, with
-  superseded requests cancelled. Results appear under their own "Community
+  directory on, the search box now asks Radio Browser by name **and by tag**,
+  debounced, with superseded requests cancelled. Both, because the directory's
+  name search matches station names only — typing "lofi" missed every station
+  called "Lo-Fi" or "Chillhop", which matters most for the genres that have no
+  Picks and so are not offered as genres at all. It also accepts a staler
+  liveness check than genre browsing does: the directory re-polls a station
+  every few days, and searching for WFMU was returning one of the nine WFMU
+  entries it holds because the other eight had been checked 80 hours ago
+  rather than 70. Results appear under their own "Community
   directory" heading so there is never doubt about which stations anyone has
   vouched for, and they go through the same filters as the genre listing —
   including the denylist, so searching for a denied broadcaster still finds

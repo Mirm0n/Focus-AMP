@@ -130,10 +130,38 @@ interface Row {
  */
 const CHECK_MAX_AGE_DAYS = 3;
 
+/**
+ * The same window, relaxed, for a by-name search.
+ *
+ * Three days is right for filling a genre: nobody asked for those stations by
+ * name, so dropping a doubtful one costs nothing and keeps the list clean. It
+ * is wrong for a search. The directory re-checks a station every few days, so
+ * on a bad day a station checked 80 hours ago vanishes from a search for its
+ * own name — searching WFMU returned one of the nine WFMU entries the
+ * directory holds, all of which were fine.
+ *
+ * A stale entry in a search costs what the app's design has always said it
+ * costs: the player notices a dead stream and moves on. Hiding a station
+ * somebody typed the name of costs more than that.
+ */
+const SEARCH_CHECK_MAX_AGE_DAYS = 14;
+
 /** Asked of the directory per tag, before filtering. */
 const PER_TAG = 80;
 /** Shown per genre, after filtering. */
 const PER_GENRE = 60;
+
+/**
+ * The same pair for a by-name search. Both are higher than the genre numbers
+ * because the situations are different: a genre listing is a shelf to browse,
+ * where sixty is already more than anyone reads, while a search is someone
+ * looking for one particular station — and the filters here are strict enough
+ * that asking for three hundred can leave very few. Fetching more costs one
+ * request against a volunteer-run directory, which the 400ms debounce already
+ * keeps to one per search rather than one per keystroke.
+ */
+const SEARCH_FETCH = 300;
+const SEARCH_SHOW = 120;
 
 /**
  * The bar for a directory station to be shown at all: this many people voted
@@ -202,11 +230,11 @@ export function lacksProvenance(name: string, homepage: string): string | null {
 }
 
 /** Reached by the directory's checker, recently, without a TLS problem. */
-function recentlyAlive(row: Row): boolean {
+function recentlyAlive(row: Row, maxAgeDays = CHECK_MAX_AGE_DAYS): boolean {
   if (row.lastcheckok !== 1 || (row.ssl_error ?? 0) !== 0) return false;
   const checked = Date.parse(row.lastchecktime_iso8601 ?? "");
   if (Number.isNaN(checked)) return false;
-  return Date.now() - checked <= CHECK_MAX_AGE_DAYS * 86_400_000;
+  return Date.now() - checked <= maxAgeDays * 86_400_000;
 }
 
 /** A bitrate the codec can't make listenable. Zero means "not reported". */
@@ -391,14 +419,30 @@ export async function searchDirectory(
   const name = term.trim();
   if (name.length < 2) return [];
 
-  const query = new URLSearchParams({
-    name,
-    hidebroken: "true",
-    order: "votes",
-    reverse: "true",
-    limit: "120",
-  });
-  const rows = await get<Row[]>(`/json/stations/search?${query}`, signal);
+  // Two questions, not one. The directory's `name` search matches the station
+  // name as a substring and nothing else, so typing a genre word finds almost
+  // nothing — "lofi" misses every station called "Lo-Fi" or "Chillhop". Asking
+  // by tag as well is what makes a word like metal or techno behave the way
+  // somebody typing it expects, which matters all the more for the genres that
+  // have no Picks and so are not offered as genres at all.
+  const ask = (params: Record<string, string>) => {
+    const query = new URLSearchParams({
+      ...params,
+      hidebroken: "true",
+      order: "votes",
+      reverse: "true",
+      limit: String(SEARCH_FETCH),
+    });
+    return get<Row[]>(`/json/stations/search?${query}`, signal);
+  };
+  const answers = await Promise.allSettled([ask({ name }), ask({ tag: name })]);
+  if (answers.every((a) => a.status === "rejected")) {
+    throw new Error("Radio Browser could not be reached");
+  }
+  // Name matches first: someone who typed a station's name wants that station
+  // at the top, not the most-voted member of a genre that shares the word.
+  const rows: Row[] = [];
+  for (const a of answers) if (a.status === "fulfilled") rows.push(...a.value);
 
   // Tag sets of the genres known to attract generated music, flattened once.
   const riskyTags = GENRES.concat(PLANNED_GENRES)
@@ -411,7 +455,7 @@ export async function searchDirectory(
     const url = row.url_resolved || row.url;
     const stationName = row.name.trim().replace(/\s+/g, " ");
     if (!url || !stationName || row.hls === 1 || tooThin(row)) continue;
-    if (!recentlyAlive(row)) continue;
+    if (!recentlyAlive(row, SEARCH_CHECK_MAX_AGE_DAYS)) continue;
     if (isDenied(url)) continue;
 
     const tags = tagsOf(row);
@@ -435,7 +479,7 @@ export async function searchDirectory(
 
     const { vocals, vocalsFrom } = inferVocals(tags, SEARCH_VOCALS);
     out.push({ name: stationName, artist: describe(tags, row), url, vocals, vocalsFrom });
-    if (out.length >= 40) break;
+    if (out.length >= SEARCH_SHOW) break;
   }
   return out;
 }
