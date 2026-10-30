@@ -41,7 +41,7 @@ jobs:
           - os: ubuntu-22.04
             label: Linux packages
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Linux build dependencies
         if: runner.os == 'Linux'

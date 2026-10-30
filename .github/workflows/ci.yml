@@ -30,7 +30,7 @@ jobs:
     name: Frontend and catalog
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v4
         with:
@@ -52,7 +52,7 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-22.04]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # WebKitGTK and friends. Only the dev headers are needed to compile;
       # what a *user* needs to actually hear anything is a separate list, in
