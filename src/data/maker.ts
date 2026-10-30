@@ -46,7 +46,7 @@ export const MAKER = {
  * with it empty.
  * ────────────────────────────────────────────────────────────────────────────
  */
-const SOURCE = "";
+const SOURCE = "https://github.com/Mirm0n/Focus-AMP";
 
 /** `owner/name` for a GitHub URL, so the derived links can be built. */
 function gitHubSlug(url: string): string | null {
