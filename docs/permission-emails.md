@@ -208,6 +208,48 @@ music whose artists are paid.
 
 ---
 
+## Hunter.FM — two questions that would settle it
+
+Added 2026-10-30. Of everything tried for the Lofi genre, this came closest:
+it plays verifiably real, label-released music (Mell-ø, Hoogway, Joey
+Pecoraro, Elijah Lee all check out), it has been online since 2016, and it is
+run by a named company. Its terms say nothing about third-party players, which
+is an acceptable footing.
+
+It fails on one rule only — R2, "named people choose the music" — because
+nobody is named anywhere on the site. Two questions fix that or settle it.
+
+**To:** the contact address on hunter.fm
+**Subject:** Duas perguntas sobre o canal Lo-Fi
+
+> Olá,
+>
+> Mantenho o Focus AMP, um reprodutor de rádio gratuito e de código aberto
+> para desktop (GPL-3.0, sem anúncios, sem assinatura, sem contas). Ele toca
+> estações a partir das URLs públicas de transmissão, como o VLC faz — nada é
+> retransmitido, gravado ou alterado, e cada estação aparece com o seu próprio
+> nome e um link para o seu site.
+>
+> Gostaria de incluir o canal Lo-Fi. O aplicativo tem uma regra: só lista
+> estações onde se possa saber quem escolhe a música, porque é assim que
+> mantemos fora as estações de música gerada por IA. Duas perguntas, então:
+>
+> 1. Quem seleciona as faixas do canal Lo-Fi — uma equipe, um curador?
+> 2. A Hunter.FM é licenciada pelo ECAD para transmissão online?
+>
+> Perguntei porque as faixas que ouvi são de artistas reais e creditados
+> (Mell-ø, Hoogway, Joey Pecoraro, Elijah Lee), o que é raro neste gênero.
+>
+> O código é público, caso queiram ver o que o aplicativo faz com a
+> transmissão: <repository URL>.
+>
+> Um "não" está perfeitamente bem.
+>
+> Obrigado,
+> Marwan Hazem
+
+---
+
 ## For a station whose terms are silent
 
 Use this when adding a Pick whose terms say nothing either way. Not required —
