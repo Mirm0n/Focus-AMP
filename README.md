@@ -1,7 +1,22 @@
-# Focus AMP V2
+# Focus AMP
 
-A single-player desktop radio player. Tauri, no database, no multiplayer — pick a genre,
-get a retro spectrum visualizer, listen.
+A desktop radio player with a focus timer and a retro spectrum visualizer. Free and open
+source, no account, no adverts, no tracking — pick a genre, start the timer, listen.
+
+<img src="docs/screenshots/player-ladder.png" alt="Focus AMP playing a lo-fi station: a 25-minute focus timer above a full-width LED spectrum analyser, with the Lofi genre's three stations listed in the sidebar">
+
+<table>
+<tr>
+<td width="50%">
+<img src="docs/screenshots/genres.png" alt="The sidebar listing all genres with the number of hand-picked stations in each: Ambient 6, Classical 10, Jazz 10, Lofi 3, and more below">
+<p><b>108 stations across 28 genres.</b> Every one is hand-picked, and each carries a record of why we may play it. Switch on the community directory and tens of thousands more are searchable.</p>
+</td>
+<td width="50%">
+<img src="docs/screenshots/hud-ridge-outrun.png" alt="The same app in its HUD layout: a full-bleed Ridge visualizer of stacked waveform traces in pink and cyan, with the timer floating in a frosted glass pill">
+<p><b>Six layouts, seven visualizers, twelve themes.</b> The display is a real <code>AnalyserNode</code> fed by the stream itself, not an animation.</p>
+</td>
+</tr>
+</table>
 
 Plan, decisions, station policy and known gaps: [docs/EXECUTION.md](docs/EXECUTION.md).
 
@@ -9,6 +24,22 @@ Plan, decisions, station policy and known gaps: [docs/EXECUTION.md](docs/EXECUTI
 
 Heading for 1.0 as a free, open-source radio player. Progress and what's left are in
 [docs/EXECUTION.md](docs/EXECUTION.md).
+
+## What it does and does not send
+
+<img src="docs/screenshots/settings.png" alt="The Settings dialog, Appearance tab: a density slider and glow toggle for the visualizer, and an Album art checkbox explaining that covers are looked up through Apple's iTunes search and that the setting is off by default" align="right" width="46%">
+
+There is no account, no sign-in and no telemetry. Left alone it contacts the station you are
+playing and nothing else.
+
+Three things reach anywhere else, and each is a setting you control:
+
+- **Updates** — asks GitHub once a launch whether a newer release exists. On by default.
+- **The community directory** — searches [Radio Browser](https://www.radio-browser.info/)
+  when you turn it on. Off by default, and with it off nothing you type leaves the machine.
+- **Album art** — sends the current track title to Apple's iTunes search. Off by default.
+
+[PRIVACY.md](PRIVACY.md) says it in full.
 
 ## Running it
 
