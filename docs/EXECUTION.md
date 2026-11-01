@@ -73,11 +73,15 @@ against Part 3.1 and the verdicts carried out. What is left:
 | **Removed, dead** | 1 | BGMVibes |
 | **Parked: awaiting permission** (U3) | 9 | Radio France FIP ×7, The Current (MPR), laut.fm Lofi |
 | **Parked: awaiting the no-AI review** | 5 | Hotmix Lo-Fi, 0nlineradio LO-FI, Epic Lounge, Hunter.FM Lo-Fi, CLIAMP Lofi |
+| **Added** (2026-11-01) | 1 | NTS Low Key — fills Lofi |
 
-**38 Picks across 15 genres, and 15 is now the whole list.** The thirteen that never found a
+**39 Picks across 16 genres, and 16 is now the whole list.** The thirteen that never found a
 Pick were taken out of `GENRES` and moved to `PLANNED_GENRES` in the same file, tag sets
 intact — twelve on 2026-10-29, and Lofi on 2026-10-30 once the one station in it turned out to
-belong in Synthwave. The app offers no genre it cannot vouch for.
+belong in Synthwave. **Lofi came back on 2026-11-01**, carrying NTS Low Key — an
+Infinite Mixtape cut from NTS Radio's own archive of presenter-hosted shows, which is the
+provenance the genre had never managed to find in a 24/7 stream. The app still offers no genre
+it cannot vouch for.
 
 That is a real trade and it is worth naming: those twelve worked perfectly well with the
 community directory switched on — around sixty stations each. Taking them out costs that. The
@@ -113,7 +117,7 @@ something untrue about them. **Freeform & eclectic** (6 Picks) and **World** (3)
 actually are. Both also yield ~60 directory stations each, so they work with the setting on as
 well as off.
 
-**The thirteen planned genres** — lofi, space, piano, nature, bossa, house, techno, trance,
+**The twelve planned genres** — space, piano, nature, bossa, house, techno, trance,
 idm, postrock, metal, blues, hiphop — are in `PLANNED_GENRES`, not offered anywhere. Their tags were
 checked against the live directory and each yields plenty; the gap is Picks and nothing else. That is the honest state: a genre with nothing vouched for in it
 should not pretend otherwise, and padding it with a station that does not belong there would
@@ -561,6 +565,9 @@ holds (Hotmix, 0nlineradio, Epic Lounge, Hunter.FM, CLIAMP).
 
 | Date | Station | Action | Reason |
 |---|---|---|---|
+| 2026-11-01 | **NTS Low Key** | **Added as a Pick — Lofi is a live genre again** | Found on the instruction to bring Lofi back. NTS Radio (London, broadcasting since 2011) publishes "Infinite Mixtapes": continuous streams cut from its own archive of presenter-hosted shows. That inverts the problem the genre kept failing on — the music was chosen by named people on air before it was ever a 24/7 stream, so **R1, R2 and R4 pass on the institution** rather than on a rotation nobody can trace. Low Key is the lo-fi hip hop and smooth R&B mixtape; the stream URL comes from NTS's own public API (`/api/v2/mixtapes`), not from guesswork. **Terms are silent**: the only thing NTS publishes is Supporter subscription terms — payments, refunds, cancellation — with nothing about third-party players, so §1.5 applies. **One caveat, user-visible:** the mixtapes send no ICY metadata, so the app shows the station name and no track title |
+| 2026-11-01 | Hunter.FM Lo-Fi | **Stays parked — not needed after all** | It was going to be added as a deliberate exception, with R2 unmet. Re-checking its stream first turned up "Chillbeat Dreamer — Night People", the same untraceable name the 2026-10-30 review had flagged, so the exception would have put the app's weakest evidence behind a badge that means the opposite. NTS makes the trade unnecessary. Its terms page was re-read today and still says nothing about third-party players, so the two drafted questions remain the way back |
+| 2026-11-01 | The other fifteen NTS Infinite Mixtapes | **Noted, not added** | Slow Focus (ambient/drone), Sheet Music (classical), Expansions (jazz), Island Time (reggae), Feelings (soul), Otaku (game soundtracks), Field Recordings, The Pit (metal), 4 To The Floor (house/techno) — several of them land squarely on genres that are still in `PLANNED_GENRES`. One broadcaster is already 28% of Picks, so these go in a few at a time and only after each is listened to and placed accurately. Adding fifteen streams from one host in one go is how the Concertzender concentration happened |
 | 2026-10-29 | WFMU, Rock'n'Soul, Give the Drummer, Sheena's Jungle Room | Added as Picks | Publishes direct stream URLs "which you can use in whatever mobile streaming client you may be using"; listener-supported freeform since 1958 |
 | 2026-10-29 | The Classical Station (WCPE) | Added as a Pick | "Copy/paste one of the following stream links into your Windows Media player, VLC or Winamp player"; non-commercial, on air since 1978 |
 | 2026-10-29 | Ambient Sleeping Pill, a.m. ambient, Ambient Modern | Added as Picks | "Links for adding directly to Winamp and other players"; run by Andrew J Klimek since 2013, playing largely his own label's music — a direct R1/R5 pass |

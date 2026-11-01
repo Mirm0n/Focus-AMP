@@ -78,6 +78,13 @@ export const GENRES: GenreDef[] = [
     vocals: "mixed",
   },
   {
+    id: "lofi",
+    name: "Lofi",
+
+    tags: ["lofi", "lo-fi", "lo fi", "chillhop", "lofi hip hop", "study"],
+    vocals: "instrumental",
+  },
+  {
     id: "folk",
     name: "Acoustic & folk",
 
@@ -191,13 +198,6 @@ export const GENRES: GenreDef[] = [
  * Nothing reads this array. It is a record, and the build does not ship it.
  */
 export const PLANNED_GENRES: GenreDef[] = [
-  {
-    id: "lofi",
-    name: "Lofi",
-
-    tags: ["lofi", "lo-fi", "lo fi", "chillhop", "lofi hip hop", "study"],
-    vocals: "instrumental",
-  },
   {
     id: "space",
     name: "Space / Drone",
