@@ -42,7 +42,14 @@ export const GENRES: GenreDef[] = [
     id: "classical",
     name: "Classical",
 
-    tags: ["classical", "classical music", "baroque", "orchestral", "chamber music", "symphonic"],
+    tags: [
+      "classical",
+      "classical music",
+      "baroque",
+      "orchestral",
+      "chamber music",
+      "symphonic",
+    ],
     // Opera is classical, and it is the opposite of something to work to.
     exclude: ["opera"],
     vocals: "instrumental",
@@ -74,7 +81,15 @@ export const GENRES: GenreDef[] = [
     id: "chillout",
     name: "Downtempo / Chillout",
 
-    tags: ["chillout", "chill", "downtempo", "lounge", "chill out", "trip-hop", "trip hop"],
+    tags: [
+      "chillout",
+      "chill",
+      "downtempo",
+      "lounge",
+      "chill out",
+      "trip-hop",
+      "trip hop",
+    ],
     vocals: "mixed",
   },
   {
@@ -102,7 +117,14 @@ export const GENRES: GenreDef[] = [
     id: "dnb",
     name: "Drum & bass",
 
-    tags: ["drum and bass", "dnb", "drum & bass", "drum'n'bass", "jungle", "liquid funk"],
+    tags: [
+      "drum and bass",
+      "dnb",
+      "drum & bass",
+      "drum'n'bass",
+      "jungle",
+      "liquid funk",
+    ],
     vocals: "mixed",
   },
   {
@@ -131,7 +153,15 @@ export const GENRES: GenreDef[] = [
   {
     id: "world",
     name: "World",
-    tags: ["world", "world music", "worldmusic", "global", "afrobeat", "afro", "latin"],
+    tags: [
+      "world",
+      "world music",
+      "worldmusic",
+      "global",
+      "afrobeat",
+      "afro",
+      "latin",
+    ],
     // Religious broadcasting is a large part of this tag space in the
     // directory, and RELIGIOUS_NAME only catches the obvious names.
     exclude: ["gospel", "christian", "religious"],
@@ -177,27 +207,8 @@ export const GENRES: GenreDef[] = [
     tags: ["soul", "funk", "motown", "rnb", "r&b", "disco"],
     vocals: "vocal",
   },
-];
 
-/**
- * Genres with their tag sets worked out, waiting on Picks.
- *
- * These were in `GENRES` until 2026-10-29 and were removed for 1.0 — not
- * because the tags are wrong, but because none of them has a single station
- * anyone has vouched for. docs/EXECUTION.md Part 4 records what was tried:
- * their long-running stations are overwhelmingly commercial networks whose
- * terms forbid a player like this, or anonymous streams with no operator to
- * ask. Shipping a genre that is empty by default, and filled only by stations
- * nobody checked, would be the app quietly dropping its own standard.
- *
- * They are kept whole rather than deleted so that putting one back is moving
- * its entry into `GENRES` and adding a `PICKS` row — not reconstructing the
- * tag set from scratch. The tags were checked against the live directory and
- * each yields plenty; the gap is Picks, nothing else.
- *
- * Nothing reads this array. It is a record, and the build does not ship it.
- */
-export const PLANNED_GENRES: GenreDef[] = [
+  // ── Brought in on 2026-11-01, when the rules were relaxed ─────────────────
   {
     id: "space",
     name: "Space / Drone",
@@ -216,7 +227,14 @@ export const PLANNED_GENRES: GenreDef[] = [
     id: "nature",
     name: "Nature & soundscapes",
 
-    tags: ["nature", "nature sounds", "relaxation", "meditation", "new age", "sleep"],
+    tags: [
+      "nature",
+      "nature sounds",
+      "relaxation",
+      "meditation",
+      "new age",
+      "sleep",
+    ],
     vocals: "instrumental",
   },
   {
@@ -252,14 +270,27 @@ export const PLANNED_GENRES: GenreDef[] = [
     id: "idm",
     name: "IDM / Electronica",
 
-    tags: ["idm", "electronica", "glitch", "experimental electronic", "leftfield"],
+    tags: [
+      "idm",
+      "electronica",
+      "glitch",
+      "experimental electronic",
+      "leftfield",
+    ],
     vocals: "instrumental",
   },
   {
     id: "postrock",
     name: "Post-rock",
 
-    tags: ["post-rock", "post rock", "postrock", "shoegaze", "math rock", "instrumental rock"],
+    tags: [
+      "post-rock",
+      "post rock",
+      "postrock",
+      "shoegaze",
+      "math rock",
+      "instrumental rock",
+    ],
     vocals: "instrumental",
   },
   {
@@ -285,6 +316,16 @@ export const PLANNED_GENRES: GenreDef[] = [
   },
 ];
 
+/**
+ * Nothing is planned any more.
+ *
+ * This held the twelve genres that had never found a station anyone could vouch
+ * for. On 2026-11-01 the standard changed — docs/EXECUTION.md Part 4 records the
+ * decision — and every one of them was filled, so the array is empty rather than
+ * deleted: the build still refuses to offer a genre with no Picks, and this is
+ * where a genre goes if it ever loses its last one.
+ */
+export const PLANNED_GENRES: GenreDef[] = [];
 export function getGenre(id: string): GenreDef | undefined {
   return GENRES.find((g) => g.id === id);
 }
@@ -348,7 +389,12 @@ export const NOT_MUSIC = [
 ];
 
 /** Station tags that settle the vocals question better than a genre default. */
-export const INSTRUMENTAL_TAGS = ["instrumental", "instrumentals", "no vocals", "beats"];
+export const INSTRUMENTAL_TAGS = [
+  "instrumental",
+  "instrumentals",
+  "no vocals",
+  "beats",
+];
 export const VOCAL_TAGS = [
   "vocal",
   "vocals",
@@ -398,7 +444,14 @@ export const EXCLUDED_SCRIPT =
 export const AI_BARE = /(?<![A-Za-z0-9])A\.?I\.?(?![A-Za-z0-9])/;
 export const AI_WORDING =
   /(?<![a-z0-9])(ai[- ]?(generated|music|radio|beats|lofi|made)|generative|neural|suno|udio|mubert|aiva|boomy|soundraw|beatoven|loudly|endel|stable audio)(?![a-z])/i;
-export const AI_TAGS = ["ai", "a.i.", "a.i", "ai music", "ai generated", "ai-generated"];
+export const AI_TAGS = [
+  "ai",
+  "a.i.",
+  "a.i",
+  "ai music",
+  "ai generated",
+  "ai-generated",
+];
 
 /**
  * Rule D2: stations built on "royalty-free" libraries. Those libraries are now

@@ -28,7 +28,7 @@ import { join } from "node:path";
 const root = fileURLToPath(new URL("..", import.meta.url));
 const read = (p) => readFileSync(join(root, p), "utf8");
 
-const VALID_STATUS = new Set(["allows-players", "silent", "permission"]);
+const VALID_STATUS = new Set(["allows-players", "silent", "permission", "unreviewed"]);
 
 const stationsSrc = read("src/data/stations.ts");
 const genresSrc = read("src/data/genres.ts");
@@ -60,7 +60,9 @@ for (const m of stationsSrc.matchAll(
   /const (\w+_TERMS): StationTerms = \{([\s\S]*?)\n\};/g,
 )) {
   const body = m[2];
-  const field = (name) => body.match(new RegExp(`${name}: "([^"]*)"`))?.[1];
+  // `\s*` after the colon because Prettier moves a long value onto its own
+  // line — a formatter run must not be able to fail this check.
+  const field = (name) => body.match(new RegExp(`${name}:\\s*"([^"]*)"`))?.[1];
   terms.set(m[1], { status: field("status"), source: field("source"), checked: field("checked") });
 }
 
