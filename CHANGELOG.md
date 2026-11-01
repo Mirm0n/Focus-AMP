@@ -54,6 +54,22 @@ The work that made the repository fit to be public.
   the GitHub secrets, bumping the version in three files, the draft-then-
   publish step that keeps a bad build from ever reaching anyone, how to prove
   the updater works, and what can and cannot be undone when it goes wrong.
+- **108 stations across 28 genres**, up from 39 across 16, and nothing is left
+  in the "planned" list — space, solo piano, nature, bossa, house, techno,
+  trance, IDM, post-rock, metal, blues and hip-hop all have stations now. This
+  follows a deliberate loosening of the station rules, and the trade is worth
+  stating plainly. **Radio France** (FIP's eleven channels and five from France
+  Musique), **NRK** and **laut.fm** are played while their permission requests
+  are still unanswered rather than held back until a reply arrives; a no means
+  immediate removal. And a station no longer needs its terms page read before
+  it ships. Those carry a new `terms.status` of **`unreviewed`** — the stream
+  was verified, nothing else was — so the weaker footing is recorded in the
+  data instead of being dressed up as something stronger. Sixteen **NTS
+  Infinite Mixtapes** and both live channels came in on NTS's own published
+  API. Every one of the 70 new streams was checked for real audio first; 19
+  candidates were dropped for answering 404 or silence.
+  **The denylist did not move.** SomaFM and zeno.fm said no, and a no is not a
+  pending question.
 - **Lofi, with a station worth vouching for.** The genre had been dropped because
   every 24/7 lofi stream is either a commercial network whose terms forbid a
   player like this or an anonymous rotation with nobody to ask — and lofi is

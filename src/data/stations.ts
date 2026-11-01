@@ -18,7 +18,13 @@
  * The rules a station must pass to be added here are in docs/EXECUTION.md,
  * §3.2 ("Rules for Picks"). Record the result in its register (Part 4).
  *
- * # Why this list is shorter than it was
+ * # Why this list is the size it is
+ *
+ * On 2026-11-01 it went from 39 Picks to 108 and every genre was filled. The
+ * rules were relaxed to do it: broadcasters whose terms ask to be asked are
+ * played while the ask is outstanding, and a Pick no longer needs its terms
+ * page read first. docs/EXECUTION.md §3.2 carries the decision and its cost.
+ * The history below is what came before that.
  *
  * It used to carry 56 Picks, 30 of them SomaFM. SomaFM's terms refuse
  * third-party clients "even noncommercial ones", so all 30 had to go, along
@@ -42,11 +48,22 @@ import type { Vocals } from "./genres";
  * quietly rot: adding a station means reading its terms.
  *
  * - `allows-players` — they publish stream URLs for other players, or say so.
- * - `silent` — no published terms either way. The weakest footing we accept.
- * - `permission` — they told us yes directly; `source` is the saved email.
+ * - `silent` — no published terms either way.
+ * - `permission` — their terms require written permission. Until 2026-11-01
+ *   that meant the station was parked until a reply came; now it means the
+ *   ask is outstanding and we are playing them meanwhile, which is the
+ *   maintainer's decision and is recorded as such in `docs/EXECUTION.md`.
+ * - `unreviewed` — the stream was verified, the terms page was not read.
+ *
+ * `unreviewed` exists so that relaxing the standard did not quietly turn into
+ * mislabelling. Before 2026-11-01 every Pick carried a page somebody had read;
+ * most of what was added that day does not, and calling those `silent` would
+ * have claimed a check nobody performed. The weaker footing is in the data
+ * rather than hidden by it, so the honest ones can be told apart later and
+ * `scripts/check-streams.mjs` can keep nagging about the rest.
  */
 export interface StationTerms {
-  status: "allows-players" | "silent" | "permission";
+  status: "allows-players" | "silent" | "permission" | "unreviewed";
   /** The terms page, stream-URL page, or saved permission. */
   source: string;
   /** ISO date a person read it. */
@@ -83,7 +100,16 @@ function pick(
   terms: StationTerms,
   home: string,
 ): Station {
-  return { name, artist, url, vocals, vocalsFrom: "hand", pick: true, terms, home };
+  return {
+    name,
+    artist,
+    url,
+    vocals,
+    vocalsFrom: "hand",
+    pick: true,
+    terms,
+    home,
+  };
 }
 
 // ── Terms records, one per broadcaster ──────────────────────────────────────
@@ -101,7 +127,8 @@ const WFMU_TERMS: StationTerms = {
 
 const RADIO_PARADISE_TERMS: StationTerms = {
   status: "silent",
-  source: "https://hacks.mozilla.org/2013/10/building-a-firefoxos-app-for-my-favorite-internet-radio-station/",
+  source:
+    "https://hacks.mozilla.org/2013/10/building-a-firefoxos-app-for-my-favorite-internet-radio-station/",
   checked: "2026-09-27",
   note:
     "No published terms either way. Historically welcomes developers — Mozilla documented " +
@@ -209,12 +236,12 @@ const CONCERTZENDER_TERMS: StationTerms = {
   source: "https://streams.greenhost.nl:8006/",
   checked: "2026-10-29",
   note:
-    "Stichting Concertzender, a volunteer foundation in Utrecht making radio since 1982 and "
-    + "distributed nationally by cable; it publishes annual reports and was designated a side "
-    + "activity of the NOS in 1999. Its own /streams/ link resolves to the public Icecast status "
-    + "page used here, which lists every mount. No terms were found either way. Each channel is a "
-    + "themed re-broadcast of its own programme archive, so what plays is work its own editors "
-    + "made and dated — about as far from an auto-DJ as a stream gets.",
+    "Stichting Concertzender, a volunteer foundation in Utrecht making radio since 1982 and " +
+    "distributed nationally by cable; it publishes annual reports and was designated a side " +
+    "activity of the NOS in 1999. Its own /streams/ link resolves to the public Icecast status " +
+    "page used here, which lists every mount. No terms were found either way. Each channel is a " +
+    "themed re-broadcast of its own programme archive, so what plays is work its own editors " +
+    "made and dated — about as far from an auto-DJ as a stream gets.",
 };
 
 const CESKY_ROZHLAS_TERMS: StationTerms = {
@@ -222,26 +249,28 @@ const CESKY_ROZHLAS_TERMS: StationTerms = {
   source: "https://jazz.rozhlas.cz/about-us-5176836",
   checked: "2026-10-29",
   note:
-    "Český rozhlas, the Czech public broadcaster and an EBU member. Its own station "
-    + "pages publish .m3u and .asx playlist files to open in an audio player. The https URLs "
-    + "used here are the direct equivalents of those playlists — confirmed on 2026-10-29 to "
-    + "answer with the same icy-name as the published api.play.cz m3u resolves to.",
+    "Český rozhlas, the Czech public broadcaster and an EBU member. Its own station " +
+    "pages publish .m3u and .asx playlist files to open in an audio player. The https URLs " +
+    "used here are the direct equivalents of those playlists — confirmed on 2026-10-29 to " +
+    "answer with the same icy-name as the published api.play.cz m3u resolves to.",
 };
 
 const WMBR_TERMS: StationTerms = {
   status: "allows-players",
   source: "https://wmbr.org/",
   checked: "2026-10-29",
-  note: "Publishes a .m3u for external players, labelled “Live Stream (m3u)”. "
-    + "Student- and community-run non-profit at MIT.",
+  note:
+    "Publishes a .m3u for external players, labelled “Live Stream (m3u)”. " +
+    "Student- and community-run non-profit at MIT.",
 };
 
 const KZSU_TERMS: StationTerms = {
   status: "allows-players",
   source: "https://kzsu.stanford.edu/live/",
   checked: "2026-10-29",
-  note: "Publishes its streams in four formats under the heading “Use your own player”. "
-    + "Student-run at Stanford, on air since 1964.",
+  note:
+    "Publishes its streams in four formats under the heading “Use your own player”. " +
+    "Student-run at Stanford, on air since 1964.",
 };
 
 const BASSDRIVE_TERMS: StationTerms = {
@@ -552,40 +581,6 @@ const KZSU = pick(
   "https://kzsu.stanford.edu/",
 );
 
-/**
- * NTS Radio, London — the institution that finally makes a Lofi Pick possible.
- *
- * Its "Infinite Mixtapes" are continuous streams cut from NTS's own archive of
- * presenter-hosted shows, which is why this one passes where a decade of
- * 24/7 lofi streams did not: the music was chosen by named people on air
- * before it was ever a stream, and NTS has been broadcasting since 2011.
- *
- * One honest caveat, and it is a user-visible one: the mixtapes send **no ICY
- * metadata at all** — `StreamTitle` is empty — so the app shows the station
- * name and no track. That is a missing nicety, not a provenance problem; R5
- * is satisfied by NTS publishing what its shows played, not by the stream.
- */
-const NTS_TERMS: StationTerms = {
-  status: "silent",
-  source: "https://www.nts.live/terms-and-conditions",
-  checked: "2026-11-01",
-  note:
-    "The only terms NTS publishes cover Supporter subscriptions — payments, refunds, " +
-    "cancellation. Nothing about third-party players, embedding, redistribution or " +
-    "non-commercial use, so §1.5 silence applies. Stream URL taken from NTS's own public " +
-    "API (/api/v2/mixtapes), which lists audio_stream_endpoint for each mixtape. London, " +
-    "broadcasting since 2011.",
-};
-
-const NTS_LOW_KEY = pick(
-  "NTS Low Key",
-  "NTS Radio · Lo-fi hip hop and smooth R&B",
-  "https://stream-mixtape-geo.ntslive.net/mixtape2",
-  "mixed",
-  NTS_TERMS,
-  "https://www.nts.live/infinite-mixtapes/100-percent-hip-hop",
-);
-
 const NIGHTWAVE_PLAZA = pick(
   "Nightwave Plaza",
   "Vaporwave and mallsoft",
@@ -632,26 +627,968 @@ const BASSDRIVE = pick(
  * tried. Putting a station in a genre it does not belong to would make this
  * list longer and the app worse, so the gap is recorded instead.
  */
-export const PICKS: Record<string, Station[]> = {
-  ambient: [ASP, AM_AMBIENT, AMBIENT_MODERN, CZ_STILTE],
-  classical: [SWISS_CLASSIC, WCPE, CZ_KLASSIEK, CZ_OUDE, CZ_NIEUWE],
-  scores: [CZ_FILM],
-  jazz: [SWISS_JAZZ, WBGO, CZ_JAZZ, CZ_HARDBOP, CRO_JAZZ],
-  chillout: [RP_MELLOW, AM_AMBIENT],
-  lofi: [NTS_LOW_KEY],
-  folk: [WFMU_DRUMMER, RP_GLOBAL, CZ_FOLK],
-  reggae: [ALPHA_BOYS],
-  dnb: [BASSDRIVE],
-  synthwave: [NIGHTWAVE_PLAZA],
-  eclectic: [WFMU_FREEFORM, KFJC, KALX, WMBR, KZSU, CRO_WAVE, RP_MAIN, WFMU_DRUMMER, RP_GLOBAL],
-  world: [RP_GLOBAL, ALPHA_BOYS, WFMU_DRUMMER, CZ_WERELD, CZ_CHANSON],
-  altrock: [KEXP, WXPN, KALX, CRO_WAVE],
-  indie: [RP_MAIN, KEXP, SWISS_POP, WFMU_FREEFORM, KFJC, CZ_POP],
-  rock: [RP_ROCK, WFMU_SHEENA, WFMU_ROCKNSOUL],
-  soul: [WFMU_ROCKNSOUL],
+// ── 2026-11-01: the catalog expansion ───────────────────────────────────────
+//
+// Everything below went in on one day, when the maintainer relaxed the station
+// rules: broadcasters that had been parked waiting for a reply are played while
+// the ask is outstanding, and a Pick no longer needs its terms page read first.
+// docs/EXECUTION.md Part 4 records the decision and what it costs. The `status`
+// on each record says which footing it actually stands on, so the ones somebody
+// checked can still be told from the ones nobody did.
+
+const RADIO_FRANCE_TERMS: StationTerms = {
+  status: "permission",
+  source: "https://www.radiofrance.com/conditions-generales-utilisation",
+  checked: "2026-10-29",
+  note:
+    'Terms restrict use to "un usage strictement personnel et prive" and require written ' +
+    "permission for reuse. The ask is drafted in docs/permission-emails.md and has not been " +
+    "answered. Added anyway on 2026-11-01 by the maintainer's decision; remove on a no.",
 };
 
-const PICK_URLS = new Set(Object.values(PICKS).flatMap((list) => list.map((s) => s.url)));
+const NRK_TERMS: StationTerms = {
+  status: "permission",
+  source: "https://lyd.nrk.no/",
+  checked: "2026-10-29",
+  note:
+    "lyd.nrk.no publishes every stream URL openly, then says any other use to build new " +
+    "services needs NRK's approval. Asked, unanswered; playing meanwhile by the maintainer's " +
+    "decision of 2026-11-01.",
+};
+
+const LAUT_FM_TERMS: StationTerms = {
+  status: "permission",
+  source: "https://laut.fm/agb",
+  checked: "2026-10-29",
+  note:
+    "Their terms forbid embedding streams on third-party websites. A desktop player is " +
+    "arguably not a website, and the question is drafted in docs/permission-emails.md. " +
+    "Unanswered; playing meanwhile by the maintainer's decision of 2026-11-01.",
+};
+
+const NTS_TERMS: StationTerms = {
+  status: "silent",
+  source: "https://www.nts.live/terms-and-conditions",
+  checked: "2026-11-01",
+  note:
+    "The only terms NTS publishes cover Supporter subscriptions - payments, refunds, " +
+    "cancellation. Nothing about third-party players, embedding or redistribution, so the " +
+    "silence rule applies. Stream URLs come from NTS's own public API (/api/v2/mixtapes). " +
+    "London, broadcasting since 2011. The Infinite Mixtapes send no ICY metadata, so the app " +
+    "shows the station name and no track title.",
+};
+
+const HUNTER_LOFI_TERMS: StationTerms = {
+  status: "silent",
+  source: "https://hunter.fm/privacidade-e-termos/",
+  checked: "2026-11-01",
+  note:
+    "No clause either way on third-party players; the page covers advertisers and privacy. " +
+    "Hunter Midia Ltda, online since 2016. Credited artists (Hoogway, Mell-o) play alongside " +
+    "names that cannot be traced at all, which is why it was parked until the rules changed.",
+};
+
+const WWOZ_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://www.wwoz.org/listen",
+  checked: "2026-11-01",
+  note:
+    "Listener-supported community radio, New Orleans, on air since 1980; its Listen page " +
+    "offers the stream in several formats. Stream verified; terms page not read.",
+};
+
+const WFUV_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://wfuv.org/stream",
+  checked: "2026-11-01",
+  note: "Fordham University's public radio station. Stream verified; terms page not read.",
+};
+
+const DUBLAB_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://dublab.com/",
+  checked: "2026-11-01",
+  note:
+    "Non-profit arts radio, Los Angeles, since 1999; named resident DJs. Stream verified; " +
+    "terms page not read.",
+};
+
+const KIOSK_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://kioskradio.com/",
+  checked: "2026-11-01",
+  note:
+    "Non-profit community radio from a former newspaper kiosk in Brussels. Stream verified; " +
+    "terms page not read.",
+};
+
+const RINSE_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://rinse.fm/",
+  checked: "2026-11-01",
+  note:
+    "London station, pirate from 1994 and licensed since 2010. Stream verified; terms not " +
+    "read.",
+};
+
+const EPIC_PIANO_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://epic-piano.com/",
+  checked: "2026-11-01",
+  note: "Stream verified; terms page not read. German operator, same family as Epic Lounge.",
+};
+
+const WHISPERINGS_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://www.solopianoradio.com/",
+  checked: "2026-11-01",
+  note:
+    "Solo piano only, curated by David Nevue, artists named on air. Stream verified; terms " +
+    "page not read. Previously declined under the old rules for exactly that gap.",
+};
+
+const BOSSA_JAZZ_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://www.bossajazzbrasil.com/",
+  checked: "2026-11-01",
+  note:
+    "Brazilian bossa and jazz station. Stream verified; terms page not read. Previously " +
+    "declined under the old rules.",
+};
+
+const RMC_BOSSA_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://radiomontecarlo.net/",
+  checked: "2026-11-01",
+  note:
+    "Radio Monte Carlo's bossa channel, an Italian commercial broadcaster. Stream verified; " +
+    "terms page not read.",
+};
+
+const RADIOART_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://www.radioart.com/",
+  checked: "2026-11-01",
+  note: "Stream verified; terms page not read.",
+};
+
+const ANON_FM_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://anon.fm/",
+  checked: "2026-11-01",
+  note: "Long-running listener-run trance stream. Stream verified; terms page not read.",
+};
+
+const NIGHTRIDE_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://nightride.fm/",
+  checked: "2026-11-01",
+  note: "Synthwave network that publishes its stream URLs. Stream verified; terms not read.",
+};
+
+const SYSTRUM_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://systrumsistum.com/",
+  checked: "2026-11-01",
+  note: "Two channels of drone and experimental electronics. Stream verified; terms not read.",
+};
+
+const WKNC_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://wknc.org/",
+  checked: "2026-11-01",
+  note: "North Carolina State University student radio. Stream verified; terms page not read.",
+};
+
+const NEU_RADIO_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://www.neuradio.it/",
+  checked: "2026-11-01",
+  note: "Independent station from Bologna. Stream verified; terms page not read.",
+};
+
+const GROLLOO_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://grollooradio.nl/",
+  checked: "2026-11-01",
+  note:
+    "Blues station from Grolloo, the Dutch village Cuby + Blizzards came from. Stream " +
+    "verified; terms page not read.",
+};
+
+const CAMP_RADIO_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://listen.camp/",
+  checked: "2026-11-01",
+  note: "Ambient and drone, Ogg Vorbis. Stream verified; terms page not read.",
+};
+
+const MUSICAL_DECADENCE_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://musicaldecadence.ru/",
+  checked: "2026-11-01",
+  note: "Techno stream. Stream verified; terms page not read.",
+};
+
+const TECHNOLOVERS_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://technolovers.fm/",
+  checked: "2026-11-01",
+  note: "German dance network, one channel per style. Stream verified; terms not read.",
+};
+
+const REYFM_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://reyfm.de/",
+  checked: "2026-11-01",
+  note: "German dance network. Stream verified; terms page not read.",
+};
+
+const SLEEPSCAPES_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://www.live365.com/station/Sleepscapes-Rain-a7844de",
+  checked: "2026-11-01",
+  note: "Rain and sleep soundscapes. Stream verified; terms page not read.",
+};
+
+const RAUTEMUSIK_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://epic-lounge.com/",
+  checked: "2026-11-01",
+  note:
+    "Epic Lounge, part of the rautemusik family. Stream verified; terms page not read. It was " +
+    "parked in October pending a no-AI review that was never finished.",
+};
+
+const FIP_MAIN = pick(
+  "FIP",
+  "Radio France · Freeform, no adverts",
+  "https://icecast.radiofrance.fr/fip-hifi.aac",
+  "mixed",
+  RADIO_FRANCE_TERMS,
+  "https://www.fip.fr/",
+);
+
+const FIP_JAZZ = pick(
+  "FIP Jazz",
+  "Radio France",
+  "https://icecast.radiofrance.fr/fipjazz-hifi.aac",
+  "mixed",
+  RADIO_FRANCE_TERMS,
+  "https://www.fip.fr/jazz/",
+);
+
+const FIP_ROCK = pick(
+  "FIP Rock",
+  "Radio France",
+  "https://icecast.radiofrance.fr/fiprock-hifi.aac",
+  "vocal",
+  RADIO_FRANCE_TERMS,
+  "https://www.fip.fr/rock/",
+);
+
+const FIP_ELECTRO = pick(
+  "FIP Electro",
+  "Radio France",
+  "https://icecast.radiofrance.fr/fipelectro-hifi.aac",
+  "instrumental",
+  RADIO_FRANCE_TERMS,
+  "https://www.fip.fr/electro/",
+);
+
+const FIP_GROOVE = pick(
+  "FIP Groove",
+  "Radio France",
+  "https://icecast.radiofrance.fr/fipgroove-hifi.aac",
+  "vocal",
+  RADIO_FRANCE_TERMS,
+  "https://www.fip.fr/groove/",
+);
+
+const FIP_REGGAE = pick(
+  "FIP Reggae",
+  "Radio France",
+  "https://icecast.radiofrance.fr/fipreggae-hifi.aac",
+  "vocal",
+  RADIO_FRANCE_TERMS,
+  "https://www.fip.fr/reggae/",
+);
+
+const FIP_HIPHOP = pick(
+  "FIP Hip-Hop",
+  "Radio France",
+  "https://icecast.radiofrance.fr/fiphiphop-hifi.aac",
+  "vocal",
+  RADIO_FRANCE_TERMS,
+  "https://www.fip.fr/hip-hop/",
+);
+
+const FIP_METAL = pick(
+  "FIP Metal",
+  "Radio France",
+  "https://icecast.radiofrance.fr/fipmetal-hifi.aac",
+  "vocal",
+  RADIO_FRANCE_TERMS,
+  "https://www.fip.fr/metal/",
+);
+
+const FIP_POP = pick(
+  "FIP Pop",
+  "Radio France",
+  "https://icecast.radiofrance.fr/fippop-hifi.aac",
+  "vocal",
+  RADIO_FRANCE_TERMS,
+  "https://www.fip.fr/pop/",
+);
+
+const FIP_NOUVEAUTES = pick(
+  "FIP Nouveautés",
+  "Radio France · New releases",
+  "https://icecast.radiofrance.fr/fipnouveautes-hifi.aac",
+  "mixed",
+  RADIO_FRANCE_TERMS,
+  "https://www.fip.fr/nouveautes/",
+);
+
+const FIP_MONDE = pick(
+  "FIP Monde",
+  "Radio France",
+  "https://icecast.radiofrance.fr/fipworld-hifi.aac",
+  "mixed",
+  RADIO_FRANCE_TERMS,
+  "https://www.fip.fr/monde/",
+);
+
+const FM_EASY = pick(
+  "France Musique Classique Easy",
+  "Radio France",
+  "https://icecast.radiofrance.fr/francemusiqueeasyclassique-hifi.aac",
+  "instrumental",
+  RADIO_FRANCE_TERMS,
+  "https://www.radiofrance.fr/francemusique",
+);
+
+const FM_BAROQUE = pick(
+  "France Musique Baroque",
+  "Radio France",
+  "https://icecast.radiofrance.fr/francemusiquebaroque-hifi.aac",
+  "instrumental",
+  RADIO_FRANCE_TERMS,
+  "https://www.radiofrance.fr/francemusique",
+);
+
+const FM_JAZZ = pick(
+  "France Musique Jazz",
+  "Radio France",
+  "https://icecast.radiofrance.fr/francemusiquelajazz-hifi.aac",
+  "mixed",
+  RADIO_FRANCE_TERMS,
+  "https://www.radiofrance.fr/francemusique",
+);
+
+const FM_CONTEMP = pick(
+  "France Musique Contemporaine",
+  "Radio France",
+  "https://icecast.radiofrance.fr/francemusiquelacontemporaine-hifi.aac",
+  "instrumental",
+  RADIO_FRANCE_TERMS,
+  "https://www.radiofrance.fr/francemusique",
+);
+
+const FM_OCORA = pick(
+  "France Musique Ocora",
+  "Radio France · World traditions",
+  "https://icecast.radiofrance.fr/francemusiqueocoramonde-hifi.aac",
+  "mixed",
+  RADIO_FRANCE_TERMS,
+  "https://www.radiofrance.fr/francemusique",
+);
+
+const NRK_JAZZ = pick(
+  "NRK Jazz",
+  "Norwegian public radio",
+  "https://lyd.nrk.no/nrk_radio_jazz_mp3_h",
+  "mixed",
+  NRK_TERMS,
+  "https://radio.nrk.no/",
+);
+
+const NRK_KLASSISK = pick(
+  "NRK Klassisk",
+  "Norwegian public radio",
+  "https://lyd.nrk.no/nrk_radio_klassisk_mp3_h",
+  "instrumental",
+  NRK_TERMS,
+  "https://radio.nrk.no/",
+);
+
+const NRK_FOLK = pick(
+  "NRK Folkemusikk",
+  "Norwegian public radio",
+  "https://lyd.nrk.no/nrk_radio_folkemusikk_mp3_h",
+  "mixed",
+  NRK_TERMS,
+  "https://radio.nrk.no/",
+);
+
+const NRK_P3 = pick(
+  "NRK P3",
+  "Norwegian public radio",
+  "https://lyd.nrk.no/nrk_radio_p3_mp3_h",
+  "vocal",
+  NRK_TERMS,
+  "https://radio.nrk.no/",
+);
+
+const NRK_MP3 = pick(
+  "NRK mP3",
+  "Norwegian public radio",
+  "https://lyd.nrk.no/nrk_radio_mp3_mp3_h",
+  "vocal",
+  NRK_TERMS,
+  "https://radio.nrk.no/",
+);
+
+const LAUT_LOFI = pick(
+  "laut.fm Lofi",
+  "Community station",
+  "https://stream.laut.fm/lofi",
+  "instrumental",
+  LAUT_FM_TERMS,
+  "https://laut.fm/lofi",
+);
+
+const LAUT_POSTROCK = pick(
+  "laut.fm Post-Rock",
+  "Community station",
+  "https://stream.laut.fm/post-rock",
+  "instrumental",
+  LAUT_FM_TERMS,
+  "https://laut.fm/post-rock",
+);
+
+const LAUT_BLUES = pick(
+  "laut.fm Blues",
+  "Community station",
+  "https://stream.laut.fm/blues",
+  "vocal",
+  LAUT_FM_TERMS,
+  "https://laut.fm/blues",
+);
+
+const LAUT_TRANCE = pick(
+  "laut.fm Trance",
+  "Community station",
+  "https://stream.laut.fm/trance",
+  "instrumental",
+  LAUT_FM_TERMS,
+  "https://laut.fm/trance",
+);
+
+const LAUT_TECHNO = pick(
+  "laut.fm Techno",
+  "Community station",
+  "https://stream.laut.fm/techno",
+  "instrumental",
+  LAUT_FM_TERMS,
+  "https://laut.fm/techno",
+);
+
+const LAUT_HOUSE = pick(
+  "laut.fm House",
+  "Community station",
+  "https://stream.laut.fm/house",
+  "instrumental",
+  LAUT_FM_TERMS,
+  "https://laut.fm/house",
+);
+
+const NTS_LOW_KEY = pick(
+  "NTS Low Key",
+  "NTS Radio · Lo-fi hip hop and smooth R&B",
+  "https://stream-mixtape-geo.ntslive.net/mixtape2",
+  "mixed",
+  NTS_TERMS,
+  "https://www.nts.live/infinite-mixtapes/100-percent-hip-hop",
+);
+
+const NTS_LIVE1 = pick(
+  "NTS 1",
+  "NTS Radio · London, live",
+  "https://stream-relay-geo.ntslive.net/stream",
+  "mixed",
+  NTS_TERMS,
+  "https://www.nts.live/",
+);
+
+const NTS_LIVE2 = pick(
+  "NTS 2",
+  "NTS Radio · London, live",
+  "https://stream-relay-geo.ntslive.net/stream2",
+  "mixed",
+  NTS_TERMS,
+  "https://www.nts.live/",
+);
+
+const NTS_SLOW_FOCUS = pick(
+  "NTS Slow Focus",
+  "NTS Radio · Ambient, drone and ragas",
+  "https://stream-mixtape-geo.ntslive.net/mixtape",
+  "instrumental",
+  NTS_TERMS,
+  "https://www.nts.live/infinite-mixtapes/slow-focus",
+);
+
+const NTS_EXPANSIONS = pick(
+  "NTS Expansions",
+  "NTS Radio · Jazz and its variations",
+  "https://stream-mixtape-geo.ntslive.net/mixtape3",
+  "mixed",
+  NTS_TERMS,
+  "https://www.nts.live/infinite-mixtapes/expansions",
+);
+
+const NTS_POOLSIDE = pick(
+  "NTS Poolside",
+  "NTS Radio · Balearic and boogie",
+  "https://stream-mixtape-geo.ntslive.net/mixtape4",
+  "mixed",
+  NTS_TERMS,
+  "https://www.nts.live/infinite-mixtapes/poolside",
+);
+
+const NTS_FOUR_FLOOR = pick(
+  "NTS 4 To The Floor",
+  "NTS Radio · House and techno",
+  "https://stream-mixtape-geo.ntslive.net/mixtape5",
+  "instrumental",
+  NTS_TERMS,
+  "https://www.nts.live/infinite-mixtapes/4-to-the-floor",
+);
+
+const NTS_MEMORY = pick(
+  "NTS Memory Lane",
+  "NTS Radio · Turn on, tune in",
+  "https://stream-mixtape-geo.ntslive.net/mixtape6",
+  "mixed",
+  NTS_TERMS,
+  "https://www.nts.live/infinite-mixtapes/memory-lane",
+);
+
+const NTS_ISLAND = pick(
+  "NTS Island Time",
+  "NTS Radio · Reggae and dub",
+  "https://stream-mixtape-geo.ntslive.net/mixtape21",
+  "vocal",
+  NTS_TERMS,
+  "https://www.nts.live/infinite-mixtapes/island-time",
+);
+
+const NTS_RAP_HOUSE = pick(
+  "NTS Rap House",
+  "NTS Radio · 808s and champagne",
+  "https://stream-mixtape-geo.ntslive.net/mixtape22",
+  "vocal",
+  NTS_TERMS,
+  "https://www.nts.live/infinite-mixtapes/rap-house",
+);
+
+const NTS_FIELD = pick(
+  "NTS Field Recordings",
+  "NTS Radio · Natural ambience",
+  "https://stream-mixtape-geo.ntslive.net/mixtape23",
+  "instrumental",
+  NTS_TERMS,
+  "https://www.nts.live/infinite-mixtapes/field-recordings",
+);
+
+const NTS_SWEAT = pick(
+  "NTS Sweat",
+  "NTS Radio · International party music",
+  "https://stream-mixtape-geo.ntslive.net/mixtape24",
+  "vocal",
+  NTS_TERMS,
+  "https://www.nts.live/infinite-mixtapes/sweat",
+);
+
+const NTS_TUBE = pick(
+  "NTS The Tube",
+  "NTS Radio · Post-punk and minimal wave",
+  "https://stream-mixtape-geo.ntslive.net/mixtape26",
+  "vocal",
+  NTS_TERMS,
+  "https://www.nts.live/infinite-mixtapes/the-tube",
+);
+
+const NTS_FEELINGS = pick(
+  "NTS Feelings",
+  "NTS Radio · Soul, gospel and boogie",
+  "https://stream-mixtape-geo.ntslive.net/mixtape27",
+  "vocal",
+  NTS_TERMS,
+  "https://www.nts.live/infinite-mixtapes/feelings",
+);
+
+const NTS_LABYRINTH = pick(
+  "NTS Labyrinth",
+  "NTS Radio · Enter the void",
+  "https://stream-mixtape-geo.ntslive.net/mixtape31",
+  "instrumental",
+  NTS_TERMS,
+  "https://www.nts.live/infinite-mixtapes/labyrinth",
+);
+
+const NTS_PIT = pick(
+  "NTS The Pit",
+  "NTS Radio · Songs of the ancient metal bards",
+  "https://stream-mixtape-geo.ntslive.net/mixtape34",
+  "vocal",
+  NTS_TERMS,
+  "https://www.nts.live/infinite-mixtapes/the-pit",
+);
+
+const NTS_SHEET = pick(
+  "NTS Sheet Music",
+  "NTS Radio · Classical and contemporary",
+  "https://stream-mixtape-geo.ntslive.net/mixtape35",
+  "instrumental",
+  NTS_TERMS,
+  "https://www.nts.live/infinite-mixtapes/sheet-music",
+);
+
+const NTS_OTAKU = pick(
+  "NTS Otaku",
+  "NTS Radio · Video game and anime scores",
+  "https://stream-mixtape-geo.ntslive.net/mixtape36",
+  "instrumental",
+  NTS_TERMS,
+  "https://www.nts.live/infinite-mixtapes/otaku",
+);
+
+const HUNTER_LOFI = pick(
+  "Hunter.FM Lo-Fi",
+  "Lo-fi hip hop and chillhop",
+  "https://live.hunter.fm/lofi_high",
+  "instrumental",
+  HUNTER_LOFI_TERMS,
+  "https://hunter.fm/lofi/",
+);
+
+const WWOZ = pick(
+  "WWOZ",
+  "New Orleans · Listener-supported",
+  "https://wwoz-sc.streamguys1.com/wwoz-hi.mp3",
+  "vocal",
+  WWOZ_TERMS,
+  "https://www.wwoz.org/",
+);
+
+const WFUV = pick(
+  "WFUV",
+  "Fordham University · Public radio",
+  "https://onair.wfuv.org/onair-hi",
+  "vocal",
+  WFUV_TERMS,
+  "https://wfuv.org/",
+);
+
+const DUBLAB = pick(
+  "dublab",
+  "Los Angeles · Non-profit arts radio",
+  "https://dublab.out.airtime.pro/dublab_a",
+  "mixed",
+  DUBLAB_TERMS,
+  "https://dublab.com/",
+);
+
+const KIOSK_RADIO = pick(
+  "Kiosk Radio",
+  "Brussels · Community radio",
+  "https://kioskradiobxl.out.airtime.pro/kioskradiobxl_a",
+  "mixed",
+  KIOSK_TERMS,
+  "https://kioskradio.com/",
+);
+
+const RINSE_FM = pick(
+  "Rinse FM",
+  "London · Pirate turned licensed",
+  "https://admin.stream.rinse.fm/proxy/rinse_uk/stream",
+  "mixed",
+  RINSE_TERMS,
+  "https://rinse.fm/",
+);
+
+const WHISPERINGS = pick(
+  "Whisperings Solo Piano",
+  "Curated by David Nevue",
+  "https://pianosolo.streamguys1.com/live",
+  "instrumental",
+  WHISPERINGS_TERMS,
+  "https://www.solopianoradio.com/",
+);
+
+const EPIC_PIANO_CHILL = pick(
+  "Epic Piano Chillout",
+  "Chillout piano",
+  "https://stream.epic-piano.com/chillout-piano",
+  "instrumental",
+  EPIC_PIANO_TERMS,
+  "https://epic-piano.com/",
+);
+
+const EPIC_PIANO_ROMANTIC = pick(
+  "Epic Piano Romantic",
+  "Romantic piano",
+  "https://stream.epic-piano.com/romantic-piano",
+  "instrumental",
+  EPIC_PIANO_TERMS,
+  "https://epic-piano.com/",
+);
+
+const BOSSA_JAZZ = pick(
+  "Bossa Jazz Brasil",
+  "Bossa nova and Brazilian jazz",
+  "https://centova5.transmissaodigital.com:20104/live",
+  "mixed",
+  BOSSA_JAZZ_TERMS,
+  "https://www.bossajazzbrasil.com/",
+);
+
+const RMC_BOSSA = pick(
+  "RMC Bossa Nova",
+  "Radio Monte Carlo",
+  "https://mc-mcbossa.hostingradio.ru/mcbossa96.aacp",
+  "mixed",
+  RMC_BOSSA_TERMS,
+  "https://radiomontecarlo.net/",
+);
+
+const RADIOART_BOSSA = pick(
+  "Radio Art Smooth Bossa",
+  "Smooth bossa nova",
+  "https://live.radioart.com/fSmooth_bossa_nova.mp3",
+  "mixed",
+  RADIOART_TERMS,
+  "https://www.radioart.com/",
+);
+
+const ANON_FM = pick(
+  "Anon.FM",
+  "Listener-run trance",
+  "https://icecast.anon.fm/radio",
+  "instrumental",
+  ANON_FM_TERMS,
+  "https://anon.fm/",
+);
+
+const NIGHTRIDE_DATAWAVE = pick(
+  "Nightride Datawave",
+  "Nightride FM · Electronic",
+  "https://stream.nightride.fm/datawave.mp3",
+  "instrumental",
+  NIGHTRIDE_TERMS,
+  "https://nightride.fm/",
+);
+
+const SYSTRUM_SSR1 = pick(
+  "Systrum Sistum SSR1",
+  "Drone and ambient",
+  "https://systrum.net:8443/SSR1",
+  "instrumental",
+  SYSTRUM_TERMS,
+  "https://systrumsistum.com/",
+);
+
+const SYSTRUM_SSR2 = pick(
+  "Systrum Sistum SSR2",
+  "Experimental electronics",
+  "https://systrum.net:8443/SSR2",
+  "instrumental",
+  SYSTRUM_TERMS,
+  "https://systrumsistum.com/",
+);
+
+const WKNC = pick(
+  "WKNC 88.1",
+  "NC State · Student radio",
+  "https://streaming.live365.com/a45877",
+  "mixed",
+  WKNC_TERMS,
+  "https://wknc.org/",
+);
+
+const NEU_RADIO = pick(
+  "NEU Radio",
+  "Bologna · Independent",
+  "https://nr9.newradio.it/proxy/ebaruffa?mp=/stream",
+  "mixed",
+  NEU_RADIO_TERMS,
+  "https://www.neuradio.it/",
+);
+
+const GROLLOO = pick(
+  "Grolloo Radio",
+  "Blues from Grolloo",
+  "https://uk1.streamingpulse.com/ssl/grollooradio",
+  "vocal",
+  GROLLOO_TERMS,
+  "https://grollooradio.nl/",
+);
+
+const CAMP_RADIO = pick(
+  "CAMP Radio",
+  "Ambient and drone",
+  "https://listen.camp/campradio.ogg",
+  "instrumental",
+  CAMP_RADIO_TERMS,
+  "https://listen.camp/",
+);
+
+const MUSICAL_DECADENCE = pick(
+  "Musical Decadence",
+  "Techno",
+  "https://stream.musicaldecadence.ru/live",
+  "instrumental",
+  MUSICAL_DECADENCE_TERMS,
+  "https://musicaldecadence.ru/",
+);
+
+const TECHNOLOVERS_DEEP = pick(
+  "Technolovers Deep House",
+  "Deep house",
+  "https://stream.technolovers.fm/deep-house",
+  "instrumental",
+  TECHNOLOVERS_TERMS,
+  "https://technolovers.fm/",
+);
+
+const REYFM_HOUSE = pick(
+  "REYFM Houseparty",
+  "House",
+  "https://listen.reyfm.de/houseparty_192kbps.mp3",
+  "instrumental",
+  REYFM_TERMS,
+  "https://reyfm.de/",
+);
+
+const SLEEPSCAPES = pick(
+  "Sleepscapes Rain",
+  "Rain and sleep soundscapes",
+  "https://stream.willstare.com:8850/",
+  "instrumental",
+  SLEEPSCAPES_TERMS,
+  "https://www.live365.com/station/Sleepscapes-Rain-a7844de",
+);
+
+const EPIC_LOUNGE = pick(
+  "Epic Lounge Workday",
+  "Lounge and downtempo",
+  "https://stream.epic-lounge.com/workday-lounge",
+  "instrumental",
+  RAUTEMUSIK_TERMS,
+  "https://epic-lounge.com/",
+);
+
+export const PICKS: Record<string, Station[]> = {
+  ambient: [
+    ASP,
+    AM_AMBIENT,
+    AMBIENT_MODERN,
+    CZ_STILTE,
+    NTS_SLOW_FOCUS,
+    CAMP_RADIO,
+  ],
+  classical: [
+    SWISS_CLASSIC,
+    WCPE,
+    CZ_KLASSIEK,
+    CZ_OUDE,
+    CZ_NIEUWE,
+    FM_EASY,
+    FM_BAROQUE,
+    NRK_KLASSISK,
+    NTS_SHEET,
+    FM_CONTEMP,
+  ],
+  scores: [CZ_FILM, NTS_OTAKU],
+  jazz: [
+    SWISS_JAZZ,
+    WBGO,
+    CZ_JAZZ,
+    CZ_HARDBOP,
+    CRO_JAZZ,
+    FIP_JAZZ,
+    FM_JAZZ,
+    NRK_JAZZ,
+    NTS_EXPANSIONS,
+    WWOZ,
+  ],
+  chillout: [RP_MELLOW, AM_AMBIENT, NTS_POOLSIDE, EPIC_LOUNGE],
+  lofi: [NTS_LOW_KEY, HUNTER_LOFI, LAUT_LOFI],
+  space: [NTS_SLOW_FOCUS, SYSTRUM_SSR1, CAMP_RADIO],
+  piano: [WHISPERINGS, EPIC_PIANO_CHILL, EPIC_PIANO_ROMANTIC],
+  nature: [NTS_FIELD, SLEEPSCAPES],
+  bossa: [BOSSA_JAZZ, RMC_BOSSA, RADIOART_BOSSA],
+  folk: [WFMU_DRUMMER, RP_GLOBAL, CZ_FOLK, NRK_FOLK, WFUV],
+  reggae: [ALPHA_BOYS, FIP_REGGAE, NTS_ISLAND],
+  dnb: [BASSDRIVE],
+  house: [NTS_FOUR_FLOOR, LAUT_HOUSE, TECHNOLOVERS_DEEP, REYFM_HOUSE],
+  techno: [NTS_FOUR_FLOOR, LAUT_TECHNO, MUSICAL_DECADENCE, FIP_ELECTRO],
+  trance: [LAUT_TRANCE, ANON_FM],
+  idm: [NIGHTRIDE_DATAWAVE, SYSTRUM_SSR2, NTS_LABYRINTH],
+  postrock: [LAUT_POSTROCK, WKNC, NEU_RADIO],
+  metal: [FIP_METAL, NTS_PIT],
+  blues: [WWOZ, LAUT_BLUES, GROLLOO],
+  hiphop: [FIP_HIPHOP, NTS_RAP_HOUSE],
+  synthwave: [NIGHTWAVE_PLAZA, NIGHTRIDE_DATAWAVE],
+  eclectic: [
+    WFMU_FREEFORM,
+    KFJC,
+    KALX,
+    WMBR,
+    KZSU,
+    CRO_WAVE,
+    RP_MAIN,
+    WFMU_DRUMMER,
+    RP_GLOBAL,
+    FIP_MAIN,
+    NTS_LIVE1,
+    NTS_LIVE2,
+    DUBLAB,
+    KIOSK_RADIO,
+    RINSE_FM,
+    NTS_MEMORY,
+  ],
+  world: [
+    RP_GLOBAL,
+    ALPHA_BOYS,
+    WFMU_DRUMMER,
+    CZ_WERELD,
+    CZ_CHANSON,
+    FIP_MONDE,
+    FM_OCORA,
+    NTS_SWEAT,
+  ],
+  altrock: [KEXP, WXPN, KALX, CRO_WAVE, FIP_ROCK, NTS_TUBE, NRK_P3],
+  indie: [
+    RP_MAIN,
+    KEXP,
+    SWISS_POP,
+    WFMU_FREEFORM,
+    KFJC,
+    CZ_POP,
+    FIP_NOUVEAUTES,
+    FIP_POP,
+    NRK_MP3,
+  ],
+  rock: [RP_ROCK, WFMU_SHEENA, WFMU_ROCKNSOUL, FIP_ROCK],
+  soul: [WFMU_ROCKNSOUL, NTS_FEELINGS, FIP_GROOVE],
+};
+
+const PICK_URLS = new Set(
+  Object.values(PICKS).flatMap((list) => list.map((s) => s.url)),
+);
 
 /**
  * Whether a station is a Pick *now*. Asked of the URL, not of a stored `pick`

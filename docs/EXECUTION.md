@@ -446,8 +446,28 @@ instead of the genres being dropped.
 
 ### Rules for Picks
 
-A station becomes a Pick only if **every** rule passes, and the result is written into the
-register (Part 4). One failure, or one "couldn't find out", means it isn't a Pick.
+> **Relaxed on 2026-11-01 by the maintainer's decision.** What follows is still the standard
+> the project aims at, and still what a `status: "allows-players"` or `"silent"` record means.
+> It is no longer a gate every Pick must pass before it ships. Two things changed:
+>
+> 1. **A broadcaster whose terms ask to be asked is played while the ask is outstanding.**
+>    Radio France, NRK and laut.fm went in on that basis. Their records carry
+>    `status: "permission"`, which now means *we asked and are waiting*, not *they said yes*.
+>    A no means removal, immediately and without argument.
+> 2. **A Pick no longer needs its terms page read first.** Those carry
+>    `status: "unreviewed"` — the stream was verified, nothing else was. That status exists so
+>    the relaxation did not quietly become mislabelling: you can still tell at a glance which
+>    Picks somebody actually checked.
+>
+> What did **not** change: the denylist. SomaFM and zeno.fm said no, and a no is not a pending
+> question. Nothing on `src/data/denylist.ts` comes back without the broadcaster saying so.
+>
+> The cost is plain. Of 108 Picks, fewer than half now stand on a page a person read, and the
+> AI-provenance rules below (R1, R2, R5, R6) are aspirations for most of the new ones rather
+> than findings. Hunter.FM is the honest example: it plays credited artists next to names that
+> cannot be traced anywhere. Re-reviewing the `unreviewed` ones is the work this created.
+
+The rules, as written before that decision:
 
 - **R1. A named operator:** an identifiable organisation or person runs it (legal name,
   non-profit, public broadcaster, named founder). *Check:* About or Imprint page; a registry.
@@ -565,6 +585,8 @@ holds (Hotmix, 0nlineradio, Epic Lounge, Hunter.FM, CLIAMP).
 
 | Date | Station | Action | Reason |
 |---|---|---|---|
+| 2026-11-01 | **The rules were relaxed, and the catalog went from 39 Picks to 108** | **28 genres, none planned** | The maintainer's call: *"we need to make our rules more flexible right now, the ones we need to send emails to are allowed... please add a lot."* So **Radio France (FIP x11, France Musique x5), NRK x5 and laut.fm x6** came in while their permission asks are still outstanding, and the requirement that somebody read a station's terms before it ships was dropped. **Sixteen NTS Infinite Mixtapes** plus both live channels went in on NTS's own published API, and the twelve genres in `PLANNED_GENRES` were all filled — space, piano, nature, bossa, house, techno, trance, idm, post-rock, metal, blues, hip-hop. Every stream was verified for real audio before it was added; 19 candidates were dropped for answering 404 or nothing. A fourth `terms.status`, **`unreviewed`**, was added so that the weaker footing is recorded rather than disguised as `silent` — 44 terms records now, and the status says which is which. The denylist did not move: SomaFM and zeno.fm said no, which is not a pending question |
+| 2026-11-01 | ISP interception found while checking streams | **Not a catalog fault** | `npm run check:streams` called 12 Picks dead. They were not. Every one was a plain `http://` URL and every reply was the same 8674-byte page: `Via: 1.0 middlebox`, redirecting to `megaplusredirection.tedata.net`. The developer's ISP rewrites unencrypted HTTP. WFMU, Radio Swiss, KFJC, KZSU, Bassdrive and Stereoscenic are all reached over `http://` and would play the ISP's notice page on that connection — through the Rust proxy too, since it fetches over the same wire. Moving those Picks to `https://` where the station offers it is worth doing and is not done |
 | 2026-11-01 | **NTS Low Key** | **Added as a Pick — Lofi is a live genre again** | Found on the instruction to bring Lofi back. NTS Radio (London, broadcasting since 2011) publishes "Infinite Mixtapes": continuous streams cut from its own archive of presenter-hosted shows. That inverts the problem the genre kept failing on — the music was chosen by named people on air before it was ever a 24/7 stream, so **R1, R2 and R4 pass on the institution** rather than on a rotation nobody can trace. Low Key is the lo-fi hip hop and smooth R&B mixtape; the stream URL comes from NTS's own public API (`/api/v2/mixtapes`), not from guesswork. **Terms are silent**: the only thing NTS publishes is Supporter subscription terms — payments, refunds, cancellation — with nothing about third-party players, so §1.5 applies. **One caveat, user-visible:** the mixtapes send no ICY metadata, so the app shows the station name and no track title |
 | 2026-11-01 | Hunter.FM Lo-Fi | **Stays parked — not needed after all** | It was going to be added as a deliberate exception, with R2 unmet. Re-checking its stream first turned up "Chillbeat Dreamer — Night People", the same untraceable name the 2026-10-30 review had flagged, so the exception would have put the app's weakest evidence behind a badge that means the opposite. NTS makes the trade unnecessary. Its terms page was re-read today and still says nothing about third-party players, so the two drafted questions remain the way back |
 | 2026-11-01 | The other fifteen NTS Infinite Mixtapes | **Noted, not added** | Slow Focus (ambient/drone), Sheet Music (classical), Expansions (jazz), Island Time (reggae), Feelings (soul), Otaku (game soundtracks), Field Recordings, The Pit (metal), 4 To The Floor (house/techno) — several of them land squarely on genres that are still in `PLANNED_GENRES`. One broadcaster is already 28% of Picks, so these go in a few at a time and only after each is listened to and placed accurately. Adding fifteen streams from one host in one go is how the Concertzender concentration happened |
