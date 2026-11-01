@@ -44,7 +44,7 @@ tauri-plugin-process = "2"
 # Windows attributes a toast to an AppUserModelID, not to a process; see
 # src/notify.rs. Both versions are already in the lockfile.
 [target.'cfg(windows)'.dependencies]
-tauri-winrt-notification = "0.7"
+tauri-winrt-notification = "0.8"
 winreg = "0.55"
 
 [profile.release]
