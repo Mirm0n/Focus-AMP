@@ -54,6 +54,16 @@ The work that made the repository fit to be public.
   the GitHub secrets, bumping the version in three files, the draft-then-
   publish step that keeps a bad build from ever reaching anyone, how to prove
   the updater works, and what can and cannot be undone when it goes wrong.
+- **Lofi, with a station worth vouching for.** The genre had been dropped because
+  every 24/7 lofi stream is either a commercial network whose terms forbid a
+  player like this or an anonymous rotation with nobody to ask — and lofi is
+  the most AI-saturated genre there is. **NTS Low Key** gets round the problem
+  from the other side: NTS Radio has broadcast from London since 2011, and its
+  Infinite Mixtapes are cut from its own archive of presenter-hosted shows, so
+  the music was chosen by named people on air before it was ever a stream. Its
+  stream URL comes from NTS's own public API. One wrinkle: the mixtapes send no
+  track metadata, so the app shows the station name and nothing else while it
+  plays.
 - Two genres, **Freeform & eclectic** and **World**. The genre list had been
   built around one broadcaster's channel lineup; with that broadcaster gone it
   described a catalog that no longer existed, and the best stations left are
@@ -91,7 +101,7 @@ The work that made the repository fit to be public.
   KZSU, KEXP, WXPN), listener-supported non-profits (WBGO, WCPE, Alpha Boys
   School Radio) and foundations (Concertzender's eleven channels) — leaving 38
   Picks across 16 genres.
-- **Thirteen genres were removed for 1.0** — lofi, space, piano, nature, bossa,
+- **Twelve genres were removed for 1.0** — space, piano, nature, bossa,
   house, techno, trance, idm, post-rock, metal, blues and hip-hop. None found a single
   station anyone could vouch for: their long-running stations are
   overwhelmingly commercial networks whose terms forbid a player like this, or

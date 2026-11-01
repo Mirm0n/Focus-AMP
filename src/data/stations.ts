@@ -23,7 +23,7 @@
  * It used to carry 56 Picks, 30 of them SomaFM. SomaFM's terms refuse
  * third-party clients "even noncommercial ones", so all 30 had to go, along
  * with everything else Part 3.1 marked Exclude. Radio France, MPR and laut.fm
- * are parked pending permission (task L6/U3), and four lofi streams are parked
+ * are parked pending permission (task L6/U3), and five lofi streams are parked
  * pending the no-AI review under R1–R8. What is left is small and clean, and
  * the genres with nothing in them are simply not offered until the community
  * directory is switched on. Filling them back up honestly is task L3.
@@ -552,6 +552,40 @@ const KZSU = pick(
   "https://kzsu.stanford.edu/",
 );
 
+/**
+ * NTS Radio, London — the institution that finally makes a Lofi Pick possible.
+ *
+ * Its "Infinite Mixtapes" are continuous streams cut from NTS's own archive of
+ * presenter-hosted shows, which is why this one passes where a decade of
+ * 24/7 lofi streams did not: the music was chosen by named people on air
+ * before it was ever a stream, and NTS has been broadcasting since 2011.
+ *
+ * One honest caveat, and it is a user-visible one: the mixtapes send **no ICY
+ * metadata at all** — `StreamTitle` is empty — so the app shows the station
+ * name and no track. That is a missing nicety, not a provenance problem; R5
+ * is satisfied by NTS publishing what its shows played, not by the stream.
+ */
+const NTS_TERMS: StationTerms = {
+  status: "silent",
+  source: "https://www.nts.live/terms-and-conditions",
+  checked: "2026-11-01",
+  note:
+    "The only terms NTS publishes cover Supporter subscriptions — payments, refunds, " +
+    "cancellation. Nothing about third-party players, embedding, redistribution or " +
+    "non-commercial use, so §1.5 silence applies. Stream URL taken from NTS's own public " +
+    "API (/api/v2/mixtapes), which lists audio_stream_endpoint for each mixtape. London, " +
+    "broadcasting since 2011.",
+};
+
+const NTS_LOW_KEY = pick(
+  "NTS Low Key",
+  "NTS Radio · Lo-fi hip hop and smooth R&B",
+  "https://stream-mixtape-geo.ntslive.net/mixtape2",
+  "mixed",
+  NTS_TERMS,
+  "https://www.nts.live/infinite-mixtapes/100-percent-hip-hop",
+);
+
 const NIGHTWAVE_PLAZA = pick(
   "Nightwave Plaza",
   "Vaporwave and mallsoft",
@@ -604,6 +638,7 @@ export const PICKS: Record<string, Station[]> = {
   scores: [CZ_FILM],
   jazz: [SWISS_JAZZ, WBGO, CZ_JAZZ, CZ_HARDBOP, CRO_JAZZ],
   chillout: [RP_MELLOW, AM_AMBIENT],
+  lofi: [NTS_LOW_KEY],
   folk: [WFMU_DRUMMER, RP_GLOBAL, CZ_FOLK],
   reggae: [ALPHA_BOYS],
   dnb: [BASSDRIVE],
