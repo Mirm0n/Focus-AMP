@@ -4,9 +4,27 @@ Notable changes, newest first. Dates are ISO. This project follows
 [semantic versioning](https://semver.org) once it reaches 1.0; before then,
 minor versions may break things.
 
-## Unreleased
+## 0.9.1 — 2026-11-04
 
-The work that made the repository fit to be public.
+### Fixed
+
+- **Twelve stations played nothing, and the app was right to call them
+  unavailable.** Every stream URL is now `https`. The twelve that were plain
+  `http` — WFMU's four channels, both Radio Swiss stations, Stereoscenic's
+  three, KFJC, KZSU and Bassdrive — can be, and on at least one real
+  connection were, rewritten in transit: an ISP middlebox answered each of
+  them with its own notice page instead of the audio, so the player got HTML
+  where it expected an MP3 and marked the station dead. Radio Swiss needed
+  more than a scheme change: its `/m/` URLs answer with a redirect *to* plain
+  http, so they now point at the `/srgssr/` form that stays encrypted the
+  whole way. `check:stations` refuses a plain-http Pick from now on, which is
+  also a small privacy gain — an http stream tells every hop what you are
+  listening to.
+
+## 0.9.0 — 2026-11-03
+
+The first release anyone can install, and the work that made the repository
+fit to be public.
 
 ### Added
 

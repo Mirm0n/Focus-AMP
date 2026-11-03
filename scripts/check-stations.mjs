@@ -94,6 +94,18 @@ for (const [constName, s] of stations) {
   }
   if (!/^https?:\/\/\S+$/.test(s.url)) {
     errors.push(`${constName} (${s.name}): stream URL ${JSON.stringify(s.url)} is not http(s)`);
+  } else if (s.url.startsWith("http://")) {
+    // Plain http is not merely untidy here. Anything on the path can replace
+    // the audio, and something does: on one developer's connection every one
+    // of the twelve http Picks returned the ISP's own notice page instead of
+    // the station, so the app showed them as unavailable. It also tells that
+    // middlebox what the listener is listening to. Every station worth having
+    // serves https; if one truly does not, that is a reason to think twice
+    // rather than a reason to relax this.
+    errors.push(
+      `${constName} (${s.name}): stream URL is plain http. Use https — ` +
+        `http streams can be, and are, rewritten in transit`,
+    );
   }
   if (s.home && !/^https?:\/\/\S+$/.test(s.home)) {
     errors.push(`${constName} (${s.name}): home ${JSON.stringify(s.home)} is not a URL`);

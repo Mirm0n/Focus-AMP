@@ -289,7 +289,7 @@ const BASSDRIVE_TERMS: StationTerms = {
 const WFMU_FREEFORM = pick(
   "WFMU",
   "Listener-supported freeform, New Jersey",
-  "http://stream0.wfmu.org/freeform-128k.mp3",
+  "https://stream0.wfmu.org/freeform-128k.mp3",
   "vocal",
   WFMU_TERMS,
   "https://wfmu.org/",
@@ -297,7 +297,7 @@ const WFMU_FREEFORM = pick(
 const WFMU_ROCKNSOUL = pick(
   "WFMU Rock'n'Soul Radio",
   "WFMU · Vintage rock and soul 45s",
-  "http://stream0.wfmu.org/rocknsoul",
+  "https://stream0.wfmu.org/rocknsoul",
   "vocal",
   WFMU_TERMS,
   "https://wfmu.org/",
@@ -305,7 +305,7 @@ const WFMU_ROCKNSOUL = pick(
 const WFMU_DRUMMER = pick(
   "Give the Drummer Radio",
   "WFMU · Global and outsider sounds",
-  "http://stream0.wfmu.org/drummer",
+  "https://stream0.wfmu.org/drummer",
   "mixed",
   WFMU_TERMS,
   "https://wfmu.org/",
@@ -313,7 +313,7 @@ const WFMU_DRUMMER = pick(
 const WFMU_SHEENA = pick(
   "Sheena's Jungle Room",
   "WFMU · Garage, surf and rock'n'roll",
-  "http://stream0.wfmu.org/sheena",
+  "https://stream0.wfmu.org/sheena",
   "vocal",
   WFMU_TERMS,
   "https://wfmu.org/",
@@ -356,7 +356,7 @@ const RP_GLOBAL = pick(
 const SWISS_JAZZ = pick(
   "Radio Swiss Jazz",
   "SRG SSR · Jazz, no talk",
-  "https://stream.srg-ssr.ch/m/rsj/mp3_128",
+  "https://stream.srg-ssr.ch/srgssr/rsj/mp3/128",
   "mixed",
   SRG_SSR_TERMS,
   "https://www.radioswissjazz.ch/",
@@ -364,7 +364,7 @@ const SWISS_JAZZ = pick(
 const SWISS_CLASSIC = pick(
   "Radio Swiss Classic",
   "SRG SSR · Classical, no talk",
-  "https://stream.srg-ssr.ch/m/rsc_de/mp3_128",
+  "https://stream.srg-ssr.ch/srgssr/rsc_de/mp3/128",
   "instrumental",
   SRG_SSR_TERMS,
   "https://www.radioswissclassic.ch/",
@@ -397,7 +397,7 @@ const WXPN = pick(
 const WCPE = pick(
   "The Classical Station",
   "WCPE · Listener-supported classical",
-  "http://playerservices.streamtheworld.com/api/livestream-redirect/WCPE_FM.mp3",
+  "https://playerservices.streamtheworld.com/api/livestream-redirect/WCPE_FM.mp3",
   "instrumental",
   WCPE_TERMS,
   "https://theclassicalstation.org/",
@@ -406,7 +406,7 @@ const WCPE = pick(
 const ASP = pick(
   "Ambient Sleeping Pill",
   "Stereoscenic · Beatless ambient",
-  "http://radio.stereoscenic.com/asp-s",
+  "https://radio.stereoscenic.com/asp-s",
   "instrumental",
   STEREOSCENIC_TERMS,
   "https://www.ambientsleepingpill.com/",
@@ -414,7 +414,7 @@ const ASP = pick(
 const AM_AMBIENT = pick(
   "a.m. ambient",
   "Stereoscenic · Brighter daytime ambient",
-  "http://radio.stereoscenic.com/ama-s",
+  "https://radio.stereoscenic.com/ama-s",
   "instrumental",
   STEREOSCENIC_TERMS,
   "https://amambient.com/",
@@ -422,7 +422,7 @@ const AM_AMBIENT = pick(
 const AMBIENT_MODERN = pick(
   "Ambient Modern",
   "Stereoscenic · Contemporary ambient",
-  "http://radio.stereoscenic.com/mod-s",
+  "https://radio.stereoscenic.com/mod-s",
   "instrumental",
   STEREOSCENIC_TERMS,
   "https://ambientmodern.com/",
@@ -431,7 +431,7 @@ const AMBIENT_MODERN = pick(
 const KFJC = pick(
   "KFJC",
   "Foothill College · Freeform, Los Altos Hills",
-  "http://netcast.kfjc.org/kfjc-128k-mp3",
+  "https://netcast.kfjc.org/kfjc-128k-mp3",
   "mixed",
   KFJC_TERMS,
   "https://kfjc.org/",
@@ -575,7 +575,7 @@ const WMBR = pick(
 const KZSU = pick(
   "KZSU",
   "Stanford · Student freeform",
-  "http://kzsu-streams.stanford.edu:80/kzsu-1-128.mp3",
+  "https://kzsu-streams.stanford.edu/kzsu-1-128.mp3",
   "mixed",
   KZSU_TERMS,
   "https://kzsu.stanford.edu/",
@@ -602,7 +602,7 @@ const WBGO = pick(
 const ALPHA_BOYS = pick(
   "Alpha Boys School Radio",
   "Alpha School of Music · Jamaican roots, ska and dub",
-  "http://alphaboys-live.streamguys1.com/alphaboys.mp3",
+  "https://alphaboys-live.streamguys1.com/alphaboys.mp3",
   "vocal",
   ALPHA_BOYS_TERMS,
   "https://alphaboysschoolradio.com/",
@@ -611,7 +611,7 @@ const ALPHA_BOYS = pick(
 const BASSDRIVE = pick(
   "Bassdrive",
   "Drum & bass, DJ-programmed",
-  "http://ice.bassdrive.net/stream",
+  "https://ice.bassdrive.net/stream",
   "mixed",
   BASSDRIVE_TERMS,
   "https://www.bassdrive.com/",
