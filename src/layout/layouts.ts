@@ -50,8 +50,20 @@ export const LAYOUTS: Layout[] = [
   },
 ];
 
-export const DEFAULT_LAYOUT: LayoutId = "console";
+/**
+ * Focus, not Console: the timer is the reason the app is open, so it gets the
+ * stage and the visualizer takes the strip. Console shows the opposite, which
+ * is the better *demo* and the worse default.
+ *
+ * Only new installs see this. A saved choice is read back in
+ * `useAppearance`, so changing it never moves anyone's layout out from under
+ * them.
+ */
+export const DEFAULT_LAYOUT: LayoutId = "focus";
 
 export function getLayout(id: string): Layout {
-  return LAYOUTS.find((l) => l.id === id) ?? LAYOUTS[0];
+  // Falls back to the default rather than LAYOUTS[0], so an unknown id and a
+  // fresh install land in the same place instead of drifting apart whenever
+  // the array is reordered.
+  return LAYOUTS.find((l) => l.id === id) ?? LAYOUTS.find((l) => l.id === DEFAULT_LAYOUT)!;
 }
