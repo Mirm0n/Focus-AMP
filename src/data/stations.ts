@@ -1490,6 +1490,144 @@ const EPIC_LOUNGE = pick(
   "https://epic-lounge.com/",
 );
 
+// ── 2026-11-04: Lofi, judged by what the stations actually play ─────────────
+//
+// The genre had three Picks and only one of them was lofi. The fix was not to
+// trust the directory's "lofi" tag — it is attached to news stations mis-filed
+// by bitrate, to chiptune, to Malayalam slowed-and-reverbed edits, and to
+// dance networks with a lofi channel in name only. Each candidate below was
+// opened and held until it announced a few tracks, and kept only when those
+// tracks were by artists the genre actually has: Phlocalyst, Arbour, Claxy,
+// Tomppabeats, im.fine, Kalaido, Kanisan, Unheard, PRODUCERBOIBRAD.
+//
+// Rejected on the same evidence: CLIAMP (playing John Bartmann, a public-domain
+// library composer), Hotmix (library titles with UUIDs appended), Retro Lofi
+// Chiptune (chiptune), Palmera Blanca (vaporwave), Radio Digital Malayali
+// (slowed edits), PAX LO-FI (sermons between the beats).
+
+const NIA_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://nia.nc/",
+  checked: "2026-11-04",
+  note: "New Caledonian station. Sampled playing Arbour, a Chillhop Records artist. Stream verified; terms page not read.",
+};
+
+const RADIO_RECORD_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://www.radiorecord.ru/station/lofi",
+  checked: "2026-11-04",
+  note: "Large Russian commercial network, one channel per style. Sampled playing Claxy and Tomppabeats, both real lofi artists. Stream verified; terms page not read.",
+};
+
+const ILM_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://www.ilovemusic.de/ilovechillhop/",
+  checked: "2026-11-04",
+  note: "German commercial network. Sampled playing PRODUCERBOIBRAD. Stream verified; terms page not read.",
+};
+
+const LITT_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://littlive.com/",
+  checked: "2026-11-04",
+  note: "Sampled playing Kalaido. Stream verified; terms page not read.",
+};
+
+const KALIZO_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://www.kalizoradio.com/",
+  checked: "2026-11-04",
+  note: "Sampled playing Unheard. Stream verified; terms page not read.",
+};
+
+const RADIO_RELAX_TERMS: StationTerms = {
+  status: "unreviewed",
+  source: "https://radiorelax.md/",
+  checked: "2026-11-04",
+  note: "Moldovan station. Sampled playing Kanisan. Stream verified; terms page not read.",
+};
+
+const RM_STUDY = pick(
+  "rautemusik Study",
+  "Lofi beats to work to",
+  "https://study-high.rautemusik.fm/",
+  "instrumental",
+  RAUTEMUSIK_TERMS,
+  "https://www.rm.fm/study",
+);
+
+const EPIC_JAZZHOP = pick(
+  "Epic Lounge Jazzhop",
+  "Jazzhop and lofi",
+  "https://stream.epic-lounge.com/jazzhop-lounge",
+  "instrumental",
+  RAUTEMUSIK_TERMS,
+  "https://epic-lounge.com/",
+);
+
+const REYFM_LOFI = pick(
+  "REYFM Lofi",
+  "Lofi hip hop",
+  "https://listen.reyfm.de/lofi_320kbps.mp3",
+  "instrumental",
+  REYFM_TERMS,
+  "https://www.reyfm.de/",
+);
+
+const NIA_LOFI = pick(
+  "NIA Lo-Fi",
+  "New Caledonia",
+  "https://radio.nia.nc/radio/8020/lofi-hq-stream.aac",
+  "instrumental",
+  NIA_TERMS,
+  "https://nia.nc/",
+);
+
+const RECORD_LOFI = pick(
+  "Record Lo-Fi",
+  "Radio Record",
+  "https://radiorecord.hostingradio.ru/lofi96.aacp",
+  "instrumental",
+  RADIO_RECORD_TERMS,
+  "https://www.radiorecord.ru/station/lofi",
+);
+
+const ILM_CHILLHOP = pick(
+  "I Love Chillhop",
+  "I Love Music",
+  "https://ilm.stream12.radiohost.de/ilm_ilovechillhop_mp3-192",
+  "instrumental",
+  ILM_TERMS,
+  "https://www.ilovemusic.de/ilovechillhop/",
+);
+
+const LITT_LOFI = pick(
+  "LITT Live Lofi",
+  "Chill and instrumental jazz beats",
+  "https://das-sa39.cdnstream1.com/5582_128",
+  "instrumental",
+  LITT_TERMS,
+  "https://littlive.com/",
+);
+
+const KALIZO_LOFI = pick(
+  "Kalizo Lo-fi",
+  "Chillofi",
+  "https://streams.dez.ovh/listen/chillofi/radio.mp3",
+  "instrumental",
+  KALIZO_TERMS,
+  "https://www.kalizoradio.com/",
+);
+
+const RELAX_LOFI = pick(
+  "Relax Lo-Fi",
+  "Radio Relax",
+  "https://radio8.dixi.md/listen/relax_lofi/relax_lofi128.aac",
+  "instrumental",
+  RADIO_RELAX_TERMS,
+  "https://radiorelax.md/",
+);
+
 export const PICKS: Record<string, Station[]> = {
   ambient: [
     ASP,
@@ -1524,8 +1662,19 @@ export const PICKS: Record<string, Station[]> = {
     NTS_EXPANSIONS,
     WWOZ,
   ],
-  chillout: [RP_MELLOW, AM_AMBIENT, NTS_POOLSIDE, EPIC_LOUNGE],
-  lofi: [NTS_LOW_KEY, HUNTER_LOFI, LAUT_LOFI],
+  chillout: [RP_MELLOW, AM_AMBIENT, NTS_POOLSIDE, EPIC_LOUNGE, LAUT_LOFI],
+  lofi: [
+    HUNTER_LOFI,
+    RM_STUDY,
+    NIA_LOFI,
+    RECORD_LOFI,
+    ILM_CHILLHOP,
+    REYFM_LOFI,
+    LITT_LOFI,
+    KALIZO_LOFI,
+    RELAX_LOFI,
+    EPIC_JAZZHOP,
+  ],
   space: [NTS_SLOW_FOCUS, SYSTRUM_SSR1, CAMP_RADIO],
   piano: [WHISPERINGS, EPIC_PIANO_CHILL, EPIC_PIANO_ROMANTIC],
   nature: [NTS_FIELD, SLEEPSCAPES],
@@ -1540,7 +1689,7 @@ export const PICKS: Record<string, Station[]> = {
   postrock: [LAUT_POSTROCK, WKNC, NEU_RADIO],
   metal: [FIP_METAL, NTS_PIT],
   blues: [WWOZ, LAUT_BLUES, GROLLOO],
-  hiphop: [FIP_HIPHOP, NTS_RAP_HOUSE],
+  hiphop: [FIP_HIPHOP, NTS_RAP_HOUSE, NTS_LOW_KEY],
   synthwave: [NIGHTWAVE_PLAZA, NIGHTRIDE_DATAWAVE],
   eclectic: [
     WFMU_FREEFORM,
@@ -1583,7 +1732,7 @@ export const PICKS: Record<string, Station[]> = {
     NRK_MP3,
   ],
   rock: [RP_ROCK, WFMU_SHEENA, WFMU_ROCKNSOUL, FIP_ROCK],
-  soul: [WFMU_ROCKNSOUL, NTS_FEELINGS, FIP_GROOVE],
+  soul: [WFMU_ROCKNSOUL, NTS_FEELINGS, FIP_GROOVE, NTS_LOW_KEY],
 };
 
 const PICK_URLS = new Set(

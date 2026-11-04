@@ -4,6 +4,34 @@ Notable changes, newest first. Dates are ISO. This project follows
 [semantic versioning](https://semver.org) once it reaches 1.0; before then,
 minor versions may break things.
 
+## 0.9.2 — 2026-11-04
+
+### Added
+
+- **Nine more lofi stations, chosen by what they actually play.** The genre had
+  three Picks and only one of them — Hunter.FM — was really lofi. The
+  directory's "lofi" tag turned out to be attached to chiptune, to vaporwave,
+  to Malayalam slowed-and-reverbed edits, to sermons, and to news stations
+  mis-filed by bitrate, so tags were no use. Every candidate was instead opened
+  and held until it announced a few tracks, and kept only if those tracks were
+  by artists the genre actually has. The nine that passed — rautemusik Study,
+  NIA Lo-Fi, Record Lo-Fi, I Love Chillhop, REYFM Lofi, LITT Live Lofi, Kalizo
+  Lo-fi, Relax Lo-Fi and Epic Lounge Jazzhop — were caught playing Phlocalyst,
+  Arbour, Claxy, Tomppabeats, im.fine, Kalaido, Unheard, Kanisan and
+  PRODUCERBOIBRAD. Rejected on the same evidence: CLIAMP, which was playing a
+  public-domain library composer, and Hotmix, whose track titles carry UUIDs.
+  **Lofi now has ten stations.**
+
+### Changed
+
+- **The app opens on the Focus layout** rather than Console. The timer is why
+  the app is open, so it gets the stage and the visualizer takes the strip
+  below. Only new installs are affected; a saved layout is still read back.
+- **NTS Low Key moved to Hip-hop and Soul**, which is what NTS's own
+  description of it — "lo-fi hip-hop and smooth R'n'B" — mostly turns out to
+  be, and **laut.fm Lofi moved to Downtempo**: its sample held eli filosov,
+  who is squarely lofi, next to tracks that are not.
+
 ## 0.9.1 — 2026-11-04
 
 ### Fixed
